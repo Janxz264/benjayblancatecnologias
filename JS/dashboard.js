@@ -383,7 +383,7 @@ function savePatient() {
         telefono: document.getElementById("phone").value,
         fecha_nacimiento: document.getElementById("birthdate").value,
         id_estado: document.getElementById("state").value,
-        id_municipio: document.getElementById("addMunicipio").value
+        id_municipio: document.getElementById("municipio").value
     };
 
     fetch("../PHP/patienthandler.php?action=ADD", {
