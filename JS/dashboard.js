@@ -345,7 +345,7 @@ function loadMunicipios(stateId, selectedMunicipio) {
         });
 }
 
-function loadStates(selectedState = null) {
+function loadStates() {
     fetch("../PHP/getStates.php")
         .then(response => response.json())
         .then(states => {
@@ -355,10 +355,19 @@ function loadStates(selectedState = null) {
             states.forEach(state => {
                 let option = new Option(state.NOMBRE, state.ID_ESTADO);
                 stateSelect.add(option);
-                if (state.ID_ESTADO == selectedState) option.selected = true;
+
+                // Automatically select "Tabasco"
+                if (state.NOMBRE === "Tabasco") {
+                    option.selected = true;
+                }
             });
-        });
+
+            // Now that "Tabasco" is selected, load its municipios
+            loadMunicipios();
+        })
+        .catch(error => console.error("Error loading states:", error));
 }
+
 
 function loadMunicipios() {
     let stateId = document.getElementById("state").value;
@@ -371,9 +380,16 @@ function loadMunicipios() {
             municipios.forEach(municipio => {
                 let option = new Option(municipio.NOMBRE, municipio.ID_MUNICIPIO);
                 municipioSelect.add(option);
+
+                // Automatically select "Centro"
+                if (municipio.NOMBRE === "Centro") {
+                    option.selected = true;
+                }
             });
-        });
+        })
+        .catch(error => console.error("Error loading municipios:", error));
 }
+
 
 function savePatient() {
     let patientData = {

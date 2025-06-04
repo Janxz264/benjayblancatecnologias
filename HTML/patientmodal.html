@@ -1,8 +1,8 @@
 <!-- Patient Modal (Used for Both Add & Edit) -->
 <div class="modal fade" id="patientModal" tabindex="-1" aria-labelledby="patientModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg"> <!-- Larger modal for better spacing -->
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="patientModalLabel">Agregar Paciente</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
@@ -10,33 +10,44 @@
                 <form id="patientForm">
                     <input type="hidden" id="patientId"> <!-- Hidden field for Edit mode -->
 
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Nombres</label>
-                        <input type="text" class="form-control" id="name" maxlength="100" required>
+                    <!-- First Row: Nombres, Apellido Paterno, Apellido Materno -->
+                    <div class="row g-3"> <!-- g-3 adds spacing between elements -->
+                        <div class="col-md-4">
+                            <label for="name" class="form-label">Nombres</label>
+                            <input type="text" class="form-control border rounded" id="name" maxlength="100" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="paterno" class="form-label">Apellido Paterno</label>
+                            <input type="text" class="form-control border rounded" id="paterno" maxlength="75" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="materno" class="form-label">Apellido Materno</label>
+                            <input type="text" class="form-control border rounded" id="materno" maxlength="75">
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="paterno" class="form-label">Apellido Paterno</label>
-                        <input type="text" class="form-control" id="paterno" maxlength="75" required>
+
+                    <!-- Second Row: Teléfono, Fecha de Nacimiento -->
+                    <div class="row g-3 mt-3">
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label">Teléfono</label>
+                            <input type="text" class="form-control border rounded" id="phone" maxlength="15">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="birthdate" class="form-label">Fecha de Nacimiento</label>
+                            <input type="date" class="form-control border rounded" id="birthdate" required>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="materno" class="form-label">Apellido Materno (Opcional)</label>
-                        <input type="text" class="form-control" id="materno" maxlength="75">
-                    </div>
-                    <div class="mb-3">
-                        <label for="phone" class="form-label">Teléfono (Opcional)</label>
-                        <input type="text" class="form-control" id="phone" maxlength="15">
-                    </div>
-                    <div class="mb-3">
-                        <label for="birthdate" class="form-label">Fecha de Nacimiento</label>
-                        <input type="date" class="form-control" id="birthdate" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="state" class="form-label">Estado</label>
-                        <select class="form-control" id="state" onchange="loadMunicipios()"></select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="municipio" class="form-label">Municipio</label>
-                        <select class="form-control" id="municipio"></select>
+
+                    <!-- Third Row: Estado, Municipio -->
+                    <div class="row g-3 mt-3">
+                        <div class="col-md-6">
+                            <label for="state" class="form-label">Estado</label>
+                            <select class="form-control border rounded" id="state" onchange="loadMunicipios()"></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="municipio" class="form-label">Municipio</label>
+                            <select class="form-control border rounded" id="municipio"></select>
+                        </div>
                     </div>
                 </form>
             </div>
