@@ -79,3 +79,9 @@ footer img {
     padding: 15px; /* Adds spacing inside */
     border-radius: 8px; /* Smooth rounded corners */
 }
+
+.form-label {
+    font-weight: bold; /* Make text bold */
+    font-size: 18px; /* Slightly larger text */
+    color: black; /* Darker color for better visibility */
+}
