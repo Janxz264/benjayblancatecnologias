@@ -54,20 +54,33 @@
                         <input class="form-check-input custom-checkbox" type="checkbox" id="referredCheckbox" onchange="toggleDoctorFields()">
                         <label class="form-check-label" for="referredCheckbox"><strong>¿Fue referido por otro médico?</strong></label>
                     </div>
-                    <!-- Doctor Information Fields (Initially Hidden) -->
+
+                    <!-- Doctor Fields (Initially Hidden) -->
                     <div id="doctorFields" style="display: none;">
                         <div class="row g-3 mt-3">
-                            <div class="col-md-4">
-                                <label for="doctorName" class="form-label">Nombre del dr. referente</label>
-                                <input type="text" class="form-control border rounded" id="doctorName" maxlength="100">
+                            <!-- Dropdown for existing doctors (Initially Hidden) -->
+                            <div class="col-md-12" id="doctorSelectContainer" style="display: none;">
+                                <label for="doctorSelect" class="form-label">Seleccione un médico referente</label>
+                                <select class="form-control border rounded" id="doctorSelect" onchange="handleDoctorSelection()">
+                                    <option value="">-- Seleccione un médico --</option>
+                                </select>
                             </div>
-                            <div class="col-md-4">
-                                <label for="doctorPaterno" class="form-label">Apellido paterno del dr.</label>
-                                <input type="text" class="form-control border rounded" id="doctorPaterno" maxlength="75">
-                            </div>
-                            <div class="col-md-4">
-                                <label for="doctorMaterno" class="form-label">Apellido materno del dr.</label>
-                                <input type="text" class="form-control border rounded" id="doctorMaterno" maxlength="75">
+
+                            <!-- Manual input fields (Shown only when no doctor is selected) -->
+                            <div id="doctorManualFields">
+                                <label for="doctorManualFields" class="form-label">Si no aparece en la lista registre un nuevo doctor referente</label>
+                                <div class="col-md-4">
+                                    <label for="doctorName" class="form-label">Nombre</label>
+                                    <input type="text" class="form-control border rounded" id="doctorName" maxlength="100">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="doctorPaterno" class="form-label">Apellido paterno</label>
+                                    <input type="text" class="form-control border rounded" id="doctorPaterno" maxlength="75">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="doctorMaterno" class="form-label">Apellido materno</label>
+                                    <input type="text" class="form-control border rounded" id="doctorMaterno" maxlength="75">
+                                </div>
                             </div>
                         </div>
                     </div>
