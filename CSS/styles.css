@@ -1,0 +1,67 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #819797; /* Grayish background */
+    margin: 0;
+}
+
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Ensures full-height scaling */
+}
+
+.card {
+    width: 350px; /* Slightly wider for better aesthetics */
+    border-radius: 10px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Bootstrap overrides for better styling */
+h2 {
+    color: #53ebd6;
+}
+
+/* Bootstrap already manages input styling, but adding minor refinements */
+.form-control {
+    border-radius: 5px;
+}
+
+/* Custom teal button using Bootstrap */
+.btn-teal {
+    background-color: #005f5f;
+    color: white;
+    width: 100%;
+    font-size: 16px;
+}
+
+.btn-teal:hover {
+    background-color: #004848;
+}
+
+.error-message {
+    color: red;
+    font-size: 14px;
+}
+
+/* Footer Styling */
+footer {
+    background: #005f5f;
+    padding: 15px;
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    color: white;
+}
+
+footer img {
+    width: 80px;
+    opacity: 0.8;
+}
+
+#mainTitle {
+    font-size: 2.5rem; /* Adjust size */
+    text-align: center; /* Center the text */
+    font-weight: bold; /* Optional for emphasis */
+}
