@@ -65,3 +65,17 @@ footer img {
     text-align: center; /* Center the text */
     font-weight: bold; /* Optional for emphasis */
 }
+
+.custom-header-bg {
+    background-color: #005f5f; /* Dark teal */
+    color: white; /* Ensures text remains visible */
+    border-top-left-radius: 8px; /* Slight rounding on modal corners */
+    border-top-right-radius: 8px;
+    padding: 10px; /* Adds spacing */
+}
+
+.custom-form-bg {
+    background-color: #819797; /* Soft gray-green */
+    padding: 15px; /* Adds spacing inside */
+    border-radius: 8px; /* Smooth rounded corners */
+}

@@ -125,7 +125,7 @@ if (patientsLink) {
 }
 
 function loadPatients() {
-    document.getElementById("mainTitle").innerText = "Pacientes Registrados";
+    document.getElementById("mainTitle").innerText = "Gestor de pacientes";
     const container = document.getElementById("patientsContainer");
 
     // Add "Agregar Paciente" button at the top-right before the table
@@ -141,7 +141,7 @@ function loadPatients() {
         .then(response => response.json())
         .then(data => {
             if (data.length === 0) {
-                container.innerHTML += "<h1>No existen pacientes registrados.</h1>";
+                container.innerHTML += "<h1>No existen pacientes registrados en la base de datos.</h1>";
                 return;
             }
 

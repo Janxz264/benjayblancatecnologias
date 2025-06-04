@@ -1,13 +1,13 @@
 <!-- Patient Modal (Used for Both Add & Edit) -->
 <div class="modal fade" id="patientModal" tabindex="-1" aria-labelledby="patientModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg"> <!-- Larger modal for better spacing -->
+    <div class="modal-dialog modal-lg modal-dialog-centered"> <!-- Larger modal for better spacing -->
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
+            <div class="modal-header custom-header-bg text-white">
                 <h5 class="modal-title" id="patientModalLabel">Agregar Paciente</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-                <form id="patientForm">
+                <form id="patientForm" class="custom-form-bg">
                     <input type="hidden" id="patientId"> <!-- Hidden field for Edit mode -->
 
                     <!-- First Row: Nombres, Apellido Paterno, Apellido Materno -->
