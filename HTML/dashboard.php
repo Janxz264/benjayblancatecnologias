@@ -69,14 +69,16 @@
     <!-- Footer -->
     <?php include 'footer.html'; ?>
 
-    <!-- JavaScript Logic -->
-    <script src="../JS/dashboard.js"></script>
-
     <!-- Change Password Modal -->
     <?php include 'changepassword.html'; ?>
 
     <!-- Patient ADD & EDIT modal -->
     <?php include 'patientmodal.html'; ?>
 
+    <!-- Bootstrap JS Bundle (includes Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Your Custom JavaScript -->
+    <script src="../JS/dashboard.js"></script>
 </body>
 </html>

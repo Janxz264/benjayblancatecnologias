@@ -225,7 +225,7 @@ function openPatientModal(isEdit = false, patient = null) {
         document.getElementById("municipio").innerHTML = "<option>Seleccione un estado primero</option>"; // Reset municipios
     }
 
-    $("#patientModal").modal("show"); // Show the modal
+    new bootstrap.Modal(document.getElementById("patientModal")).show();
 }
 
 // Open Add Patient Modal
@@ -340,12 +340,6 @@ function loadMunicipios(stateId, selectedMunicipio) {
                 if (municipio.ID_MUNICIPIO == selectedMunicipio) option.selected = true;
             });
         });
-}
-
-function openAddPatientModal() {
-    loadStates(); // Load states dynamically
-    document.getElementById("addPatientForm").reset(); // Reset form fields
-    $("#addPatientModal").modal("show"); // Open modal
 }
 
 function loadStates(selectedState = null) {
