@@ -312,19 +312,22 @@ function calculateAge(birthDateString) {
     return age;
 }
 
-function loadStates(selectedState) {
+function loadStates(selectedState = null) {
     fetch("../PHP/getStates.php")
         .then(response => response.json())
         .then(states => {
-            const stateSelect = document.getElementById("editState");
+            const stateSelect = document.getElementById("state"); // Ensure correct ID
             stateSelect.innerHTML = ""; // Clear previous options
 
             states.forEach(state => {
                 let option = new Option(state.NOMBRE, state.ID_ESTADO);
                 stateSelect.add(option);
-                if (state.ID_ESTADO == selectedState) option.selected = true;
+                if (selectedState && state.ID_ESTADO == selectedState) {
+                    option.selected = true; // Preselect state if editing
+                }
             });
-        });
+        })
+        .catch(error => console.error("Error loading states:", error));
 }
 
 function loadMunicipios(stateId, selectedMunicipio) {
@@ -346,7 +349,7 @@ function loadStates(selectedState = null) {
     fetch("../PHP/getStates.php")
         .then(response => response.json())
         .then(states => {
-            const stateSelect = document.getElementById("addState");
+            const stateSelect = document.getElementById("state");
             stateSelect.innerHTML = ""; // Clear previous options
 
             states.forEach(state => {
@@ -358,11 +361,11 @@ function loadStates(selectedState = null) {
 }
 
 function loadMunicipios() {
-    let stateId = document.getElementById("addState").value;
+    let stateId = document.getElementById("state").value;
     fetch(`../PHP/getMunicipios.php?stateId=${stateId}`)
         .then(response => response.json())
         .then(municipios => {
-            const municipioSelect = document.getElementById("addMunicipio");
+            const municipioSelect = document.getElementById("municipio");
             municipioSelect.innerHTML = ""; // Clear previous options
 
             municipios.forEach(municipio => {
@@ -374,12 +377,12 @@ function loadMunicipios() {
 
 function savePatient() {
     let patientData = {
-        nombres: document.getElementById("addName").value,
-        paterno: document.getElementById("addPaterno").value,
-        materno: document.getElementById("addMaterno").value,
-        telefono: document.getElementById("addPhone").value,
-        fecha_nacimiento: document.getElementById("addBirthdate").value,
-        id_estado: document.getElementById("addState").value,
+        nombres: document.getElementById("name").value,
+        paterno: document.getElementById("paterno").value,
+        materno: document.getElementById("materno").value,
+        telefono: document.getElementById("phone").value,
+        fecha_nacimiento: document.getElementById("birthdate").value,
+        id_estado: document.getElementById("state").value,
         id_municipio: document.getElementById("addMunicipio").value
     };
 
