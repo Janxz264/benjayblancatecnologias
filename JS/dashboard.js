@@ -424,3 +424,17 @@ function savePatient() {
     })
     .catch(error => console.error("Error adding patient:", error));
 }
+
+function toggleDoctorFields() {
+    const checkbox = document.getElementById("referredCheckbox");
+    const doctorFields = document.getElementById("doctorFields");
+
+    if (checkbox.checked) {
+        doctorFields.style.display = "block"; // Show fields
+    } else {
+        doctorFields.style.display = "none"; // Hide fields
+        document.getElementById("doctorName").value = ""; // Clear inputs
+        document.getElementById("doctorPaterno").value = "";
+        document.getElementById("doctorMaterno").value = "";
+    }
+}

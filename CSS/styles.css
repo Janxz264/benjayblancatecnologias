@@ -85,3 +85,25 @@ footer img {
     font-size: 18px; /* Slightly larger text */
     color: black; /* Darker color for better visibility */
 }
+
+/* Make checkbox more visible */
+.custom-checkbox {
+    width: 20px; /* Increase checkbox size */
+    height: 20px;
+    border: 2px solid #333; /* Dark border for visibility */
+    border-radius: 4px; /* Slight rounding */
+    appearance: none; /* Ensures custom styling */
+    background-color: white; /* Stand out against form background */
+    cursor: pointer; /* Makes it clickable */
+}
+
+/* Add a checkmark when selected */
+.custom-checkbox:checked {
+    background-color: #005f5f; /* Match your custom modal header */
+    border-color: #005f5f;
+}
+
+/* Center checkbox next to label */
+.form-check.d-flex {
+    gap: 10px; /* Space between label and checkbox */
+}
