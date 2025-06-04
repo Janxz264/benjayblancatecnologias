@@ -49,6 +49,34 @@
                             <select class="form-control border rounded" id="municipio"></select>
                         </div>
                     </div>
+
+                    <!-- Checkbox for Assurance -->
+                    <div class="form-check d-flex align-items-center gap-3 mt-3">
+                        <input class="form-check-input custom-checkbox" type="checkbox" id="assuranceCheckbox" onchange="toggleAssuranceFields()">
+                        <label class="form-check-label" for="assuranceCheckbox"><strong>¿Cuenta con seguro médico?</strong></label>
+                    </div>
+
+                    <!-- Assurance Fields (Initially Hidden) -->
+                    <div id="assuranceFields" style="display: none;">
+                        <div class="row g-3 mt-3">
+                            <!-- Dropdown for existing assurances (Initially Hidden) -->
+                            <div class="col-md-12" id="assuranceSelectContainer" style="display: none;">
+                                <label for="assuranceSelect" class="form-label">Seleccione un seguro</label>
+                                <select class="form-control border rounded" id="assuranceSelect" onchange="handleAssuranceSelection()">
+                                    <option value="">-- Seleccione un seguro --</option>
+                                </select>
+                            </div>
+
+                            <!-- Manual input field (Shown only when no assurance is selected) -->
+                            <div id="assuranceManualField">
+                                <div class="col-md-12">
+                                    <label for="assuranceName" class="form-label">Nombre del seguro</label>
+                                    <input type="text" class="form-control border rounded" id="assuranceName" maxlength="150">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Checkbox for Referral -->
                     <div class="form-check d-flex align-items-center gap-3 mt-3">
                         <input class="form-check-input custom-checkbox" type="checkbox" id="referredCheckbox" onchange="toggleDoctorFields()">
@@ -60,7 +88,7 @@
                         <div class="row g-3 mt-3">
                             <!-- Dropdown for existing doctors (Initially Hidden) -->
                             <div class="col-md-12" id="doctorSelectContainer" style="display: none;">
-                                <label for="doctorSelect" class="form-label">Seleccione un médico referente</label>
+                                <label for="doctorSelect" class="form-label">Seleccione al médico referente</label>
                                 <select class="form-control border rounded" id="doctorSelect" onchange="handleDoctorSelection()">
                                     <option value="">-- Seleccione un médico --</option>
                                 </select>

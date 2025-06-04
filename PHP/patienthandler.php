@@ -17,7 +17,7 @@ $action = $_GET['action'] ?? '';
 if ($action === "VIEW") {
     // Fetch patient data
     $stmt = $pdo->prepare("
-        SELECT PA.ID_PACIENTE, P.NOMBRES, P.PATERNO, P.MATERNO, PA.TELEFONO, 
+        SELECT PA.ID_PACIENTE, P.NOMBRE, P.PATERNO, P.MATERNO, PA.TELEFONO, 
         DATE_FORMAT(PA.FECHA_NACIMIENTO, '%d/%m/%Y') AS FECHA_NACIMIENTO,
         M.NOMBRE AS NOMBRE_MUNICIPIO, E.NOMBRE AS NOMBRE_ESTADO
         FROM PERSONA AS P
@@ -52,7 +52,7 @@ if ($action === "VIEW") {
     $idPaciente = $_GET['id'];
 
     $stmt = $pdo->prepare("
-        SELECT P.NOMBRES, P.PATERNO, P.MATERNO, PA.TELEFONO, PA.FECHA_NACIMIENTO, 
+        SELECT P.NOMBRE, P.PATERNO, P.MATERNO, PA.TELEFONO, PA.FECHA_NACIMIENTO, 
                M.ID_MUNICIPIO, M.NOMBRE AS NOMBRE_MUNICIPIO, 
                E.ID_ESTADO, E.NOMBRE AS NOMBRE_ESTADO
         FROM PERSONA AS P
@@ -72,10 +72,10 @@ if ($action === "VIEW") {
 } elseif ($action === "ADD") {
     $data = json_decode(file_get_contents("php://input"), true);
     $stmt = $pdo->prepare("
-        INSERT INTO PERSONA (NOMBRES, PATERNO, MATERNO) 
+        INSERT INTO PERSONA (NOMBRE, PATERNO, MATERNO) 
         VALUES (?, ?, ?)
     ");
-    $stmt->execute([$data['nombres'], $data['paterno'], $data['materno']]);
+    $stmt->execute([$data['nombre'], $data['paterno'], $data['materno']]);
 
     $idPersona = $pdo->lastInsertId();
     $stmtPaciente = $pdo->prepare("
@@ -91,10 +91,10 @@ if ($action === "VIEW") {
     $data = json_decode(file_get_contents("php://input"), true);
 
     $stmt = $pdo->prepare("
-        UPDATE PERSONA SET NOMBRES=?, PATERNO=?, MATERNO=? 
+        UPDATE PERSONA SET NOMBRE=?, PATERNO=?, MATERNO=? 
         WHERE ID_PERSONA=(SELECT ID_PERSONA FROM PACIENTE WHERE ID_PACIENTE=?)
     ");
-    $stmt->execute([$data['nombres'], $data['paterno'], $data['materno'], $idPaciente]);
+    $stmt->execute([$data['nombre'], $data['paterno'], $data['materno'], $idPaciente]);
 
     $stmtPaciente = $pdo->prepare("
         UPDATE PACIENTE SET TELEFONO=?, FECHA_NACIMIENTO=?, ID_MUNICIPIO=? 

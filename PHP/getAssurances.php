@@ -5,12 +5,8 @@ require_once '../PHP/db_connect.php';
 header('Content-Type: application/json; charset=utf-8');
 
 try {
-    // Retrieve only persons who are NOT patients (i.e., doctors)
     $stmt = $pdo->prepare("
-        SELECT P.ID_PERSONA, P.NOMBRE, P.PATERNO, P.MATERNO
-        FROM PERSONA P
-        LEFT JOIN PACIENTE PA ON P.ID_PERSONA = PA.ID_PERSONA
-        WHERE PA.ID_PERSONA IS NULL ORDER BY P.PATERNO
+        SELECT ID_SEGURO, NOMBRE FROM SEGURO ORDER BY NOMBRE
     ");
     $stmt->execute();
     $doctors = $stmt->fetchAll(PDO::FETCH_ASSOC);

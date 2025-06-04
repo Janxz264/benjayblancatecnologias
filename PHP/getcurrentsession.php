@@ -7,7 +7,7 @@ header('Content-Type: application/json');
 $date = new DateTime("now", new DateTimeZone("America/Mexico_City"));
 $date->modify("-1 hour"); // Subtract 1 hour manually
 
-$formatter = new IntlDateFormatter('es_ES', IntlDateFormatter::FULL, IntlDateFormatter::SHORT, 'America/Mexico_City', IntlDateFormatter::GREGORIAN, "EEEE, d 'de' MMMM 'de' yyyy hh:mm a");
+$formatter = new IntlDateFormatter('es_ES', IntlDateFormatter::FULL, IntlDateFormatter::SHORT, 'America/Mexico_City', IntlDateFormatter::GREGORIAN, "EEEE, d 'de' MMMM 'de' yyyy");
 
 $formattedDate = ucfirst($formatter->format($date));
 
