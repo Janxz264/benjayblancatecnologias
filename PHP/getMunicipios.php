@@ -20,7 +20,7 @@ if (!$idEstado) {
 
 try {
     // Query to fetch municipalities for the given state
-    $stmt = $pdo->prepare("SELECT ID_MUNICIPIO, NOMBRE FROM MUNICIPIO WHERE ID_ESTADO = ?");
+    $stmt = $pdo->prepare("SELECT ID_MUNICIPIO, NOMBRE FROM MUNICIPIO WHERE ID_ESTADO = ? ORDER BY NOMBRE");
     $stmt->execute([$idEstado]);
     $municipios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

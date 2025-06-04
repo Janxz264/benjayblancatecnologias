@@ -334,7 +334,7 @@ function loadMunicipios(stateId, selectedMunicipio) {
     fetch(`../PHP/getMunicipios.php?stateId=${stateId}`)
         .then(response => response.json())
         .then(municipios => {
-            const municipioSelect = document.getElementById("editMunicipio");
+            const municipioSelect = document.getElementById("municipio");
             municipioSelect.innerHTML = ""; // Clear previous options
 
             municipios.forEach(municipio => {
@@ -363,33 +363,38 @@ function loadStates() {
             });
 
             // Now that "Tabasco" is selected, load its municipios
-            loadMunicipios();
+            populateMunicipios();
         })
         .catch(error => console.error("Error loading states:", error));
 }
 
-
-function loadMunicipios() {
+function populateMunicipios() {
     let stateId = document.getElementById("state").value;
+
     fetch(`../PHP/getMunicipios.php?stateId=${stateId}`)
         .then(response => response.json())
         .then(municipios => {
             const municipioSelect = document.getElementById("municipio");
             municipioSelect.innerHTML = ""; // Clear previous options
 
+            let defaultMunicipio = null;
+
             municipios.forEach(municipio => {
                 let option = new Option(municipio.NOMBRE, municipio.ID_MUNICIPIO);
                 municipioSelect.add(option);
 
-                // Automatically select "Centro"
-                if (municipio.NOMBRE === "Centro") {
-                    option.selected = true;
+                // If state is "Tabasco", default to "Centro"; otherwise, let users pick freely
+                if (document.getElementById("state").selectedOptions[0].text === "Tabasco" && municipio.NOMBRE === "Centro") {
+                    defaultMunicipio = option;
                 }
             });
+
+            if (defaultMunicipio) {
+                defaultMunicipio.selected = true;
+            }
         })
         .catch(error => console.error("Error loading municipios:", error));
 }
-
 
 function savePatient() {
     let patientData = {

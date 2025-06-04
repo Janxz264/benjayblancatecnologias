@@ -86,7 +86,7 @@ if ($action === "VIEW") {
 
     echo json_encode(["success" => true]);
 
-} elseif ($action === "UPDATE") {
+} elseif ($action === "EDIT") {
     $idPaciente = $_GET['id'];
     $data = json_decode(file_get_contents("php://input"), true);
 

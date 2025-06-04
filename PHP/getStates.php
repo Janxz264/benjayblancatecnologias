@@ -12,7 +12,7 @@ if (!isset($_SESSION['user_id'])) {
 
 try {
     // Query to fetch states
-    $stmt = $pdo->prepare("SELECT ID_ESTADO, NOMBRE FROM ESTADO");
+    $stmt = $pdo->prepare("SELECT ID_ESTADO, NOMBRE FROM ESTADO ORDER BY NOMBRE");
     $stmt->execute();
     $states = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
