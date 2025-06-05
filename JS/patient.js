@@ -12,7 +12,6 @@ function loadPatients() {
     document.getElementById("mainTitle").innerText = "Gestor de pacientes";
     const container = document.getElementById("patientsContainer");
 
-    // Add "Agregar Paciente" button at the top-right before the table
     container.innerHTML = `
         <div class="d-flex justify-content-between align-items-center mb-3">
             <button class="btn btn-success" onclick="openAddPatientModal()">
@@ -47,7 +46,7 @@ function loadPatients() {
 
             data.forEach(patient => {
                 let age = calculateAge(patient.FECHA_NACIMIENTO);
-                let fullName = `${patient.PATERNO} ${patient.MATERNO ? patient.MATERNO : ""} ${patient.NOMBRES}`;
+                let fullName = `${patient.PATERNO} ${patient.MATERNO || ""} ${patient.NOMBRE}`;
                 
                 tableHTML += `
                     <tr>
@@ -85,10 +84,10 @@ function openPatientModal(isEdit = false, patient = null) {
     const saveBtn = document.getElementById("savePatientBtn");
     const form = document.getElementById("patientForm");
 
-    if (isEdit) {
-        // Editing a patient
+    if (isEdit && patient) {
         modalLabel.innerText = "Editar Paciente";
         saveBtn.innerText = "Guardar Cambios";
+        form.reset();
         document.getElementById("patientId").value = patient.ID_PACIENTE;
         document.getElementById("name").value = patient.NOMBRES;
         document.getElementById("paterno").value = patient.PATERNO;
@@ -96,66 +95,76 @@ function openPatientModal(isEdit = false, patient = null) {
         document.getElementById("phone").value = patient.TELEFONO || "";
         document.getElementById("birthdate").value = patient.FECHA_NACIMIENTO;
 
-        loadStates(patient.ID_ESTADO); // Preselect existing state
-        loadMunicipios(patient.ID_ESTADO, patient.ID_MUNICIPIO); // Preselect existing municipio
+        loadStates(patient.ID_ESTADO).then(() => {
+            loadMunicipios(patient.ID_ESTADO, patient.ID_MUNICIPIO);
+        });
     } else {
-        // Adding a new patient
         modalLabel.innerText = "Agregar Paciente";
         saveBtn.innerText = "Guardar";
         form.reset();
-        document.getElementById("patientId").value = ""; // Ensure ID is empty
-
-        loadStates(); // Load default states
-        document.getElementById("municipio").innerHTML = "<option>Seleccione un estado primero</option>"; // Reset municipios
+        document.getElementById("patientId").value = "";
+        loadStates();
+        document.getElementById("municipio").innerHTML = "<option>Seleccione un estado primero</option>";
     }
 
     new bootstrap.Modal(document.getElementById("patientModal")).show();
 }
 
-// Open Add Patient Modal
 function openAddPatientModal() {
     openPatientModal(false);
 }
 
-// Open Edit Patient Modal
 function editPatient(id) {
     fetch(`../PHP/patienthandler.php?action=GET&id=${id}`)
         .then(response => response.json())
         .then(patient => {
             if (patient.error) {
-                alert(patient.error);
+                Swal.fire("Error", patient.error, "error");
                 return;
             }
             openPatientModal(true, patient);
         })
-        .catch(error => console.error("Error loading patient data:", error));
+        .catch(error => {
+            console.error("Error loading patient data:", error);
+            Swal.fire("Error", "No se pudo cargar el paciente.", "error");
+        });
 }
 
 function deletePatient(id) {
-    if (confirm("¿Estás seguro de que deseas eliminar este paciente? Esta acción no se puede deshacer.")) {
-        fetch(`../PHP/patienthandler.php?action=REMOVE`, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `id=${id}`
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                alert("Paciente eliminado correctamente.");
-                loadPatients();
-            } else {
-                alert("Error eliminando paciente.");
-            }
-        })
-        .catch(error => console.error("Error deleting patient:", error));
-    }
+    Swal.fire({
+        title: "¿Eliminar paciente?",
+        text: "Esta acción no se puede deshacer.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar"
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch(`../PHP/patienthandler.php?action=REMOVE`, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `id=${id}`
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    Swal.fire("Eliminado", "Paciente eliminado correctamente.", "success");
+                    loadPatients();
+                } else {
+                    Swal.fire("Error", "Error eliminando paciente.", "error");
+                }
+            })
+            .catch(error => {
+                console.error("Error deleting patient:", error);
+                Swal.fire("Error", "No se pudo eliminar el paciente.", "error");
+            });
+        }
+    });
 }
 
 function calculateAge(birthDateString) {
-    // Convert "DD/MM/YYYY" to "YYYY-MM-DD"
     let parts = birthDateString.split('/');
-    let formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`; // Rearrange to YYYY-MM-DD
-    
+    let formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
     let birthDate = new Date(formattedDate);
     let today = new Date();
 
@@ -163,17 +172,62 @@ function calculateAge(birthDateString) {
     let monthDiff = today.getMonth() - birthDate.getMonth();
     let dayDiff = today.getDate() - birthDate.getDate();
 
-    // Adjust age if birth month/day hasn't occurred yet
     if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
         age--;
     }
-
     return age;
 }
 
+function loadStates(preselectedId = null) {
+    return fetch("../PHP/patienthandler.php?action=GET_STATES")
+        .then(response => response.json())
+        .then(states => {
+            const stateSelect = document.getElementById("state");
+            stateSelect.innerHTML = "<option value=''>Seleccione un estado</option>";
+            states.forEach(state => {
+                const option = document.createElement("option");
+                option.value = state.ID_ESTADO;
+                option.text = state.NOMBRE;
+                if (preselectedId && parseInt(preselectedId) === parseInt(state.ID_ESTADO)) {
+                    option.selected = true;
+                }
+                stateSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error("Error loading states:", error));
+}
+
+function loadMunicipios(idEstado, preselectedId = null) {
+    fetch(`../PHP/patienthandler.php?action=GET_MUNICIPIOS&id_estado=${idEstado}`)
+        .then(response => response.json())
+        .then(municipios => {
+            const municipioSelect = document.getElementById("municipio");
+            municipioSelect.innerHTML = "<option value=''>Seleccione un municipio</option>";
+            municipios.forEach(m => {
+                const option = document.createElement("option");
+                option.value = m.ID_MUNICIPIO;
+                option.text = m.NOMBRE;
+                if (preselectedId && parseInt(preselectedId) === parseInt(m.ID_MUNICIPIO)) {
+                    option.selected = true;
+                }
+                municipioSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error("Error loading municipios:", error));
+}
+
+document.getElementById("state").addEventListener("change", function () {
+    const selectedState = this.value;
+    if (selectedState) {
+        loadMunicipios(selectedState);
+    } else {
+        document.getElementById("municipio").innerHTML = "<option>Seleccione un estado primero</option>";
+    }
+});
+
 function savePatient() {
     let patientData = {
-        nombres: document.getElementById("name").value,
+        nombre: document.getElementById("name").value,
         paterno: document.getElementById("paterno").value,
         materno: document.getElementById("materno").value,
         telefono: document.getElementById("phone").value,
@@ -182,20 +236,32 @@ function savePatient() {
         id_municipio: document.getElementById("municipio").value
     };
 
-    fetch("../PHP/patienthandler.php?action=ADD", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(patientData)
+    const idPaciente = document.getElementById("patientId").value;
+    const action = idPaciente ? "EDIT" : "ADD";
+    if (idPaciente) patientData.id_paciente = idPaciente;
+
+    if (!patientData.nombre || !patientData.paterno || !patientData.fecha_nacimiento || !patientData.telefono) {
+    Swal.fire("Campos obligatorios", "Nombre, Apellido Paterno, Teléfono & Fecha de Nacimiento son requeridos.", "warning");
+    return;
+    }
+
+    fetch(`../PHP/patienthandler.php?action=${action}${idPaciente ? `&id=${idPaciente}` : ''}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patientData)
     })
     .then(response => response.json())
     .then(result => {
         if (result.success) {
-            alert("Paciente agregado correctamente.");
-            $("#addPatientModal").modal("hide");
+            Swal.fire("Éxito", `Paciente ${idPaciente ? "actualizado" : "agregado"} correctamente.`, "success");
+            document.querySelector("#patientModal .btn-close").click();
             loadPatients();
         } else {
-            alert("Error al agregar paciente.");
+            Swal.fire("Error", "No se pudo guardar el paciente.", "error");
         }
     })
-    .catch(error => console.error("Error adding patient:", error));
+    .catch(error => {
+        console.error("Error saving patient:", error);
+        Swal.fire("Error", "Error al enviar los datos del paciente.", "error");
+    });
 }
