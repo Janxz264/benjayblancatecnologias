@@ -1,65 +1,50 @@
-function loadMunicipios(stateId, selectedMunicipio) {
-    fetch(`../PHP/getMunicipios.php?stateId=${stateId}`)
-        .then(response => response.json())
-        .then(municipios => {
-            const municipioSelect = document.getElementById("municipio");
-            municipioSelect.innerHTML = ""; // Clear previous options
-
-            municipios.forEach(municipio => {
-                let option = new Option(municipio.NOMBRE, municipio.ID_MUNICIPIO);
-                municipioSelect.add(option);
-                if (municipio.ID_MUNICIPIO == selectedMunicipio) option.selected = true;
-            });
-        });
-}
-
-function loadStates() {
-    fetch("../PHP/getStates.php")
+function loadStates(selectedStateId = null) {
+    return fetch("../PHP/getStates.php")
         .then(response => response.json())
         .then(states => {
             const stateSelect = document.getElementById("state");
-            stateSelect.innerHTML = ""; // Clear previous options
+            stateSelect.innerHTML = ""; // Limpiar opciones anteriores
 
             states.forEach(state => {
                 let option = new Option(state.NOMBRE, state.ID_ESTADO);
                 stateSelect.add(option);
 
-                // Automatically select "Tabasco"
-                if (state.NOMBRE === "Tabasco") {
+                if (selectedStateId && state.ID_ESTADO == selectedStateId) {
+                    option.selected = true;
+                } else if (!selectedStateId && state.NOMBRE === "Tabasco") {
                     option.selected = true;
                 }
             });
 
-            // Now that "Tabasco" is selected, load its municipios
-            populateMunicipios();
+            // Una vez seleccionado el estado, cargar municipios
+            const selectedId = selectedStateId || stateSelect.value;
+            return loadMunicipios(selectedId);
         })
-        .catch(error => console.error("Error loading states:", error));
+        .catch(error => console.error("Error al cargar estados:", error));
 }
 
-function populateMunicipios() {
-    let stateId = document.getElementById("state").value;
-
-    fetch(`../PHP/getMunicipios.php?stateId=${stateId}`)
+function loadMunicipios(stateId, selectedMunicipio = null) {
+    return fetch(`../PHP/getMunicipios.php?stateId=${stateId}`)
         .then(response => response.json())
         .then(municipios => {
             const municipioSelect = document.getElementById("municipio");
-            municipioSelect.innerHTML = ""; // Clear previous options
-
-            let defaultMunicipio = null;
+            municipioSelect.innerHTML = ""; // Limpiar opciones anteriores
 
             municipios.forEach(municipio => {
                 let option = new Option(municipio.NOMBRE, municipio.ID_MUNICIPIO);
                 municipioSelect.add(option);
-
-                // If state is "Tabasco", default to "Centro"; otherwise, let users pick freely
-                if (document.getElementById("state").selectedOptions[0].text === "Tabasco" && municipio.NOMBRE === "Centro") {
-                    defaultMunicipio = option;
+                if (selectedMunicipio && municipio.ID_MUNICIPIO == selectedMunicipio) {
+                    option.selected = true;
                 }
             });
 
-            if (defaultMunicipio) {
-                defaultMunicipio.selected = true;
+            // Valor por defecto si es Tabasco
+            const stateSelect = document.getElementById("state");
+            const selectedStateText = stateSelect.selectedOptions[0]?.text;
+            if (!selectedMunicipio && selectedStateText === "Tabasco") {
+                const centroOption = Array.from(municipioSelect.options).find(opt => opt.text === "Centro");
+                if (centroOption) centroOption.selected = true;
             }
         })
-        .catch(error => console.error("Error loading municipios:", error));
+        .catch(error => console.error("Error al cargar municipios:", error));
 }

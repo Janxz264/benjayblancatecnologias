@@ -89,7 +89,7 @@ function openPatientModal(isEdit = false, patient = null) {
         saveBtn.innerText = "Guardar Cambios";
         form.reset();
         document.getElementById("patientId").value = patient.ID_PACIENTE;
-        document.getElementById("name").value = patient.NOMBRES;
+        document.getElementById("name").value = patient.NOMBRE;
         document.getElementById("paterno").value = patient.PATERNO;
         document.getElementById("materno").value = patient.MATERNO || "";
         document.getElementById("phone").value = patient.TELEFONO || "";
