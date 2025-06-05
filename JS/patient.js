@@ -178,53 +178,6 @@ function calculateAge(birthDateString) {
     return age;
 }
 
-function loadStates(preselectedId = null) {
-    return fetch("../PHP/patienthandler.php?action=GET_STATES")
-        .then(response => response.json())
-        .then(states => {
-            const stateSelect = document.getElementById("state");
-            stateSelect.innerHTML = "<option value=''>Seleccione un estado</option>";
-            states.forEach(state => {
-                const option = document.createElement("option");
-                option.value = state.ID_ESTADO;
-                option.text = state.NOMBRE;
-                if (preselectedId && parseInt(preselectedId) === parseInt(state.ID_ESTADO)) {
-                    option.selected = true;
-                }
-                stateSelect.appendChild(option);
-            });
-        })
-        .catch(error => console.error("Error loading states:", error));
-}
-
-function loadMunicipios(idEstado, preselectedId = null) {
-    fetch(`../PHP/patienthandler.php?action=GET_MUNICIPIOS&id_estado=${idEstado}`)
-        .then(response => response.json())
-        .then(municipios => {
-            const municipioSelect = document.getElementById("municipio");
-            municipioSelect.innerHTML = "<option value=''>Seleccione un municipio</option>";
-            municipios.forEach(m => {
-                const option = document.createElement("option");
-                option.value = m.ID_MUNICIPIO;
-                option.text = m.NOMBRE;
-                if (preselectedId && parseInt(preselectedId) === parseInt(m.ID_MUNICIPIO)) {
-                    option.selected = true;
-                }
-                municipioSelect.appendChild(option);
-            });
-        })
-        .catch(error => console.error("Error loading municipios:", error));
-}
-
-document.getElementById("state").addEventListener("change", function () {
-    const selectedState = this.value;
-    if (selectedState) {
-        loadMunicipios(selectedState);
-    } else {
-        document.getElementById("municipio").innerHTML = "<option>Seleccione un estado primero</option>";
-    }
-});
-
 function savePatient() {
     let patientData = {
         nombre: document.getElementById("name").value,

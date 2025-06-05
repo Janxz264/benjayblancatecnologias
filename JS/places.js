@@ -48,3 +48,12 @@ function loadMunicipios(stateId, selectedMunicipio = null) {
         })
         .catch(error => console.error("Error al cargar municipios:", error));
 }
+
+document.getElementById("state").addEventListener("change", function () {
+    const selectedState = this.value;
+    if (selectedState) {
+        loadMunicipios(selectedState);
+    } else {
+        document.getElementById("municipio").innerHTML = "<option>Seleccione un estado primero</option>";
+    }
+});

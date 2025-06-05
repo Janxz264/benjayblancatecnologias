@@ -62,9 +62,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Your Custom JavaScript -->
+    <script src="../JS/places.js"></script>
     <script src="../JS/patient.js"></script>
     <script src="../JS/dashboard.js"></script>
-    <script src="../JS/places.js"></script>
     <script src="../JS/referrerdoctor.js"></script>
     <script src="../JS/assurance.js"></script>
 </body>
