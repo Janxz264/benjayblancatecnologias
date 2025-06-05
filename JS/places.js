@@ -1,21 +1,3 @@
-function loadStates(selectedState = null) {
-    fetch("../PHP/getStates.php")
-        .then(response => response.json())
-        .then(states => {
-            const stateSelect = document.getElementById("state"); // Ensure correct ID
-            stateSelect.innerHTML = ""; // Clear previous options
-
-            states.forEach(state => {
-                let option = new Option(state.NOMBRE, state.ID_ESTADO);
-                stateSelect.add(option);
-                if (selectedState && state.ID_ESTADO == selectedState) {
-                    option.selected = true; // Preselect state if editing
-                }
-            });
-        })
-        .catch(error => console.error("Error loading states:", error));
-}
-
 function loadMunicipios(stateId, selectedMunicipio) {
     fetch(`../PHP/getMunicipios.php?stateId=${stateId}`)
         .then(response => response.json())
