@@ -18,8 +18,8 @@ if (agendaLink) {
 }
 
 function loadCurrentAppointments() {
-    document.getElementById("mainTitle").innerText = "Agenda de Citas";
-    const container = document.getElementById("patientsContainer"); // Usa el mismo contenedor
+    document.getElementById("mainTitle").innerText = "Agenda del día";
+    const container = document.getElementById("mainContainer");
 
     container.innerHTML = `
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -89,8 +89,7 @@ function loadCurrentAppointments() {
 
 function loadPastAppointments() {
     document.getElementById("mainTitle").innerText = "Historial de Citas";
-    const container = document.getElementById("patientsContainer"); // Usa el mismo contenedor
-
+    const container = document.getElementById("mainContainer");
     container.innerHTML = `
         <div class="d-flex justify-content-between align-items-center mb-3">
             <button class="btn btn-success" onclick="openAddAppointmentModal()">

@@ -10,7 +10,7 @@ if (patientsLink) {
 
 function loadPatients() {
     document.getElementById("mainTitle").innerText = "Gestor de pacientes";
-    const container = document.getElementById("patientsContainer");
+    const container = document.getElementById("mainContainer");
 
     container.innerHTML = `
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -34,7 +34,8 @@ function loadPatients() {
                         <tr>
                             <th>Nombre Completo</th>
                             <th>Teléfono</th>
-                            <th>Fecha de Nacimiento / Edad</th>
+                            <th>Fecha de Nacimiento</th>
+                            <th>Edad</th>
                             <th>Municipio</th>
                             <th>Estado</th>
                             <th>Editar</th>
@@ -52,7 +53,8 @@ function loadPatients() {
                     <tr>
                         <td>${fullName}</td>
                         <td>${patient.TELEFONO}</td>
-                        <td>${patient.FECHA_NACIMIENTO} (${age} años)</td>
+                        <td>${patient.FECHA_NACIMIENTO}</td>
+                        <td>${age} años</td>
                         <td>${patient.NOMBRE_MUNICIPIO}</td>
                         <td>${patient.NOMBRE_ESTADO}</td>
                         <td>

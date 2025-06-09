@@ -34,7 +34,7 @@
     <!-- Main Content Area -->
     <main class="flex-grow container mt-5 p-4 bg-white shadow rounded w-75">
         <h1 id="mainTitle" class="title">Bienvenido</h1>
-        <div id="patientsContainer">
+        <div id="mainContainer">
             <p>Elija una opción del menú para empezar.</p>
         </div>
     </main>
