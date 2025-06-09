@@ -114,9 +114,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-// Initialize DataTables after content is loaded
-function initializeDataTable() {
-    $('#patientsTable').DataTable({
+// Global DataTables initializer
+function initializeDataTable(tableId) {
+    $(tableId).DataTable({
         paging: true,
         searching: true,
         ordering: true,
@@ -125,6 +125,7 @@ function initializeDataTable() {
         }
     });
 }
+
 
 // Helper functions
 function closeModal() {

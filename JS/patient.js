@@ -71,7 +71,8 @@ function loadPatients() {
 
             tableHTML += `</tbody></table>`;
             container.innerHTML += tableHTML;
-            initializeDataTable();
+            $('#patientsTable').DataTable().destroy();
+            initializeDataTable("#patientsTable");
         })
         .catch(error => {
             console.error("Error fetching patients:", error);

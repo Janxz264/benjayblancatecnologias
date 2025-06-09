@@ -78,7 +78,8 @@ function loadCurrentAppointments() {
 
             tableHTML += `</tbody></table>`;
             container.innerHTML += tableHTML;
-            initializeDataTable(); // Si estás usando DataTables
+            $('#appointmentsTable').DataTable().destroy();
+            initializeDataTable("#appointmentsTable");
         })
         .catch(error => {
             console.error("Error fetching appointments:", error);
@@ -147,7 +148,8 @@ function loadPastAppointments() {
 
             tableHTML += `</tbody></table>`;
             container.innerHTML += tableHTML;
-            initializeDataTable(); // Si estás usando DataTables
+            $('#appointmentsTable').DataTable().destroy();
+            initializeDataTable("#appointmentsTable");
         })
         .catch(error => {
             console.error("Error fetching appointments:", error);
