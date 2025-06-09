@@ -34,7 +34,7 @@ ORDER BY c.FECHA_HORA DESC;
 
     echo json_encode($appointments);
 }
-else if ($action === "VIEWPAST") {
+elseif ($action === "VIEWPAST") {
     // Fetch appointment data
     $stmt = $pdo->prepare("
 SELECT 
@@ -46,7 +46,7 @@ SELECT
 FROM cita c
 JOIN paciente pa ON pa.ID_PACIENTE = c.ID_PACIENTE
 JOIN persona p ON p.ID_PERSONA = pa.ID_PERSONA
-WHERE DATE(c.FECHA_HORA) >= CURDATE()
+WHERE DATE(c.FECHA_HORA) < CURDATE()
 ORDER BY c.FECHA_HORA DESC;
     ");
     $stmt->execute();

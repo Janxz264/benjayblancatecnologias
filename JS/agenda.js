@@ -153,3 +153,71 @@ function formatDateTime(datetimeString) {
         timeStyle: "short"
     });
 }
+
+// Función para abrir el modal de cita
+function openAddAppointmentModal() {
+    $('#appointmentForm')[0].reset(); // Limpiar formulario
+    $('#patientSelect').empty().append('<option value="">-- Cargando pacientes... --</option>');
+    $('#appointmentModal').modal('show');
+    loadPatientsForAppointment(); // Llenar dropdown
+}
+
+// Cargar pacientes desde patienthandler.php
+function loadPatientsForAppointment() {
+    $.ajax({
+        url: '../PHP/patienthandler.php?action=VIEW',
+        method: 'GET',
+        dataType: 'json',
+        success: function(patients) {
+            let $select = $('#patientSelect');
+            $select.empty().append('<option value="">-- Seleccione un paciente --</option>');
+            patients.forEach(p => {
+                const fullName = `${p.NOMBRE} ${p.PATERNO} ${p.MATERNO}`;
+                $select.append(`<option value="${p.ID_PACIENTE}">${fullName}</option>`);
+            });
+        },
+        error: function(err) {
+            console.error("Error al cargar pacientes:", err);
+            $('#patientSelect').html('<option value="">Error al cargar pacientes</option>');
+        }
+    });
+}
+
+function saveAppointment() {
+    const pacienteId = $('#patientSelect').val();
+    const fechaHora = $('#appointmentDatetime').val();
+    const motivo = $('#appointmentReason').val();
+
+    if (!pacienteId || !fechaHora || !motivo) {
+        Swal.fire('Campos incompletos', 'Todos los campos son obligatorios', 'warning');
+        return;
+    }
+
+    const payload = {
+        id_paciente: pacienteId,
+        fecha_hora: fechaHora,
+        motivo: motivo
+    };
+
+    fetch('../PHP/appointmenthandler.php?action=ADD', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(response => {
+        if (response.success) {
+            $('#appointmentModal').modal('hide');
+            Swal.fire('Cita guardada', 'La cita se ha registrado correctamente.', 'success');
+            // Aquí podrías refrescar una tabla o calendario
+        } else {
+            Swal.fire('Error', response.error || 'No se pudo guardar la cita', 'error');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        Swal.fire('Error', 'Ocurrió un error al enviar la cita', 'error');
+    });
+}

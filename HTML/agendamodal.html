@@ -1,0 +1,38 @@
+<!-- Appointment Modal -->
+<div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-indigo-600 text-white">
+                <h5 class="modal-title" id="appointmentModalLabel">Agendar Cita</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="appointmentForm" class="custom-form-bg">
+                    <!-- Dropdown de pacientes -->
+                    <div class="mb-3">
+                        <label for="patientSelect" class="form-label font-semibold">Elija al paciente</label>
+                        <select id="patientSelect" class="form-control border rounded" required>
+                            <option value="">-- Seleccione un paciente --</option>
+                        </select>
+                    </div>
+
+                    <!-- Fecha y hora de la cita -->
+                    <div class="mb-3">
+                        <label for="appointmentDatetime" class="form-label font-semibold">Elija la fecha y hora de la cita</label>
+                        <input type="datetime-local" id="appointmentDatetime" class="form-control border rounded" required>
+                    </div>
+
+                    <!-- Motivo de consulta -->
+                    <div class="mb-3">
+                        <label for="appointmentReason" class="form-label font-semibold">Redacte el motivo de la consulta</label>
+                        <textarea id="appointmentReason" class="form-control border rounded" rows="3" maxlength="500" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="submit" class="btn btn-success" onclick="saveAppointment()">Guardar Cita</button>
+            </div>
+        </div>
+    </div>
+</div>

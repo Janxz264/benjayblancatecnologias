@@ -71,13 +71,21 @@ if ($action === "VIEW") {
     }
 } elseif ($action === "ADD") {
     $data = json_decode(file_get_contents("php://input"), true);
-    $stmt = $pdo->prepare("
-        INSERT INTO PERSONA (NOMBRE, PATERNO, MATERNO) 
-        VALUES (?, ?, ?)
-    ");
-    $stmt->execute([$data['nombre'], $data['paterno'], $data['materno']]);
 
+    // Verifica que el campo user_id esté en la sesión
+    $userCreate = $_SESSION['user_id'];
+
+    // Insertar en PERSONA con USER_CREATE
+    $stmt = $pdo->prepare("
+        INSERT INTO PERSONA (NOMBRE, PATERNO, MATERNO, USER_CREATE) 
+        VALUES (?, ?, ?, ?)
+    ");
+    $stmt->execute([$data['nombre'], $data['paterno'], $data['materno'], $userCreate]);
+
+    // Obtener el ID generado
     $idPersona = $pdo->lastInsertId();
+
+    // Insertar en PACIENTE
     $stmtPaciente = $pdo->prepare("
         INSERT INTO PACIENTE (ID_PERSONA, TELEFONO, FECHA_NACIMIENTO, ID_MUNICIPIO) 
         VALUES (?, ?, ?, ?)
@@ -85,25 +93,43 @@ if ($action === "VIEW") {
     $stmtPaciente->execute([$idPersona, $data['telefono'], $data['fecha_nacimiento'], $data['id_municipio']]);
 
     echo json_encode(["success" => true]);
-
+    
 } elseif ($action === "EDIT") {
     $idPaciente = $_GET['id'];
     $data = json_decode(file_get_contents("php://input"), true);
 
-    $stmt = $pdo->prepare("
-        UPDATE PERSONA SET NOMBRE=?, PATERNO=?, MATERNO=? 
-        WHERE ID_PERSONA=(SELECT ID_PERSONA FROM PACIENTE WHERE ID_PACIENTE=?)
-    ");
-    $stmt->execute([$data['nombre'], $data['paterno'], $data['materno'], $idPaciente]);
+    $userModify = $_SESSION['user_id'];
 
-    $stmtPaciente = $pdo->prepare("
-        UPDATE PACIENTE SET TELEFONO=?, FECHA_NACIMIENTO=?, ID_MUNICIPIO=? 
-        WHERE ID_PACIENTE=?
+    // Actualizar PERSONA con USER_MODIFY y MODIFIED
+    $stmt = $pdo->prepare("
+        UPDATE PERSONA 
+        SET NOMBRE = ?, PATERNO = ?, MATERNO = ?, USER_MODIFY = ?, MODIFIED = NOW()
+        WHERE ID_PERSONA = (SELECT ID_PERSONA FROM PACIENTE WHERE ID_PACIENTE = ?)
     ");
-    $stmtPaciente->execute([$data['telefono'], $data['fecha_nacimiento'], $data['id_municipio'], $idPaciente]);
+    $stmt->execute([
+        $data['nombre'],
+        $data['paterno'],
+        $data['materno'],
+        $userModify,
+        $idPaciente
+    ]);
+
+    // Actualizar PACIENTE
+    $stmtPaciente = $pdo->prepare("
+        UPDATE PACIENTE 
+        SET TELEFONO = ?, FECHA_NACIMIENTO = ?, ID_MUNICIPIO = ? 
+        WHERE ID_PACIENTE = ?
+    ");
+    $stmtPaciente->execute([
+        $data['telefono'],
+        $data['fecha_nacimiento'],
+        $data['id_municipio'],
+        $idPaciente
+    ]);
 
     echo json_encode(["success" => true]);
 }
+
 
 else {
     echo json_encode(["error" => "Acción no válida"]);
