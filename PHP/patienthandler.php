@@ -23,7 +23,8 @@ if ($action === "VIEW") {
         FROM PERSONA AS P
         JOIN PACIENTE AS PA ON P.ID_PERSONA = PA.ID_PERSONA
         JOIN MUNICIPIO AS M ON PA.ID_MUNICIPIO = M.ID_MUNICIPIO
-        JOIN ESTADO AS E ON M.ID_ESTADO = E.ID_ESTADO;
+        JOIN ESTADO AS E ON M.ID_ESTADO = E.ID_ESTADO
+        WHERE PA.ACTIVO = 1;
     ");
     $stmt->execute();
     $patients = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -59,7 +60,8 @@ if ($action === "VIEW") {
         JOIN PACIENTE AS PA ON P.ID_PERSONA = PA.ID_PERSONA
         JOIN MUNICIPIO AS M ON PA.ID_MUNICIPIO = M.ID_MUNICIPIO
         JOIN ESTADO AS E ON M.ID_ESTADO = E.ID_ESTADO
-        WHERE PA.ID_PACIENTE = ?
+        WHERE PA.ACTIVO = 1
+        AND PA.ID_PACIENTE = ?
     ");
     $stmt->execute([$idPaciente]);
     $patient = $stmt->fetch(PDO::FETCH_ASSOC);

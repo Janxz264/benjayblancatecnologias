@@ -235,6 +235,21 @@ function loadPatientsForAppointment() {
         success: function(patients) {
             let $select = $('#patientSelect');
             $select.empty().append('<option value="">-- Seleccione un paciente --</option>');
+
+            // If no patients exist, show alert and close modal
+            if (patients.length === 0) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Atención",
+                    text: "Al menos un paciente debe ser registrado en la base de datos, diríjase al módulo de Pacientes del Menú Izquierdo.",
+                    confirmButtonText: "Entendido"
+                }).then(() => {
+                    $("#appointmentModal").modal("hide");
+                });
+                return;
+            }
+
+            // Populate dropdown with patient data
             patients.forEach(p => {
                 const fullName = `${p.NOMBRE} ${p.PATERNO} ${p.MATERNO}`;
                 $select.append(`<option value="${p.ID_PACIENTE}">${fullName}</option>`);
@@ -242,7 +257,7 @@ function loadPatientsForAppointment() {
         },
         error: function(err) {
             console.error("Error al cargar pacientes:", err);
-            $('#patientSelect').html('<option value="">Error al cargar pacientes</option>');
+            Swal.fire("Error", "Ocurrió un problema al cargar los pacientes.", "error");
         }
     });
 }

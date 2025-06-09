@@ -107,3 +107,24 @@ footer img {
 .form-check.d-flex {
     gap: 10px; /* Space between label and checkbox */
 }
+
+button[disabled] {
+    opacity: 0.6; /* Makes it slightly transparent */
+    cursor: not-allowed;
+}
+
+button[disabled]:hover::after {
+    content: "No es posible finalizar aún";
+    display: block;
+    position: absolute;
+    background: #000;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 12px;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+}
+
