@@ -64,6 +64,7 @@
     <!-- Your Custom JavaScript -->
     <script src="../JS/places.js"></script>
     <script src="../JS/patient.js"></script>
+    <script src="../JS/agenda.js"></script>
     <script src="../JS/dashboard.js"></script>
     <script src="../JS/referrerdoctor.js"></script>
     <script src="../JS/assurance.js"></script>
