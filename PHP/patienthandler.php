@@ -32,24 +32,32 @@ if ($action === "VIEW") {
     echo json_encode($patients);
 } elseif ($action === "REMOVE") {
     parse_str(file_get_contents("php://input"), $_POST);
+
     if (!isset($_POST['id'])) {
-        echo json_encode(["error" => "ID de paciente no proporcionado"]);
+        echo json_encode(["error" => "ID de persona no proporcionado"]);
         exit;
     }
 
-    $idPaciente = $_POST['id'];
+    $idPersona = $_POST['id'];
 
-    $stmtPersona = $pdo->prepare("
-        DELETE FROM PERSONA 
-        WHERE ID_PERSONA = (SELECT ID_PERSONA FROM PACIENTE WHERE ID_PACIENTE = ?)
-    ");
-    $stmtPersona->execute([$idPaciente]);
+    try {
+        // Update ACTIVO to 0 in PERSONA and PACIENTE tables
+        $stmtPersona = $pdo->prepare("
+            UPDATE PERSONA SET ACTIVO = 0 WHERE ID_PERSONA = ?
+        ");
+        $stmtPaciente = $pdo->prepare("
+            UPDATE PACIENTE SET ACTIVO = 0 WHERE ID_PERSONA = ?
+        ");
 
-    $stmtPaciente = $pdo->prepare("DELETE FROM PACIENTE WHERE ID_PACIENTE = ?");
-    $stmtPaciente->execute([$idPaciente]);
+        $stmtPersona->execute([$idPersona]);
+        $stmtPaciente->execute([$idPersona]);
 
-    echo json_encode(["success" => true]);
-} elseif ($action === "GET" && isset($_GET['id'])) {
+        echo json_encode(["success" => true]);
+    } catch (PDOException $e) {
+        echo json_encode(["error" => "Error al desactivar la persona: " . $e->getMessage()]);
+    }
+}
+ elseif ($action === "GET" && isset($_GET['id'])) {
     $idPaciente = $_GET['id'];
 
     $stmt = $pdo->prepare("
