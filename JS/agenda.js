@@ -17,6 +17,16 @@ if (agendaLink) {
     console.error("Error: Element #agendaLink not found.");
 }
 
+const agendaPastLink = document.getElementById("agendaPastLink");
+if (agendaPastLink) {
+    agendaPastLink.addEventListener("click", function (event) {
+        event.preventDefault();
+        loadPastAppointments();
+    });
+} else {
+    console.error("Error: Element #agendaPastLink not found.");
+}
+
 function loadCurrentAppointments() {
     document.getElementById("mainTitle").innerText = "Agenda del día";
     const container = document.getElementById("mainContainer");
@@ -38,7 +48,7 @@ function loadCurrentAppointments() {
             }
 
             if (data.length === 0) {
-                container.innerHTML += "<h1>No hay citas registradas.</h1>";
+                container.innerHTML += "<h1>No hay citas el día de hoy ni en el futuro registradas en la base de datos.</h1>";
                 return;
             }
 
@@ -51,6 +61,7 @@ function loadCurrentAppointments() {
                             <th>Motivo</th>
                             <th>Editar</th>
                             <th>Eliminar</th>
+                            <th>Finalizar</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -70,6 +81,11 @@ function loadCurrentAppointments() {
                         <td>
                             <button class="btn btn-danger btn-sm" onclick="deleteAppointment(${appointment.ID_CITA})">
                                 <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-info btn-sm" onclick="finishAppointment(${appointment.ID_CITA})">
+                                <i class="fa fa-calendar-check"></i> Finalizar Cita
                             </button>
                         </td>
                     </tr>
@@ -92,9 +108,6 @@ function loadPastAppointments() {
     const container = document.getElementById("mainContainer");
     container.innerHTML = `
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <button class="btn btn-success" onclick="openAddAppointmentModal()">
-                <i class="fas fa-plus"></i> Agendar Cita
-            </button>
         </div>
     `;
 
@@ -107,7 +120,7 @@ function loadPastAppointments() {
             }
 
             if (data.length === 0) {
-                container.innerHTML += "<h1>No hay citas registradas.</h1>";
+                container.innerHTML += "<h1>No hay citas pasadas registradas en la base de datos.</h1>";
                 return;
             }
 
@@ -118,8 +131,7 @@ function loadPastAppointments() {
                             <th>Paciente</th>
                             <th>Fecha y Hora</th>
                             <th>Motivo</th>
-                            <th>Editar</th>
-                            <th>Eliminar</th>
+                            <th>Observaciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -132,13 +144,8 @@ function loadPastAppointments() {
                         <td>${formatDateTime(appointment.FECHA_HORA)}</td>
                         <td>${appointment.MOTIVO_DE_CONSULTA}</td>
                         <td>
-                            <button class="btn btn-primary btn-sm" onclick="editAppointment(${appointment.ID_CITA})">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                        </td>
-                        <td>
-                            <button class="btn btn-danger btn-sm" onclick="deleteAppointment(${appointment.ID_CITA})">
-                                <i class="fas fa-trash"></i> Eliminar
+                            <button class="btn btn-primary btn-sm" onclick="viewAppointment(${appointment.ID_CITA})">
+                                <i class="fas fa-search"></i> Ver observaciones
                             </button>
                         </td>
                     </tr>
@@ -271,5 +278,42 @@ function deleteAppointment(idCita) {
                 Swal.fire("Error", "Ocurrió un error al eliminar la cita", "error");
             });
         }
+    });
+}
+
+function finishAppointment(idCita) {
+    $("#endAppointmentId").val(idCita);
+    $("#endAppointmentModal").modal("show");
+}
+
+function endAppointment() {
+    const idCita = $("#endAppointmentId").val();
+    const observaciones = $("#appointmentObservations").val().trim();
+
+    if (!observaciones) {
+        Swal.fire("Campo obligatorio", "Debe ingresar observaciones para finalizar la cita.", "warning");
+        return;
+    }
+
+    const payload = { observaciones };
+
+    fetch(`../PHP/agendahandler.php?action=FINISH&id=${idCita}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(response => {
+        if (response.success) {
+            $("#endAppointmentModal").modal("hide");
+            Swal.fire("Cita finalizada", "La cita ha sido cerrada correctamente.", "success");
+            loadCurrentAppointments(); // Refresh appointments
+        } else {
+            Swal.fire("Error", response.error || "No se pudo finalizar la cita.", "error");
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        Swal.fire("Error", "Ocurrió un error al finalizar la cita.", "error");
     });
 }

@@ -27,6 +27,7 @@ FROM cita c
 JOIN paciente pa ON pa.ID_PACIENTE = c.ID_PACIENTE
 JOIN persona p ON p.ID_PERSONA = pa.ID_PERSONA
 WHERE DATE(c.FECHA_HORA) >= CURDATE()
+AND C.OBSERVACIONES IS NULL
 ORDER BY c.FECHA_HORA ASC;
     ");
     $stmt->execute();
@@ -98,6 +99,25 @@ elseif ($action === "REMOVE") {
     $stmtCita->execute([$idCita]);
 
     echo json_encode(["success" => true]);
+} 
+elseif ($action === "FINISH") {
+        $idCita = $_GET['id'];
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        $userModify = $_SESSION['user_id'];
+
+        // Actualizar PERSONA con USER_MODIFY y MODIFIED
+        $stmt = $pdo->prepare("
+            UPDATE CITA 
+            SET OBSERVACIONES = ?, USER_MODIFY = ?, MODIFIED = NOW() WHERE ID_CITA = ? 
+        ");
+        $stmt->execute([
+            $data['observaciones'],
+            $userModify,
+            $idCita
+        ]);
+
+        echo json_encode(["success" => true]);
 }
 
 else {
