@@ -27,7 +27,7 @@ FROM cita c
 JOIN paciente pa ON pa.ID_PACIENTE = c.ID_PACIENTE
 JOIN persona p ON p.ID_PERSONA = pa.ID_PERSONA
 WHERE DATE(c.FECHA_HORA) >= CURDATE()
-ORDER BY c.FECHA_HORA DESC;
+ORDER BY c.FECHA_HORA ASC;
     ");
     $stmt->execute();
     $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -83,7 +83,21 @@ elseif ($action === "ADD") {
     } catch (PDOException $e) {
         echo json_encode(["error" => "Error al guardar la cita: " . $e->getMessage()]);
     }
+}
 
+elseif ($action === "REMOVE") {
+    parse_str(file_get_contents("php://input"), $_POST);
+    if (!isset($_POST['id'])) {
+        echo json_encode(["error" => "ID de cita no proporcionado"]);
+        exit;
+    }
+
+    $idCita = $_POST['id'];
+
+    $stmtCita = $pdo->prepare("DELETE FROM CITA WHERE ID_CITA = ?");
+    $stmtCita->execute([$idCita]);
+
+    echo json_encode(["success" => true]);
 }
 
 else {

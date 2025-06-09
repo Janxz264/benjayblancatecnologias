@@ -238,3 +238,37 @@ function saveAppointment() {
         Swal.fire('Error', 'Ocurrió un error al enviar la cita', 'error');
     });
 }
+
+function deleteAppointment(idCita) {
+    Swal.fire({
+        title: "¿Estás seguro?",
+        text: "La cita será eliminada permanentemente.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch("../PHP/agendahandler.php?action=REMOVE", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `id=${idCita}`
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.success) {
+                    Swal.fire("Eliminada", "La cita ha sido eliminada correctamente.", "success");
+                    loadCurrentAppointments(); // Refresh table
+                } else {
+                    Swal.fire("Error", response.error || "No se pudo eliminar la cita", "error");
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire("Error", "Ocurrió un error al eliminar la cita", "error");
+            });
+        }
+    });
+}
