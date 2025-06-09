@@ -54,6 +54,37 @@ ORDER BY c.FECHA_HORA DESC;
 
     echo json_encode($appointments);
 }
+elseif ($action === "ADD") {
+    $data = json_decode(file_get_contents("php://input"), true);
+
+    // Validar datos requeridos
+    if (
+        empty($data['id_paciente']) || 
+        empty($data['fecha_hora']) || 
+        empty($data['motivo'])
+    ) {
+        echo json_encode(["error" => "Datos incompletos"]);
+        exit;
+    }
+
+    try {
+        $stmt = $pdo->prepare("
+            INSERT INTO CITA (ID_PACIENTE, USER_CREATE, FECHA_HORA, MOTIVO_DE_CONSULTA)
+            VALUES (?, ?, ?, ?)
+        ");
+        $stmt->execute([
+            $data['id_paciente'],
+            $_SESSION['user_id'],
+            $data['fecha_hora'],
+            $data['motivo']
+        ]);
+
+        echo json_encode(["success" => true]);
+    } catch (PDOException $e) {
+        echo json_encode(["error" => "Error al guardar la cita: " . $e->getMessage()]);
+    }
+
+}
 
 else {
     echo json_encode(["error" => "Acción no válida"]);

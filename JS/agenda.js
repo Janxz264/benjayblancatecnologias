@@ -1,3 +1,12 @@
+document.addEventListener('DOMContentLoaded', function () {
+    flatpickr("#appointmentTime", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "h:i K", // 12-hour format with AM/PM
+        time_24hr: false
+    });
+});
+
 const agendaLink = document.getElementById("agendaLink");
 if (agendaLink) {
     agendaLink.addEventListener("click", function (event) {
@@ -156,10 +165,10 @@ function formatDateTime(datetimeString) {
 
 // Función para abrir el modal de cita
 function openAddAppointmentModal() {
-    $('#appointmentForm')[0].reset(); // Limpiar formulario
+    $('#appointmentForm')[0].reset(); // Clean form
     $('#patientSelect').empty().append('<option value="">-- Cargando pacientes... --</option>');
     $('#appointmentModal').modal('show');
-    loadPatientsForAppointment(); // Llenar dropdown
+    loadPatientsForAppointment();
 }
 
 // Cargar pacientes desde patienthandler.php
@@ -185,25 +194,33 @@ function loadPatientsForAppointment() {
 
 function saveAppointment() {
     const pacienteId = $('#patientSelect').val();
-    const fechaHora = $('#appointmentDatetime').val();
+    const date = $('#appointmentDate').val(); // Ej: 2025-06-10
+    const time = $('#appointmentTime').val(); // Ej: 10:30 AM
     const motivo = $('#appointmentReason').val();
 
-    if (!pacienteId || !fechaHora || !motivo) {
+    if (!pacienteId || !date || !time || !motivo) {
         Swal.fire('Campos incompletos', 'Todos los campos son obligatorios', 'warning');
         return;
     }
 
+    // Convertir hora AM/PM a 24 horas para MySQL
+    const [hourMinute, meridian] = time.split(' ');
+    let [hour, minute] = hourMinute.split(':').map(Number);
+    if (meridian === 'PM' && hour !== 12) hour += 12;
+    if (meridian === 'AM' && hour === 12) hour = 0;
+    const formattedTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+
+    const mysqlDateTime = `${date} ${formattedTime}:00`; // MySQL DATETIME format
+
     const payload = {
         id_paciente: pacienteId,
-        fecha_hora: fechaHora,
+        fecha_hora: mysqlDateTime,
         motivo: motivo
     };
 
-    fetch('../PHP/appointmenthandler.php?action=ADD', {
+    fetch('../PHP/agendahandler.php?action=ADD', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     })
     .then(res => res.json())
@@ -211,7 +228,7 @@ function saveAppointment() {
         if (response.success) {
             $('#appointmentModal').modal('hide');
             Swal.fire('Cita guardada', 'La cita se ha registrado correctamente.', 'success');
-            // Aquí podrías refrescar una tabla o calendario
+            loadCurrentAppointments();
         } else {
             Swal.fire('Error', response.error || 'No se pudo guardar la cita', 'error');
         }

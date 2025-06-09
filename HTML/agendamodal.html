@@ -10,21 +10,27 @@
                 <form id="appointmentForm" class="custom-form-bg">
                     <!-- Dropdown de pacientes -->
                     <div class="mb-3">
-                        <label for="patientSelect" class="form-label font-semibold">Elija al paciente</label>
+                        <label for="patientSelect" class="form-label font-semibold">Seleccione al paciente</label>
                         <select id="patientSelect" class="form-control border rounded" required>
                             <option value="">-- Seleccione un paciente --</option>
                         </select>
                     </div>
 
-                    <!-- Fecha y hora de la cita -->
+                    <!-- Fecha de la cita -->
                     <div class="mb-3">
-                        <label for="appointmentDatetime" class="form-label font-semibold">Elija la fecha y hora de la cita</label>
-                        <input type="datetime-local" id="appointmentDatetime" class="form-control border rounded" required>
+                        <label for="appointmentDate" class="form-label font-semibold">Fecha de la cita</label>
+                        <input type="date" id="appointmentDate" class="form-control border rounded" required>
+                    </div>
+
+                    <!-- Hora de la cita -->
+                    <div class="mb-3">
+                        <label for="appointmentTime" class="form-label font-semibold">Hora de la cita</label>
+                        <input type="text" id="appointmentTime" class="form-control border rounded" placeholder="hh:mm AM/PM" required>
                     </div>
 
                     <!-- Motivo de consulta -->
                     <div class="mb-3">
-                        <label for="appointmentReason" class="form-label font-semibold">Redacte el motivo de la consulta</label>
+                        <label for="appointmentReason" class="form-label font-semibold">Motivo de la consulta</label>
                         <textarea id="appointmentReason" class="form-control border rounded" rows="3" maxlength="500" required></textarea>
                     </div>
                 </form>
