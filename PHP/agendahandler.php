@@ -2,6 +2,7 @@
 session_start();
 require_once '../PHP/db_connect.php';
 
+
 ob_start();
 header('Content-Type: application/json; charset=utf-8');
 
@@ -118,6 +119,38 @@ elseif ($action === "FINISH") {
         ]);
 
         echo json_encode(["success" => true]);
+}
+elseif ($action === "GET" && isset($_GET['id'])) {
+    $idCita = $_GET['id'];
+
+    $stmt = $pdo->prepare("
+        SELECT 
+        c.ID_CITA, 
+        c.ID_PACIENTE, 
+        c.FECHA_HORA, 
+        c.MOTIVO_DE_CONSULTA,
+        CONCAT(p.NOMBRE, ' ', p.PATERNO, ' ', p.MATERNO) AS NOMBRE_COMPLETO,
+        e.NOMBRE AS ESTADO,
+        m.NOMBRE AS MUNICIPIO,
+        pa.TELEFONO,
+        pa.FECHA_NACIMIENTO,
+        s.NOMBRE AS SEGURO
+            FROM cita c
+            JOIN paciente pa ON pa.ID_PACIENTE = c.ID_PACIENTE
+            JOIN persona p ON p.ID_PERSONA = pa.ID_PERSONA
+            JOIN municipio m ON pa.ID_MUNICIPIO = m.ID_MUNICIPIO
+            JOIN estado e ON e.ID_ESTADO = m.ID_ESTADO
+            LEFT JOIN seguro s ON s.ID_SEGURO = pa.ID_SEGURO
+            WHERE C.ID_CITA = ?
+    ");
+    $stmt->execute([$idCita]);
+    $cita = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($cita) {
+        echo json_encode($cita);
+    } else {
+        echo json_encode(["error" => "Cita no encontrada"]);
+    }
 }
 
 else {

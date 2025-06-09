@@ -67,11 +67,32 @@ function loadCurrentAppointments() {
                     <tbody>
             `;
 
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Remove time for accurate comparison
+
             data.forEach(appointment => {
+                const appointmentDate = new Date(appointment.FECHA_HORA);
+                appointmentDate.setHours(0, 0, 0, 0);
+
+                // Determine if the appointment is today or in the future
+                const isToday = appointmentDate.getTime() === today.getTime();
+                const formattedDate = isToday 
+                    ? `Hoy a las ${formatDateTime(appointment.FECHA_HORA)}` 
+                    : formatDateTime(appointment.FECHA_HORA);
+
+                // Configure Finalizar button behavior
+                const finalizarButton = isToday 
+                    ? `<button class="btn btn-info btn-sm" onclick="finishAppointment(${appointment.ID_CITA})">
+                        <i class="fa fa-calendar-check"></i> Finalizar Cita
+                      </button>`
+                    : `<button class="btn btn-info btn-sm" disabled style="cursor: not-allowed;" title="No es posible finalizar aún">
+                        <i class="fa fa-calendar-check"></i> Finalizar Cita
+                      </button>`;
+
                 tableHTML += `
                     <tr>
                         <td>${appointment.NOMBRE_COMPLETO}</td>
-                        <td>${formatDateTime(appointment.FECHA_HORA)}</td>
+                        <td>${formattedDate}</td>
                         <td>${appointment.MOTIVO_DE_CONSULTA}</td>
                         <td>
                             <button class="btn btn-primary btn-sm" onclick="editAppointment(${appointment.ID_CITA})">
@@ -84,9 +105,7 @@ function loadCurrentAppointments() {
                             </button>
                         </td>
                         <td>
-                            <button class="btn btn-info btn-sm" onclick="finishAppointment(${appointment.ID_CITA})">
-                                <i class="fa fa-calendar-check"></i> Finalizar Cita
-                            </button>
+                            ${finalizarButton}
                         </td>
                     </tr>
                 `;
@@ -131,7 +150,7 @@ function loadPastAppointments() {
                             <th>Paciente</th>
                             <th>Fecha y Hora</th>
                             <th>Motivo</th>
-                            <th>Observaciones</th>
+                            <th>Detalle</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -144,8 +163,8 @@ function loadPastAppointments() {
                         <td>${formatDateTime(appointment.FECHA_HORA)}</td>
                         <td>${appointment.MOTIVO_DE_CONSULTA}</td>
                         <td>
-                            <button class="btn btn-primary btn-sm" onclick="viewAppointment(${appointment.ID_CITA})">
-                                <i class="fas fa-search"></i> Ver observaciones
+                            <button class="btn btn-info btn-sm" onclick="viewAppointment(${appointment.ID_CITA})">
+                                <i class="fa fa-search"></i> Ver detalles
                             </button>
                         </td>
                     </tr>
@@ -165,11 +184,39 @@ function loadPastAppointments() {
 
 function formatDateTime(datetimeString) {
     const date = new Date(datetimeString);
-    return date.toLocaleString("es-MX", {
-        dateStyle: "medium",
-        timeStyle: "short"
-    });
+    const today = new Date();
+
+    // Remove time from today for accurate comparison
+    today.setHours(0, 0, 0, 0);
+    const appointmentDate = new Date(date);
+    appointmentDate.setHours(0, 0, 0, 0);
+
+    // Format options for future & past dates
+    const fullDateOptions = {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true
+    };
+
+    const onlyTimeOptions = {
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true
+    };
+
+    // If appointment is today → Show only time
+    if (appointmentDate.getTime() === today.getTime()) {
+        return date.toLocaleTimeString("es-MX", onlyTimeOptions);
+    }
+    
+    // If appointment is tomorrow or later → Full date format
+    return date.toLocaleDateString("es-MX", fullDateOptions);
 }
+
 
 // Función para abrir el modal de cita
 function openAddAppointmentModal() {
@@ -316,4 +363,82 @@ function endAppointment() {
         console.error("Error:", error);
         Swal.fire("Error", "Ocurrió un error al finalizar la cita.", "error");
     });
+}
+
+function formatSpanishDateTime(fechaHora) {
+    const date = new Date(fechaHora);
+
+    // Options for formatting
+    const options = {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true
+    };
+
+    // Ensure Spanish locale
+    return date.toLocaleDateString("es-ES", options);
+}
+
+function viewAppointment(idCita) {
+    fetch(`../PHP/agendahandler.php?action=GET&id=${idCita}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                Swal.fire("Error", data.error, "error");
+                return;
+            }
+
+            // Format the date using JavaScript
+            const formattedDateTime = formatSpanishDateTime(data.FECHA_HORA);
+
+            // Generate modal content dynamically
+            const modalContent = `
+                <div class="modal fade" id="viewAppointmentModal" tabindex="-1" aria-labelledby="viewAppointmentModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header custom-header-bg text-white">
+                                <h5 class="modal-title" id="viewAppointmentModalLabel">Detalles de la Cita</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                            </div>
+                            <div class="modal-body">
+                                <ul class="list-group">
+                                    <li class="list-group-item"><strong>Paciente:</strong> ${data.NOMBRE_COMPLETO}</li>
+                                    <li class="list-group-item"><strong>Teléfono:</strong> ${data.TELEFONO}</li>
+                                    <li class="list-group-item"><strong>Fecha de nacimiento:</strong> ${formatBirthdate(data.FECHA_NACIMIENTO)}</li>
+                                    <li class="list-group-item"><strong>Seguro:</strong> ${data.SEGURO ? data.SEGURO : "No tiene"}</li>
+                                    <li class="list-group-item"><strong>Fecha y hora de consulta:</strong> ${formattedDateTime}</li>
+                                    <li class="list-group-item"><strong>Motivo:</strong> ${data.MOTIVO_DE_CONSULTA}</li>
+                                    <li class="list-group-item"><strong>Observaciones:</strong> ${data.OBSERVACIONES ? data.OBSERVACIONES : "No registradas"}</li>
+                                </ul>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Insert and show modal
+            const modalContainer = document.createElement("div");
+            modalContainer.innerHTML = modalContent;
+            document.body.appendChild(modalContainer);
+            $("#viewAppointmentModal").modal("show");
+        })
+        .catch(error => {
+            console.error("Error fetching appointment details:", error);
+            Swal.fire("Error", "Ocurrió un problema al obtener los detalles de la cita.", "error");
+        });
+}
+
+function formatBirthdate(dateString) {
+    const dateParts = dateString.split("-"); // Extract components (YYYY-MM-DD)
+    const year = dateParts[0];
+    const month = dateParts[1];
+    const day = dateParts[2];
+    return `${day}/${month}/${year}`; // Correct format without Date object
 }
