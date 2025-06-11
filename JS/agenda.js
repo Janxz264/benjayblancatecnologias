@@ -457,3 +457,86 @@ function formatBirthdate(dateString) {
     const day = dateParts[2];
     return `${day}/${month}/${year}`; // Correct format without Date object
 }
+
+function editAppointment(idCita) {
+    const appointmentModal = new bootstrap.Modal(document.getElementById('appointmentModal'));
+    $('#appointmentForm')[0].reset(); // Clean form
+    $('#patientSelect').empty().append('<option value="">-- Cargando pacientes... --</option>');
+    loadPatientsForAppointment();
+    appointmentModal.show();
+
+    fetch(`../PHP/agendahandler.php?action=GET&id=${idCita}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert("Error: " + data.error);
+                return;
+            }
+
+            // Store the appointment ID for later reference
+            document.getElementById('appointmentId').value = idCita;
+
+            // Populate modal fields
+            document.getElementById('patientSelect').value = data.ID_PACIENTE;
+            document.getElementById('appointmentDate').value = data.FECHA_HORA.split(" ")[0];
+            document.getElementById('appointmentTime').value = data.FECHA_HORA.split(" ")[1];
+            document.getElementById('appointmentReason').value = data.MOTIVO_DE_CONSULTA;
+
+            // Update Save button behavior
+            document.getElementById('saveAppointmentBtn').onclick = function () {
+                saveEditedAppointment();
+            };
+        })
+        .catch(error => console.error("Error fetching appointment:", error));
+}
+
+function saveEditedAppointment() {
+    const idCita = document.getElementById('appointmentId').value;
+    if (!idCita) {
+        swal("Error", "No se ha seleccionado ninguna cita para editar.", "error");
+        return;
+    }
+
+    const patientId = document.getElementById('patientSelect').value;
+    const appointmentDate = document.getElementById('appointmentDate').value;
+    const appointmentTime = document.getElementById('appointmentTime').value;
+    const appointmentReason = document.getElementById('appointmentReason').value;
+
+    if (!patientId || !appointmentDate || !appointmentTime || !appointmentReason) {
+        swal("Error", "Todos los campos son obligatorios.", "warning");
+        return;
+    }
+
+    const updatedData = {
+        id_paciente: patientId,
+        fecha_hora: `${appointmentDate} ${appointmentTime}`,
+        motivo: appointmentReason
+    };
+
+    fetch(`../PHP/agendahandler.php?action=EDIT&id=${idCita}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: "Éxito",
+                text: "Cita actualizada correctamente.",
+                icon: "success",
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                location.reload();
+            });
+        } else {
+            swal("Error", "Hubo un problema al actualizar la cita.", "error");
+        }
+    })
+    .catch(error => {
+        console.error("Error saving appointment:", error);
+        swal("Error", "Error de comunicación con el servidor.", "error");
+    });
+}
+

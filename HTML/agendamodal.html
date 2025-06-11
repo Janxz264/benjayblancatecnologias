@@ -33,11 +33,12 @@
                         <label for="appointmentReason" class="form-label font-semibold">Motivo de la consulta</label>
                         <textarea id="appointmentReason" class="form-control border rounded" rows="3" maxlength="500" required></textarea>
                     </div>
+                    <input type="hidden" id="appointmentId">
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <button type="submit" class="btn btn-success" onclick="saveAppointment()">Guardar Cita</button>
+                <button type="submit" class="btn btn-success" id="saveAppointmentBtn">Guardar Cita</button>
             </div>
         </div>
     </div>

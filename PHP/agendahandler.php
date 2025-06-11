@@ -153,6 +153,27 @@ elseif ($action === "GET" && isset($_GET['id'])) {
         echo json_encode(["error" => "Cita no encontrada"]);
     }
 }
+elseif ($action === "EDIT") {
+    $idCita = intval($_GET['id']); // Sanitize ID
+    $data = json_decode(file_get_contents("php://input"), true);
+
+    if (!isset($data['id_paciente'], $data['fecha_hora'], $data['motivo'])) {
+        echo json_encode(["error" => "Datos incompletos"]);
+        exit;
+    }
+
+    $stmt = $pdo->prepare("
+        UPDATE CITA 
+        SET ID_PACIENTE = ?, FECHA_HORA = ?, MOTIVO_DE_CONSULTA = ?, USER_MODIFY = ?, MODIFIED = NOW()
+        WHERE ID_CITA = ?
+    ");
+
+    if ($stmt->execute([$data['id_paciente'], $data['fecha_hora'], $data['motivo'], $_SESSION['user_id'], $idCita])) {
+        echo json_encode(["success" => true]);
+    } else {
+        echo json_encode(["error" => "Error al actualizar la cita"]);
+    }
+}
 
 else {
     echo json_encode(["error" => "Acción no válida"]);
