@@ -469,7 +469,11 @@ function editAppointment(idCita) {
         .then(response => response.json())
         .then(data => {
             if (data.error) {
-                alert("Error: " + data.error);
+                Swal.fire({
+                    title: "Error",
+                    text: data.error,
+                    icon: "error"
+                });
                 return;
             }
 
@@ -487,13 +491,25 @@ function editAppointment(idCita) {
                 saveEditedAppointment();
             };
         })
-        .catch(error => console.error("Error fetching appointment:", error));
+        .catch(error => {
+            console.error("Error fetching appointment:", error);
+            Swal.fire({
+                title: "Error",
+                text: "Hubo un problema al obtener la información de la cita.",
+                icon: "error"
+            });
+        });
 }
+
 
 function saveEditedAppointment() {
     const idCita = document.getElementById('appointmentId').value;
     if (!idCita) {
-        swal("Error", "No se ha seleccionado ninguna cita para editar.", "error");
+        Swal.fire({
+            title: "Error",
+            text: "No se ha seleccionado ninguna cita para editar.",
+            icon: "error"
+        });
         return;
     }
 
@@ -503,7 +519,11 @@ function saveEditedAppointment() {
     const appointmentReason = document.getElementById('appointmentReason').value;
 
     if (!patientId || !appointmentDate || !appointmentTime || !appointmentReason) {
-        swal("Error", "Todos los campos son obligatorios.", "warning");
+        Swal.fire({
+            title: "Error",
+            text: "Todos los campos son obligatorios.",
+            icon: "warning"
+        });
         return;
     }
 
@@ -531,12 +551,19 @@ function saveEditedAppointment() {
                 location.reload();
             });
         } else {
-            swal("Error", "Hubo un problema al actualizar la cita.", "error");
+            Swal.fire({
+                title: "Error",
+                text: "Hubo un problema al actualizar la cita.",
+                icon: "error"
+            });
         }
     })
     .catch(error => {
         console.error("Error saving appointment:", error);
-        swal("Error", "Error de comunicación con el servidor.", "error");
+        Swal.fire({
+            title: "Error",
+            text: "Error de comunicación con el servidor.",
+            icon: "error"
+        });
     });
 }
-
