@@ -518,6 +518,9 @@ function saveEditedAppointment() {
     const appointmentTime = document.getElementById('appointmentTime').value;
     const appointmentReason = document.getElementById('appointmentReason').value;
 
+    const time24 = convertTo24Hour(appointmentTime);
+    const fechaHora = `${appointmentDate} ${time24}`;
+
     if (!patientId || !appointmentDate || !appointmentTime || !appointmentReason) {
         Swal.fire({
             title: "Error",
@@ -529,7 +532,7 @@ function saveEditedAppointment() {
 
     const updatedData = {
         id_paciente: patientId,
-        fecha_hora: `${appointmentDate} ${appointmentTime}`,
+        fecha_hora: fechaHora,
         motivo: appointmentReason
     };
 
@@ -566,4 +569,13 @@ function saveEditedAppointment() {
             icon: "error"
         });
     });
+}
+
+function convertTo24Hour(timeStr) {
+    const [time, modifier] = timeStr.split(' ');
+    let [hours, minutes] = time.split(':');
+    hours = parseInt(hours);
+    if (modifier === 'PM' && hours < 12) hours += 12;
+    if (modifier === 'AM' && hours === 12) hours = 0;
+    return `${hours.toString().padStart(2, '0')}:${minutes}:00`;
 }
