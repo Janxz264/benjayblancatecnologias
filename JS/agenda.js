@@ -423,6 +423,7 @@ function viewAppointment(idCita) {
                                 <ul class="list-group">
                                     <li class="list-group-item"><strong>Paciente:</strong> ${data.NOMBRE_COMPLETO}</li>
                                     <li class="list-group-item"><strong>Teléfono:</strong> ${data.TELEFONO}</li>
+                                    <li class="list-group-item"><strong>Sexo:</strong> ${data.SEXO}</li>
                                     <li class="list-group-item"><strong>Fecha de nacimiento:</strong> ${formatBirthdate(data.FECHA_NACIMIENTO)}</li>
                                     <li class="list-group-item"><strong>Seguro:</strong> ${data.SEGURO ? data.SEGURO : "No tiene"}</li>
                                     <li class="list-group-item"><strong>Fecha y hora de consulta:</strong> ${formattedDateTime}</li>

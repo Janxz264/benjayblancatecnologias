@@ -134,6 +134,11 @@ elseif ($action === "GET" && isset($_GET['id'])) {
         e.NOMBRE AS ESTADO,
         m.NOMBRE AS MUNICIPIO,
         pa.TELEFONO,
+        CASE
+        WHEN PA.SEXO = 0 THEN 'Mujer'
+        WHEN PA.SEXO = 1 THEN 'Hombre'
+        ELSE 'Desconocido'
+        END AS SEXO,
         pa.FECHA_NACIMIENTO,
         s.NOMBRE AS SEGURO
             FROM cita c
