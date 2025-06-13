@@ -36,6 +36,7 @@ function loadPatients() {
                             <th>Teléfono</th>
                             <th>Fecha de Nacimiento</th>
                             <th>Edad</th>
+                            <th>Sexo</th>
                             <th>Municipio</th>
                             <th>Estado</th>
                             <th>Editar</th>
@@ -55,6 +56,7 @@ function loadPatients() {
                         <td>${patient.TELEFONO}</td>
                         <td>${patient.FECHA_NACIMIENTO}</td>
                         <td>${age} años</td>
+                        <td>${patient.SEXO}</td>
                         <td>${patient.NOMBRE_MUNICIPIO}</td>
                         <td>${patient.NOMBRE_ESTADO}</td>
                         <td>
@@ -97,6 +99,13 @@ function openPatientModal(isEdit = false, patient = null) {
         document.getElementById("materno").value = patient.MATERNO || "";
         document.getElementById("phone").value = patient.TELEFONO || "";
         document.getElementById("birthdate").value = patient.FECHA_NACIMIENTO;
+        document.getElementById("birthdate").value = patient.FECHA_NACIMIENTO;
+
+        if (patient.SEXO === 'Hombre' || patient.SEXO === 1) {
+            document.getElementById("sexo_hombre").checked = true;
+        } else if (patient.SEXO === 'Mujer' || patient.SEXO === 0) {
+            document.getElementById("sexo_mujer").checked = true;
+        }
 
         loadStates(patient.ID_ESTADO).then(() => {
             loadMunicipios(patient.ID_ESTADO, patient.ID_MUNICIPIO);
@@ -182,6 +191,13 @@ function calculateAge(birthDateString) {
 }
 
 function savePatient() {
+    let selectedSexo = document.querySelector('input[name="sexo"]:checked');
+    if (!selectedSexo) {
+        Swal.fire("Campos obligatorios", "Seleccione el sexo del paciente.", "warning");
+        return;
+    }
+    let sexoValor = selectedSexo.value === "Hombre" ? 1 : 0;
+
     let patientData = {
         nombre: document.getElementById("name").value,
         paterno: document.getElementById("paterno").value,
@@ -189,7 +205,8 @@ function savePatient() {
         telefono: document.getElementById("phone").value,
         fecha_nacimiento: document.getElementById("birthdate").value,
         id_estado: document.getElementById("state").value,
-        id_municipio: document.getElementById("municipio").value
+        id_municipio: document.getElementById("municipio").value,
+        sexo: sexoValor
     };
 
     const idPaciente = document.getElementById("patientId").value;
@@ -197,14 +214,14 @@ function savePatient() {
     if (idPaciente) patientData.id_paciente = idPaciente;
 
     if (!patientData.nombre || !patientData.paterno || !patientData.fecha_nacimiento || !patientData.telefono) {
-    Swal.fire("Campos obligatorios", "Nombre, Apellido Paterno, Teléfono & Fecha de Nacimiento son requeridos.", "warning");
-    return;
+        Swal.fire("Campos obligatorios", "Nombre, Apellido Paterno, Teléfono & Fecha de Nacimiento son requeridos.", "warning");
+        return;
     }
 
     fetch(`../PHP/patienthandler.php?action=${action}${idPaciente ? `&id=${idPaciente}` : ''}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(patientData)
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patientData)
     })
     .then(response => response.json())
     .then(result => {

@@ -19,7 +19,12 @@ if ($action === "VIEW") {
     $stmt = $pdo->prepare("
         SELECT PA.ID_PACIENTE, P.NOMBRE, P.PATERNO, P.MATERNO, PA.TELEFONO, 
         DATE_FORMAT(PA.FECHA_NACIMIENTO, '%d/%m/%Y') AS FECHA_NACIMIENTO,
-        M.NOMBRE AS NOMBRE_MUNICIPIO, E.NOMBRE AS NOMBRE_ESTADO
+        M.NOMBRE AS NOMBRE_MUNICIPIO, E.NOMBRE AS NOMBRE_ESTADO,
+        CASE
+        WHEN PA.SEXO = 0 THEN 'Mujer'
+        WHEN PA.SEXO = 1 THEN 'Hombre'
+        ELSE 'Desconocido'
+        END AS SEXO
         FROM PERSONA AS P
         JOIN PACIENTE AS PA ON P.ID_PERSONA = PA.ID_PERSONA
         JOIN MUNICIPIO AS M ON PA.ID_MUNICIPIO = M.ID_MUNICIPIO
@@ -63,7 +68,12 @@ if ($action === "VIEW") {
     $stmt = $pdo->prepare("
         SELECT PA.ID_PACIENTE, P.NOMBRE, P.PATERNO, P.MATERNO, PA.TELEFONO, PA.FECHA_NACIMIENTO, 
                M.ID_MUNICIPIO, M.NOMBRE AS NOMBRE_MUNICIPIO, 
-               E.ID_ESTADO, E.NOMBRE AS NOMBRE_ESTADO
+               E.ID_ESTADO, E.NOMBRE AS NOMBRE_ESTADO,
+               CASE
+        WHEN PA.SEXO = 0 THEN 'Mujer'
+        WHEN PA.SEXO = 1 THEN 'Hombre'
+        ELSE 'Desconocido'
+        END AS SEXO
         FROM PERSONA AS P
         JOIN PACIENTE AS PA ON P.ID_PERSONA = PA.ID_PERSONA
         JOIN MUNICIPIO AS M ON PA.ID_MUNICIPIO = M.ID_MUNICIPIO
@@ -97,10 +107,10 @@ if ($action === "VIEW") {
 
     // Insertar en PACIENTE
     $stmtPaciente = $pdo->prepare("
-        INSERT INTO PACIENTE (ID_PERSONA, TELEFONO, FECHA_NACIMIENTO, ID_MUNICIPIO) 
-        VALUES (?, ?, ?, ?)
+        INSERT INTO PACIENTE (ID_PERSONA, TELEFONO, FECHA_NACIMIENTO, ID_MUNICIPIO, SEXO) 
+        VALUES (?, ?, ?, ?, ?)
     ");
-    $stmtPaciente->execute([$idPersona, $data['telefono'], $data['fecha_nacimiento'], $data['id_municipio']]);
+    $stmtPaciente->execute([$idPersona, $data['telefono'], $data['fecha_nacimiento'], $data['id_municipio'], $data['sexo']]);
 
     echo json_encode(["success" => true]);
     
@@ -127,13 +137,14 @@ if ($action === "VIEW") {
     // Actualizar PACIENTE
     $stmtPaciente = $pdo->prepare("
         UPDATE PACIENTE 
-        SET TELEFONO = ?, FECHA_NACIMIENTO = ?, ID_MUNICIPIO = ? 
+        SET TELEFONO = ?, FECHA_NACIMIENTO = ?, ID_MUNICIPIO = ?, SEXO = ?
         WHERE ID_PACIENTE = ?
     ");
     $stmtPaciente->execute([
         $data['telefono'],
         $data['fecha_nacimiento'],
         $data['id_municipio'],
+        $data['sexo'],
         $idPaciente
     ]);
 
