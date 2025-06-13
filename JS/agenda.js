@@ -5,6 +5,10 @@ document.addEventListener('DOMContentLoaded', function () {
         dateFormat: "h:i K", // 12-hour format with AM/PM
         time_24hr: false
     });
+    // Update Save button behavior
+            document.getElementById('saveAppointmentBtn').onclick = function () {
+                saveAppointment();
+            };
 });
 
 const agendaLink = document.getElementById("agendaLink");
@@ -262,6 +266,8 @@ function loadPatientsForAppointment() {
     });
 }
 
+
+
 function saveAppointment() {
     const pacienteId = $('#patientSelect').val();
     const date = $('#appointmentDate').val(); // Ej: 2025-06-10
@@ -399,6 +405,12 @@ function formatSpanishDateTime(fechaHora) {
 }
 
 function viewAppointment(idCita) {
+    
+    const existingModal = document.getElementById("viewAppointmentModal");
+    if (existingModal) {
+        existingModal.remove();
+    }
+
     fetch(`../PHP/agendahandler.php?action=GET&id=${idCita}`)
         .then(response => response.json())
         .then(data => {
@@ -425,7 +437,8 @@ function viewAppointment(idCita) {
                                     <li class="list-group-item"><strong>Teléfono:</strong> ${data.TELEFONO}</li>
                                     <li class="list-group-item"><strong>Sexo:</strong> ${data.SEXO}</li>
                                     <li class="list-group-item"><strong>Fecha de nacimiento:</strong> ${formatBirthdate(data.FECHA_NACIMIENTO)}</li>
-                                    <li class="list-group-item"><strong>Seguro:</strong> ${data.SEGURO ? data.SEGURO : "No tiene"}</li>
+                                    <li class="list-group-item"><strong>Seguro:</strong> ${data.SEGURO ? data.SEGURO : "Sin seguro"}</li>
+                                    <li class="list-group-item"><strong>Médico referente:</strong> ${data.DOCTOR_REFERENTE}</li>
                                     <li class="list-group-item"><strong>Fecha y hora de consulta:</strong> ${formattedDateTime}</li>
                                     <li class="list-group-item"><strong>Motivo:</strong> ${data.MOTIVO_DE_CONSULTA}</li>
                                     <li class="list-group-item"><strong>Observaciones:</strong> ${data.OBSERVACIONES ? data.OBSERVACIONES : "No registradas"}</li>

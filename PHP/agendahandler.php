@@ -40,17 +40,18 @@ ORDER BY c.FECHA_HORA ASC;
 elseif ($action === "VIEWPAST") {
     // Fetch appointment data
     $stmt = $pdo->prepare("
-SELECT 
+    SELECT 
     c.ID_CITA, 
     c.ID_PACIENTE, 
     c.FECHA_HORA, 
     c.MOTIVO_DE_CONSULTA,
     CONCAT(p.NOMBRE, ' ', p.PATERNO, ' ', p.MATERNO) AS NOMBRE_COMPLETO
-FROM cita c
-JOIN paciente pa ON pa.ID_PACIENTE = c.ID_PACIENTE
-JOIN persona p ON p.ID_PERSONA = pa.ID_PERSONA
-WHERE DATE(c.FECHA_HORA) < CURDATE()
-ORDER BY c.FECHA_HORA DESC;
+    FROM cita c
+    JOIN paciente pa ON pa.ID_PACIENTE = c.ID_PACIENTE
+    JOIN persona p ON p.ID_PERSONA = pa.ID_PERSONA
+    WHERE DATE(c.FECHA_HORA) < CURDATE()
+    OR (DATE(c.FECHA_HORA) = CURDATE() AND c.OBSERVACIONES IS NOT NULL)
+    ORDER BY c.FECHA_HORA DESC;
     ");
     $stmt->execute();
     $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -126,38 +127,41 @@ elseif ($action === "GET" && isset($_GET['id'])) {
 
     $stmt = $pdo->prepare("
         SELECT 
-        c.ID_CITA, 
-        c.ID_PACIENTE, 
-        c.FECHA_HORA, 
-        c.MOTIVO_DE_CONSULTA,
-        CONCAT(p.NOMBRE, ' ', p.PATERNO, ' ', p.MATERNO) AS NOMBRE_COMPLETO,
-        e.NOMBRE AS ESTADO,
-        m.NOMBRE AS MUNICIPIO,
-        pa.TELEFONO,
-        CASE
-        WHEN PA.SEXO = 0 THEN 'Mujer'
-        WHEN PA.SEXO = 1 THEN 'Hombre'
-        ELSE 'Desconocido'
-        END AS SEXO,
-        pa.FECHA_NACIMIENTO,
-        s.NOMBRE AS SEGURO
-            FROM cita c
-            JOIN paciente pa ON pa.ID_PACIENTE = c.ID_PACIENTE
-            JOIN persona p ON p.ID_PERSONA = pa.ID_PERSONA
-            JOIN municipio m ON pa.ID_MUNICIPIO = m.ID_MUNICIPIO
-            JOIN estado e ON e.ID_ESTADO = m.ID_ESTADO
-            LEFT JOIN seguro s ON s.ID_SEGURO = pa.ID_SEGURO
-            WHERE C.ID_CITA = ?
+            c.ID_CITA, 
+            c.ID_PACIENTE, 
+            c.FECHA_HORA, 
+            c.MOTIVO_DE_CONSULTA,
+            CONCAT(p.NOMBRE, ' ', p.PATERNO, ' ', p.MATERNO) AS NOMBRE_COMPLETO,
+            e.NOMBRE AS ESTADO,
+            m.NOMBRE AS MUNICIPIO,
+            pa.TELEFONO,
+            CASE
+                WHEN pa.SEXO = 0 THEN 'Mujer'
+                WHEN pa.SEXO = 1 THEN 'Hombre'
+                ELSE 'Desconocido'
+            END AS SEXO,
+            pa.FECHA_NACIMIENTO,
+            s.NOMBRE AS SEGURO,
+            CASE 
+                WHEN d.ID_PERSONA IS NOT NULL 
+                THEN CONCAT(d.NOMBRE, ' ', d.PATERNO, ' ', d.MATERNO) 
+                ELSE 'No registrado'
+            END AS DOCTOR_REFERENTE
+        FROM cita c
+        JOIN paciente pa ON pa.ID_PACIENTE = c.ID_PACIENTE
+        JOIN persona p ON p.ID_PERSONA = pa.ID_PERSONA
+        JOIN municipio m ON pa.ID_MUNICIPIO = m.ID_MUNICIPIO
+        JOIN estado e ON e.ID_ESTADO = m.ID_ESTADO
+        LEFT JOIN seguro s ON s.ID_SEGURO = pa.ID_SEGURO
+        LEFT JOIN persona d ON d.ID_PERSONA = pa.ID_DOCTOR_REFERENTE
+        WHERE c.ID_CITA = ?
     ");
     $stmt->execute([$idCita]);
     $cita = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($cita) {
-        echo json_encode($cita);
-    } else {
-        echo json_encode(["error" => "Cita no encontrada"]);
-    }
+    echo json_encode($cita ?: ["error" => "Cita no encontrada"]);
 }
+
 elseif ($action === "EDIT") {
     $idCita = intval($_GET['id']); // Sanitize ID
     $data = json_decode(file_get_contents("php://input"), true);
