@@ -78,5 +78,6 @@
     <script src="../JS/dashboard.js"></script>
     <script src="../JS/referrerdoctor.js"></script>
     <script src="../JS/assurance.js"></script>
+    <script src="../JS/products.js"></script>
 </body>
 </html>
