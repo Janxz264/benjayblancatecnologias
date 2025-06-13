@@ -114,23 +114,34 @@ function openPatientModal(isEdit = false, patient = null) {
         // Cargar seguros y seleccionar
         loadAssurances().then(() => {
             if (patient.ID_SEGURO) {
-                document.getElementById("assuranceCheckbox").checked = true;
-                document.getElementById("assuranceSelect").value = patient.ID_SEGURO;
-                document.getElementById("assuranceSelect").disabled = false;
-                document.getElementById("assuranceName").disabled = false;
-            }
+            document.getElementById("assuranceCheckbox").checked = true;
+            document.getElementById("assuranceFields").style.display = "block";
+            document.getElementById("assuranceSelectContainer").style.display = "block";
+            document.getElementById("assuranceSelect").value = patient.ID_SEGURO;
+            document.getElementById("assuranceSelect").disabled = false;
+            document.getElementById("assuranceName").disabled = false;
+            document.getElementById("assuranceManualField").style.display = "none";
+        }
+        else {
+            document.getElementById("assuranceFields").style.display = "none";
+        }
         });
 
         // Cargar doctores y seleccionar
         loadDoctors().then(() => {
-            if (patient.ID_DOCTOR_REFERENTE) {
-                document.getElementById("referredCheckbox").checked = true;
-                document.getElementById("doctorSelect").value = patient.ID_DOCTOR_REFERENTE;
-                document.getElementById("doctorSelect").disabled = false;
-                document.getElementById("doctorName").disabled = false;
-                document.getElementById("doctorPaterno").disabled = false;
-                document.getElementById("doctorMaterno").disabled = false;
-            }
+        if (patient.ID_DOCTOR_REFERENTE) {
+            document.getElementById("referredCheckbox").checked = true;
+            document.getElementById("doctorFields").style.display = "block";
+            document.getElementById("doctorSelectContainer").style.display = "block";
+            document.getElementById("doctorSelect").value = patient.ID_DOCTOR_REFERENTE;
+            document.getElementById("doctorSelect").disabled = false;
+            document.getElementById("doctorName").disabled = false;
+            document.getElementById("doctorPaterno").disabled = false;
+            document.getElementById("doctorMaterno").disabled = false;
+            document.getElementById("doctorManualFields").style.display = "none";
+        } else {
+            document.getElementById("doctorFields").style.display = "none";
+        }
         });
     } else {
         modalLabel.innerText = "Agregar Paciente";
@@ -284,6 +295,16 @@ function savePatient() {
     const idPaciente = document.getElementById("patientId").value;
     const action = idPaciente ? "EDIT" : "ADD";
     if (idPaciente) patientData.id_paciente = idPaciente;
+
+     // Si no está marcado el seguro, forzamos id_seguro = null para borrarlo al editar
+    if (!assuranceCheckbox && idPaciente) {
+        patientData.id_seguro = null;
+    }
+
+    // Si no está marcado el médico, forzamos id_doctor_referente = null para borrarlo al editar
+    if (!referredCheckbox && idPaciente) {
+        patientData.id_doctor_referente = null;
+    }
 
     fetch(`../PHP/patienthandler.php?action=${action}${idPaciente ? `&id=${idPaciente}` : ''}`, {
         method: "POST",
