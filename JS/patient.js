@@ -99,7 +99,6 @@ function openPatientModal(isEdit = false, patient = null) {
         document.getElementById("materno").value = patient.MATERNO || "";
         document.getElementById("phone").value = patient.TELEFONO || "";
         document.getElementById("birthdate").value = patient.FECHA_NACIMIENTO;
-        document.getElementById("birthdate").value = patient.FECHA_NACIMIENTO;
 
         if (patient.SEXO === 'Hombre' || patient.SEXO === 1) {
             document.getElementById("sexo_hombre").checked = true;
@@ -107,8 +106,31 @@ function openPatientModal(isEdit = false, patient = null) {
             document.getElementById("sexo_mujer").checked = true;
         }
 
+        // Cargar estados y municipios
         loadStates(patient.ID_ESTADO).then(() => {
             loadMunicipios(patient.ID_ESTADO, patient.ID_MUNICIPIO);
+        });
+
+        // Cargar seguros y seleccionar
+        loadAssurances().then(() => {
+            if (patient.ID_SEGURO) {
+                document.getElementById("assuranceCheckbox").checked = true;
+                document.getElementById("assuranceSelect").value = patient.ID_SEGURO;
+                document.getElementById("assuranceSelect").disabled = false;
+                document.getElementById("assuranceName").disabled = false;
+            }
+        });
+
+        // Cargar doctores y seleccionar
+        loadDoctors().then(() => {
+            if (patient.ID_DOCTOR_REFERENTE) {
+                document.getElementById("referredCheckbox").checked = true;
+                document.getElementById("doctorSelect").value = patient.ID_DOCTOR_REFERENTE;
+                document.getElementById("doctorSelect").disabled = false;
+                document.getElementById("doctorName").disabled = false;
+                document.getElementById("doctorPaterno").disabled = false;
+                document.getElementById("doctorMaterno").disabled = false;
+            }
         });
     } else {
         modalLabel.innerText = "Agregar Paciente";
@@ -117,10 +139,13 @@ function openPatientModal(isEdit = false, patient = null) {
         document.getElementById("patientId").value = "";
         loadStates();
         document.getElementById("municipio").innerHTML = "<option>Seleccione un estado primero</option>";
+        loadAssurances();
+        loadDoctors();
     }
 
     new bootstrap.Modal(document.getElementById("patientModal")).show();
 }
+
 
 function openAddPatientModal() {
     openPatientModal(false);
@@ -199,24 +224,66 @@ function savePatient() {
     let sexoValor = selectedSexo.value === "Hombre" ? 1 : 0;
 
     let patientData = {
-        nombre: document.getElementById("name").value,
-        paterno: document.getElementById("paterno").value,
-        materno: document.getElementById("materno").value,
-        telefono: document.getElementById("phone").value,
+        nombre: document.getElementById("name").value.trim(),
+        paterno: document.getElementById("paterno").value.trim(),
+        materno: document.getElementById("materno").value.trim(),
+        telefono: document.getElementById("phone").value.trim(),
         fecha_nacimiento: document.getElementById("birthdate").value,
         id_estado: document.getElementById("state").value,
         id_municipio: document.getElementById("municipio").value,
         sexo: sexoValor
     };
 
+    const assuranceCheckbox = document.getElementById("assuranceCheckbox").checked;
+    const assuranceSelect = document.getElementById("assuranceSelect").value;
+    const assuranceName = document.getElementById("assuranceName").value.trim();
+
+    const referredCheckbox = document.getElementById("referredCheckbox").checked;
+    const doctorSelect = document.getElementById("doctorSelect").value;
+    const doctorName = document.getElementById("doctorName").value.trim();
+    const doctorPaterno = document.getElementById("doctorPaterno").value.trim();
+    const doctorMaterno = document.getElementById("doctorMaterno").value.trim();
+
+    // Validación seguro médico
+    if (assuranceCheckbox) {
+        if (!assuranceSelect && assuranceName === "") {
+            Swal.fire("Campos obligatorios", "Seleccione un seguro o ingrese uno nuevo.", "warning");
+            return;
+        }
+        if (assuranceSelect) {
+            patientData.id_seguro = assuranceSelect;
+        } else {
+            patientData.new_seguro = assuranceName;
+        }
+    }
+
+    // Validación médico referente
+    if (referredCheckbox) {
+        if (!doctorSelect && (doctorName === "" || doctorPaterno === "")) {
+            Swal.fire("Campos obligatorios", "Seleccione un médico referente o registre uno nuevo con nombre y apellido paterno.", "warning");
+            return;
+        }
+        if (doctorSelect) {
+            patientData.id_doctor_referente = doctorSelect;
+        } else {
+            patientData.new_doctor = {
+                nombre: doctorName,
+                paterno: doctorPaterno,
+                materno: doctorMaterno
+            };
+        }
+    }
+
+    // Validación campos obligatorios generales
+    if (!patientData.nombre || !patientData.paterno || !patientData.telefono || !patientData.fecha_nacimiento) {
+        Swal.fire("Campos obligatorios", "Nombre, Apellido Paterno, Teléfono y Fecha de Nacimiento son requeridos.", "warning");
+        return;
+    }
+
+    // Acción ADD o EDIT
     const idPaciente = document.getElementById("patientId").value;
     const action = idPaciente ? "EDIT" : "ADD";
     if (idPaciente) patientData.id_paciente = idPaciente;
-
-    if (!patientData.nombre || !patientData.paterno || !patientData.fecha_nacimiento || !patientData.telefono) {
-        Swal.fire("Campos obligatorios", "Nombre, Apellido Paterno, Teléfono & Fecha de Nacimiento son requeridos.", "warning");
-        return;
-    }
 
     fetch(`../PHP/patienthandler.php?action=${action}${idPaciente ? `&id=${idPaciente}` : ''}`, {
         method: "POST",
@@ -237,4 +304,34 @@ function savePatient() {
         console.error("Error saving patient:", error);
         Swal.fire("Error", "Error al enviar los datos del paciente.", "error");
     });
+}
+
+function loadAssurances() {
+    return fetch('../PHP/patienthandler.php?action=GET_ASSURANCES')
+        .then(res => res.json())
+        .then(data => {
+            const select = document.getElementById("assuranceSelect");
+            select.innerHTML = `<option value="">Seleccione un seguro</option>`;
+            data.forEach(seguro => {
+                const option = document.createElement("option");
+                option.value = seguro.ID_SEGURO;
+                option.textContent = seguro.NOMBRE;
+                select.appendChild(option);
+            });
+        });
+}
+
+function loadDoctors() {
+    return fetch('../PHP/patienthandler.php?action=GET_DOCTORS')
+        .then(res => res.json())
+        .then(data => {
+            const select = document.getElementById("doctorSelect");
+            select.innerHTML = `<option value="">Seleccione un médico referente</option>`;
+            data.forEach(doc => {
+                const option = document.createElement("option");
+                option.value = doc.ID_PERSONA;
+                option.textContent = `${doc.NOMBRE} ${doc.PATERNO} ${doc.MATERNO || ''}`.trim();
+                select.appendChild(option);
+            });
+        });
 }
