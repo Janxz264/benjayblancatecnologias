@@ -405,7 +405,7 @@ function formatSpanishDateTime(fechaHora) {
 }
 
 function viewAppointment(idCita) {
-    
+
     const existingModal = document.getElementById("viewAppointmentModal");
     if (existingModal) {
         existingModal.remove();
@@ -565,7 +565,10 @@ function saveEditedAppointment() {
                 timer: 2000,
                 showConfirmButton: false
             }).then(() => {
-                location.reload();
+                loadCurrentAppointments();
+                $('#appointmentForm')[0].reset(); // Clean form
+                $('#patientSelect').empty().append('<option value="">-- Cargando pacientes... --</option>');
+                $('#appointmentModal').modal('hide');
             });
         } else {
             Swal.fire({
