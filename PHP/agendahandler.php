@@ -135,6 +135,7 @@ elseif ($action === "GET" && isset($_GET['id'])) {
             e.NOMBRE AS ESTADO,
             m.NOMBRE AS MUNICIPIO,
             pa.TELEFONO,
+            c.OBSERVACIONES,
             CASE
                 WHEN pa.SEXO = 0 THEN 'Mujer'
                 WHEN pa.SEXO = 1 THEN 'Hombre'
