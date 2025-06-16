@@ -227,6 +227,8 @@ function openAddAppointmentModal() {
     $('#appointmentForm')[0].reset(); // Clean form
     $('#patientSelect').empty().append('<option value="">-- Cargando pacientes... --</option>');
     $('#appointmentModal').modal('show');
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('appointmentDate').value = today;
     loadPatientsForAppointment();
 }
 
