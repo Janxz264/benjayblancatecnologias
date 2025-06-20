@@ -26,7 +26,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 
-<body class="d-flex flex-column vh-100 bg-gray-300">
+<body class="d-flex flex-column vh-100" style="background-image: url('../media/dark.png'); background-repeat: repeat; background-color: #d1d5db;">
 
     <!-- Navbar -->
     <?php include 'navbar.html'; ?>
