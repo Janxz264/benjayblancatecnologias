@@ -12,38 +12,39 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="JS/script.js"></script>
 </head>
-<body class="d-flex justify-content-center align-items-center vh-100 bg-gray">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-4">
-                <div class="card shadow-lg p-4">
-                    <div class="text-center">
-                        <img src="media/logo.png" alt="BB GEEK Logo" class="img-fluid mb-3">
-                        <h2>Inicio de sesión</h2>
-                        <form id="loginForm" action="#" method="POST">
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Nombre de usuario:</label>
-                                <input type="text" id="username" name="username" 
-                                       class="form-control" required>
-                            </div>
+<body style="background-image: url('media/dark.png'); background-repeat: repeat; background-color: #d1d5db; display: flex; flex-direction: column; min-height: 100vh; margin: 0;">
+  
+  <div class="container flex-grow-1 d-flex justify-content-center align-items-center">
+    <div class="row justify-content-center w-100">
+      <div class="col-md-4" >
+        <div class="card shadow-lg p-4">
+          <div class="text-center">
+            <img src="media/logo.png" alt="BB GEEK Logo" class="img-fluid mb-3">
+            <h2>Inicio de sesión</h2>
+            <form id="loginForm" action="#" method="POST" class="custom-form-bg">
+              <div class="mb-3">
+                <label for="username" class="form-label">Nombre de usuario:</label>
+                <input type="text" id="username" name="username" class="form-control" required>
+              </div>
 
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Contraseña:</label>
-                                <input type="password" id="password" name="password" 
-                                       class="form-control" required>
-                            </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">Contraseña:</label>
+                <input type="password" id="password" name="password" class="form-control" required>
+              </div>
 
-                            <button type="submit" class="btn btn-teal w-100">Iniciar sesión</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
+              <button type="submit" class="btn btn-teal w-100">Iniciar sesión</button>
+            </form>
+          </div>
         </div>
+      </div>
     </div>
-    <!-- Footer -->
-    <footer class="mt-5 text-center">
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-5 text-center" style="margin-top:auto;">
     <img src="media/logo.png" alt="BB GEEK Logo" style="display: block; margin: 0 auto;">
     <p>Powered by BenjaYBlancaTecnologias</p>
-</footer>
+  </footer>
 </body>
+
 </html>
