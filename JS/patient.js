@@ -8,6 +8,10 @@ if (patientsLink) {
     console.error("Error: Element #patientsLink not found.");
 }
 
+function safeText(value) {
+    return value && value.trim ? value.trim() : "--";
+}
+
 function loadPatients() {
     document.getElementById("mainTitle").innerText = "Gestor de pacientes";
     const container = document.getElementById("mainContainer");
@@ -47,18 +51,18 @@ function loadPatients() {
             `;
 
             data.forEach(patient => {
-                let age = calculateAge(patient.FECHA_NACIMIENTO);
+                let age = patient.FECHA_NACIMIENTO ? calculateAge(patient.FECHA_NACIMIENTO) + " años" : "--";
                 let fullName = `${patient.PATERNO} ${patient.MATERNO || ""} ${patient.NOMBRE}`;
                 
                 tableHTML += `
                     <tr>
                         <td>${fullName}</td>
-                        <td>${patient.TELEFONO}</td>
-                        <td>${patient.FECHA_NACIMIENTO}</td>
-                        <td>${age} años</td>
-                        <td>${patient.SEXO}</td>
-                        <td>${patient.NOMBRE_MUNICIPIO}</td>
-                        <td>${patient.NOMBRE_ESTADO}</td>
+                        <td>${safeText(patient.TELEFONO)}</td>
+                        <td>${safeText(patient.FECHA_NACIMIENTO)}</td>
+                        <td>${age}</td>
+                        <td>${safeText(patient.SEXO)}</td>
+                        <td>${safeText(patient.NOMBRE_MUNICIPIO)}</td>
+                        <td>${safeText(patient.NOMBRE_ESTADO)}</td>
                         <td>
                             <button class="btn btn-primary btn-sm" onclick="editPatient(${patient.ID_PACIENTE})">
                                 <i class="fas fa-edit"></i> Editar
