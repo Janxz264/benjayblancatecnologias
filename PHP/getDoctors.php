@@ -2,15 +2,27 @@
 session_start();
 require_once '../PHP/db_connect.php';
 
+// Ensure user is logged in
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(["error" => "No autorizado"]);
+    exit;
+}
+
 header('Content-Type: application/json; charset=utf-8');
 
 try {
-    // Retrieve only persons who are NOT patients (i.e., doctors)
     $stmt = $pdo->prepare("
         SELECT P.ID_PERSONA, P.NOMBRE, P.PATERNO, P.MATERNO
         FROM PERSONA P
-        LEFT JOIN PACIENTE PA ON P.ID_PERSONA = PA.ID_PERSONA
-        WHERE PA.ID_PERSONA IS NULL ORDER BY P.PATERNO
+        WHERE P.ID_PERSONA NOT IN (
+            SELECT PA.ID_PERSONA
+            FROM PACIENTE PA
+            WHERE PA.ACTIVO = 1
+               OR PA.ID_PACIENTE IN (
+                   SELECT C.ID_PACIENTE FROM CITA C
+               )
+        )
+        ORDER BY P.PATERNO, P.MATERNO, P.NOMBRE
     ");
     $stmt->execute();
     $doctors = $stmt->fetchAll(PDO::FETCH_ASSOC);

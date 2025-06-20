@@ -2,6 +2,12 @@
 session_start();
 require_once '../PHP/db_connect.php';
 
+// Ensure user is logged in
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(["error" => "No autorizado"]);
+    exit;
+}
+
 header('Content-Type: application/json; charset=utf-8');
 
 try {

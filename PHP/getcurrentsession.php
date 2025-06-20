@@ -4,6 +4,12 @@ require_once '../PHP/db_connect.php';
 
 header('Content-Type: application/json');
 
+// Ensure user is logged in
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(["error" => "No autorizado"]);
+    exit;
+}
+
 $date = new DateTime("now", new DateTimeZone("America/Mexico_City"));
 $date->modify("-1 hour"); // Subtract 1 hour manually
 
