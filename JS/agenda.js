@@ -221,7 +221,6 @@ function formatDateTime(datetimeString) {
     return date.toLocaleDateString("es-MX", fullDateOptions);
 }
 
-
 // Función para abrir el modal de cita
 function openAddAppointmentModal() {
     $('#appointmentForm')[0].reset(); // Clean form
@@ -268,53 +267,96 @@ function loadPatientsForAppointment() {
     });
 }
 
-
-
 function saveAppointment() {
-    const pacienteId = $('#patientSelect').val();
-    const date = $('#appointmentDate').val(); // Ej: 2025-06-10
-    const time = $('#appointmentTime').val(); // Ej: 10:30 AM
+    const isFirstTime = document.getElementById('firstTimeCheckbox').checked;
+    const date = $('#appointmentDate').val();
+    const time = $('#appointmentTime').val();
     const motivo = $('#appointmentReason').val();
 
-    if (!pacienteId || !date || !time || !motivo) {
+    if (!date || !time || !motivo) {
         Swal.fire('Campos incompletos', 'Todos los campos son obligatorios', 'warning');
         return;
     }
 
-    // Convertir hora AM/PM a 24 horas para MySQL
+    // Convertir hora AM/PM a 24 horas
     const [hourMinute, meridian] = time.split(' ');
     let [hour, minute] = hourMinute.split(':').map(Number);
     if (meridian === 'PM' && hour !== 12) hour += 12;
     if (meridian === 'AM' && hour === 12) hour = 0;
     const formattedTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+    const mysqlDateTime = `${date} ${formattedTime}:00`;
 
-    const mysqlDateTime = `${date} ${formattedTime}:00`; // MySQL DATETIME format
+    if (isFirstTime) {
+        const nombre = $('#name').val().trim();
+        const paterno = $('#paterno').val().trim();
+        const materno = $('#materno').val().trim();
 
-    const payload = {
-        id_paciente: pacienteId,
-        fecha_hora: mysqlDateTime,
-        motivo: motivo
-    };
-
-    fetch('../PHP/agendahandler.php?action=ADD', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-    .then(res => res.json())
-    .then(response => {
-        if (response.success) {
-            $('#appointmentModal').modal('hide');
-            Swal.fire('Cita guardada', 'La cita se ha registrado correctamente.', 'success');
-            loadCurrentAppointments();
-        } else {
-            Swal.fire('Error', response.error || 'No se pudo guardar la cita', 'error');
+        if (!nombre || !paterno) {
+            Swal.fire('Campos incompletos', 'Nombre y Apellido paterno son obligatorios', 'warning');
+            return;
         }
-    })
-    .catch(err => {
-        console.error(err);
-        Swal.fire('Error', 'Ocurrió un error al enviar la cita', 'error');
-    });
+
+        const payload = {
+            nombre: nombre,
+            paterno: paterno,
+            materno: materno,
+            fecha_hora: mysqlDateTime,
+            motivo: motivo
+        };
+
+        fetch('../PHP/agendahandler.php?action=ADDFIRSTTIME', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(response => {
+            if (response.success) {
+                $('#appointmentModal').modal('hide');
+                Swal.fire('Cita guardada', 'Se ha registrado la cita con un paciente de primera vez.', 'success');
+                loadCurrentAppointments();
+            } else {
+                Swal.fire('Error', response.error || 'No se pudo guardar la cita', 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            Swal.fire('Error', 'Error al enviar la cita', 'error');
+        });
+
+    } else {
+        const pacienteId = $('#patientSelect').val();
+        if (!pacienteId) {
+            Swal.fire('Campos incompletos', 'Seleccione un paciente existente', 'warning');
+            return;
+        }
+
+        const payload = {
+            id_paciente: pacienteId,
+            fecha_hora: mysqlDateTime,
+            motivo: motivo
+        };
+
+        fetch('../PHP/agendahandler.php?action=ADD', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(response => {
+            if (response.success) {
+                $('#appointmentModal').modal('hide');
+                Swal.fire('Cita guardada', 'La cita se ha registrado correctamente.', 'success');
+                loadCurrentAppointments();
+            } else {
+                Swal.fire('Error', response.error || 'No se pudo guardar la cita', 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            Swal.fire('Error', 'Ocurrió un error al enviar la cita', 'error');
+        });
+    }
 }
 
 function deleteAppointment(idCita) {
@@ -597,4 +639,25 @@ function convertTo24Hour(timeStr) {
     if (modifier === 'PM' && hours < 12) hours += 12;
     if (modifier === 'AM' && hours === 12) hours = 0;
     return `${hours.toString().padStart(2, '0')}:${minutes}:00`;
+}
+
+function toggleFirstTimeFields() {
+    const isFirstTime = document.getElementById('firstTimeCheckbox').checked;
+    const patientSelect = document.getElementById('patientSelect');
+    const labelText = document.getElementById('patientSelectText');
+
+    // Toggle visibility
+    document.getElementById('firstTimeFields').classList.toggle('d-none', !isFirstTime);
+    document.getElementById('patientSelect').classList.toggle('d-none', isFirstTime);
+
+    if (isFirstTime) {
+        patientSelect.value = "";
+        patientSelect.disabled = true;
+        patientSelect.removeAttribute('required');
+        labelText.innerText = "Ingrese a un nuevo paciente";
+    } else {
+        patientSelect.disabled = false;
+        patientSelect.setAttribute('required', 'required');
+        labelText.innerText = "Seleccione al paciente";
+    }
 }

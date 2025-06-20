@@ -87,6 +87,38 @@ elseif ($action === "ADD") {
     } catch (PDOException $e) {
         echo json_encode(["error" => "Error al guardar la cita: " . $e->getMessage()]);
     }
+} elseif ($_GET['action'] === 'ADDFIRSTTIME') {
+    $data = json_decode(file_get_contents("php://input"), true);
+    $nombre = $data['nombre'];
+    $paterno = $data['paterno'];
+    $materno = $data['materno'];
+    $fechaHora = $data['fecha_hora'];
+    $motivo = $data['motivo'];
+
+    try {
+        $pdo->beginTransaction();
+
+        // Insertar en PERSONA
+        $stmt = $pdo->prepare("INSERT INTO PERSONA (NOMBRE, PATERNO, MATERNO, USER_CREATE) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$nombre, $paterno, $materno, $_SESSION['user_id']]);
+        $idPersona = $pdo->lastInsertId();
+
+        // Insertar en PACIENTE
+        $stmt = $pdo->prepare("INSERT INTO PACIENTE (ID_PERSONA) VALUES (?)");
+        $stmt->execute([$idPersona]);
+        $idPaciente = $pdo->lastInsertId();
+
+        // Insertar en CITAS
+        $stmt = $pdo->prepare("INSERT INTO CITA (ID_PACIENTE, FECHA_HORA, MOTIVO, USER_CREATE) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$idPaciente, $fechaHora, $motivo, $_SESSION['user_id']]);
+
+        $pdo->commit();
+
+        echo json_encode(['success' => true]);
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
 }
 
 elseif ($action === "REMOVE") {
