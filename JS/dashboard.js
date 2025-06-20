@@ -112,6 +112,9 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
         console.error("Error: Element #changePasswordForm not found.");
     }
+
+    //Funciones de tecla Escape y descarte de menús laterales
+
      document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             document.getElementById("sidebar")?.classList.add("-translate-x-full");
@@ -137,6 +140,8 @@ document.addEventListener("DOMContentLoaded", function () {
             settingsPanel.classList.remove("translate-x-0");
         }
     });
+    updateRealTimeClock(); //Relojito dinámico
+    document.getElementById("agendaLink").click(); //Irse directo a la agenda
 });
 
 // Global DataTables initializer
@@ -188,5 +193,5 @@ function updateRealTimeClock() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    updateRealTimeClock();
+    
 });
