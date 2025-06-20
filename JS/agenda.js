@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', function () {
             };
 });
 
+let currentAppointments = []; // variable global
+
 const agendaLink = document.getElementById("agendaLink");
 if (agendaLink) {
     agendaLink.addEventListener("click", function (event) {
@@ -55,6 +57,8 @@ function loadCurrentAppointments() {
                 container.innerHTML += "<h1>No hay citas el día de hoy ni en el futuro registradas en la base de datos.</h1>";
                 return;
             }
+
+            currentAppointments = data;
 
             let tableHTML = `
                 <table id="appointmentsTable" class="table table-bordered table-striped">
@@ -286,6 +290,11 @@ function saveAppointment() {
     if (meridian === 'AM' && hour === 12) hour = 0;
     const formattedTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
     const mysqlDateTime = `${date} ${formattedTime}:00`;
+
+    if (isOverlappingAppointment(mysqlDateTime)) {
+        Swal.fire('Conflicto de horario', 'Ya existe una cita agendada dentro de la ventana de 1 hora alrededor de esta hora.', 'warning');
+        return;
+    }
 
     if (isFirstTime) {
         const nombre = $('#nameagenda').val().trim();
@@ -600,6 +609,11 @@ function saveEditedAppointment() {
         return;
     }
 
+    if (isOverlappingAppointment(fechaHora, 60, idCita)) {
+        Swal.fire('Conflicto de horario', 'Ya existe otra cita agendada dentro de la ventana de 1 hora alrededor de esta hora.', 'warning');
+        return;
+    }
+
     const updatedData = {
         id_paciente: patientId,
         fecha_hora: fechaHora,
@@ -678,4 +692,26 @@ function toggleFirstTimeFields() {
         document.getElementById('maternoagenda').value = '';
         document.getElementById('sexo_hombre_agenda').checked = true;
     }
+}
+
+/**
+ * Verifica si una nueva cita en `newDateTime` se solapa con alguna cita en currentAppointments
+ * dentro de un margen de `toleranceMinutes` minutos.
+ * Si es edición, se pasa `excludeId` para no comparar contra sí misma.
+ */
+function isOverlappingAppointment(newDateTime, toleranceMinutes = 60, excludeId = null) {
+    const newTime = new Date(newDateTime).getTime();
+
+    for (const appt of currentAppointments) {
+        if (excludeId && appt.ID_CITA == excludeId) continue;
+
+        const apptTime = new Date(appt.FECHA_HORA).getTime();
+        const diffMinutes = Math.abs((apptTime - newTime) / 60000);
+
+        if (diffMinutes < toleranceMinutes) {
+            return true; // Hay solapamiento
+        }
+    }
+
+    return false; // No hay solapamiento
 }
