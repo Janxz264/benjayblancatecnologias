@@ -94,6 +94,7 @@ elseif ($action === "ADD") {
     $materno = $data['materno'];
     $fechaHora = $data['fecha_hora'];
     $motivo = $data['motivo'];
+    $sexo = $data['sexo'];
 
     try {
         $pdo->beginTransaction();
@@ -104,12 +105,12 @@ elseif ($action === "ADD") {
         $idPersona = $pdo->lastInsertId();
 
         // Insertar en PACIENTE
-        $stmt = $pdo->prepare("INSERT INTO PACIENTE (ID_PERSONA) VALUES (?)");
-        $stmt->execute([$idPersona]);
+        $stmt = $pdo->prepare("INSERT INTO PACIENTE (ID_PERSONA, SEXO) VALUES (?,?)");
+        $stmt->execute([$idPersona, $sexo]);
         $idPaciente = $pdo->lastInsertId();
 
         // Insertar en CITAS
-        $stmt = $pdo->prepare("INSERT INTO CITA (ID_PACIENTE, FECHA_HORA, MOTIVO, USER_CREATE) VALUES (?, ?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO CITA (ID_PACIENTE, FECHA_HORA, MOTIVO_DE_CONSULTA, USER_CREATE) VALUES (?, ?, ?, ?)");
         $stmt->execute([$idPaciente, $fechaHora, $motivo, $_SESSION['user_id']]);
 
         $pdo->commit();

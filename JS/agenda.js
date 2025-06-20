@@ -223,9 +223,23 @@ function formatDateTime(datetimeString) {
 
 // Función para abrir el modal de cita
 function openAddAppointmentModal() {
-    $('#appointmentForm')[0].reset(); // Clean form
+    $('#appointmentForm')[0].reset();
     $('#patientSelect').empty().append('<option value="">-- Cargando pacientes... --</option>');
-    $('#appointmentModal').modal('show');
+    const appointmentModal = new bootstrap.Modal(document.getElementById('appointmentModal'));
+    appointmentModal.show();
+
+    // Reset and show first-time patient UI
+    document.getElementById('firstTimeWrapper').classList.remove('d-none');
+    document.getElementById('firstTimeCheckbox').disabled = false;
+    document.getElementById('firstTimeCheckbox').checked = false;
+    document.getElementById('firstTimeFields').classList.add('d-none');
+    document.getElementById('sexoAgendaGroup').classList.add('d-none'); 
+
+    // Also reset dropdown behavior
+    document.getElementById('patientSelect').disabled = false;
+    document.getElementById('patientSelect').setAttribute('required', 'required');
+    document.getElementById('patientSelectText').innerText = "Seleccione al paciente";
+
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('appointmentDate').value = today;
     loadPatientsForAppointment();
@@ -240,19 +254,6 @@ function loadPatientsForAppointment() {
         success: function(patients) {
             let $select = $('#patientSelect');
             $select.empty().append('<option value="">-- Seleccione un paciente --</option>');
-
-            // If no patients exist, show alert and close modal
-            if (patients.length === 0) {
-                Swal.fire({
-                    icon: "warning",
-                    title: "Atención",
-                    text: "Al menos un paciente debe ser registrado en la base de datos, diríjase al módulo de Pacientes del Menú Izquierdo.",
-                    confirmButtonText: "Entendido"
-                }).then(() => {
-                    $("#appointmentModal").modal("hide");
-                });
-                return;
-            }
 
             // Populate dropdown with patient data
             patients.forEach(p => {
@@ -287,9 +288,11 @@ function saveAppointment() {
     const mysqlDateTime = `${date} ${formattedTime}:00`;
 
     if (isFirstTime) {
-        const nombre = $('#name').val().trim();
-        const paterno = $('#paterno').val().trim();
-        const materno = $('#materno').val().trim();
+        const nombre = $('#nameagenda').val().trim();
+        const paterno = $('#paternoagenda').val().trim();
+        const materno = $('#maternoagenda').val().trim();
+        const selectedSexo = document.querySelector('input[name="sexo_agenda"]:checked');
+        const sexoValor = selectedSexo.value === "Hombre" ? 1 : 0;
 
         if (!nombre || !paterno) {
             Swal.fire('Campos incompletos', 'Nombre y Apellido paterno son obligatorios', 'warning');
@@ -300,6 +303,7 @@ function saveAppointment() {
             nombre: nombre,
             paterno: paterno,
             materno: materno,
+            sexo: sexoValor,
             fecha_hora: mysqlDateTime,
             motivo: motivo
         };
@@ -523,6 +527,19 @@ function editAppointment(idCita) {
     loadPatientsForAppointment();
     appointmentModal.show();
 
+    // Hide first-time controls when editing
+    document.getElementById('firstTimeWrapper').classList.add('d-none');
+    document.getElementById('firstTimeFields').classList.add('d-none');
+    document.getElementById('firstTimeCheckbox').disabled = true;
+    document.getElementById('firstTimeCheckbox').checked = false;
+    document.getElementById('sexoAgendaGroup').classList.add('d-none');
+
+    // Ensure patientSelect is active again
+    const patientSelect = document.getElementById('patientSelect');
+    patientSelect.disabled = false;
+    patientSelect.setAttribute('required', 'required');
+    document.getElementById('patientSelectText').innerText = "Seleccione al paciente";
+
     fetch(`../PHP/agendahandler.php?action=GET&id=${idCita}`)
         .then(response => response.json())
         .then(data => {
@@ -535,16 +552,12 @@ function editAppointment(idCita) {
                 return;
             }
 
-            // Store the appointment ID for later reference
             document.getElementById('appointmentId').value = idCita;
-
-            // Populate modal fields
             document.getElementById('patientSelect').value = data.ID_PACIENTE;
             document.getElementById('appointmentDate').value = data.FECHA_HORA.split(" ")[0];
             document.getElementById('appointmentTime').value = data.FECHA_HORA.split(" ")[1];
             document.getElementById('appointmentReason').value = data.MOTIVO_DE_CONSULTA;
 
-            // Update Save button behavior
             document.getElementById('saveAppointmentBtn').onclick = function () {
                 saveEditedAppointment();
             };
@@ -558,7 +571,6 @@ function editAppointment(idCita) {
             });
         });
 }
-
 
 function saveEditedAppointment() {
     const idCita = document.getElementById('appointmentId').value;
@@ -648,7 +660,7 @@ function toggleFirstTimeFields() {
 
     // Toggle visibility
     document.getElementById('firstTimeFields').classList.toggle('d-none', !isFirstTime);
-    document.getElementById('patientSelect').classList.toggle('d-none', isFirstTime);
+    document.getElementById('sexoAgendaGroup').classList.toggle('d-none', !isFirstTime);
 
     if (isFirstTime) {
         patientSelect.value = "";
@@ -659,5 +671,11 @@ function toggleFirstTimeFields() {
         patientSelect.disabled = false;
         patientSelect.setAttribute('required', 'required');
         labelText.innerText = "Seleccione al paciente";
+
+        // Optionally clear the first-time fields
+        document.getElementById('nameagenda').value = '';
+        document.getElementById('paternoagenda').value = '';
+        document.getElementById('maternoagenda').value = '';
+        document.getElementById('sexo_hombre_agenda').checked = true;
     }
 }
