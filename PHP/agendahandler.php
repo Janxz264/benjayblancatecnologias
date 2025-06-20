@@ -131,11 +131,64 @@ elseif ($action === "REMOVE") {
 
     $idCita = $_POST['id'];
 
-    $stmtCita = $pdo->prepare("DELETE FROM CITA WHERE ID_CITA = ?");
-    $stmtCita->execute([$idCita]);
+    try {
+        // Iniciar transacción
+        $pdo->beginTransaction();
 
-    echo json_encode(["success" => true]);
-} 
+        // Obtener ID_PACIENTE asociado a la cita
+        $stmt = $pdo->prepare("SELECT ID_PACIENTE FROM CITA WHERE ID_CITA = ?");
+        $stmt->execute([$idCita]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$result) {
+            throw new Exception("Cita no encontrada.");
+        }
+
+        $idPaciente = $result['ID_PACIENTE'];
+
+        // Verificar si el paciente es potencial (incompleto)
+        $stmt = $pdo->prepare("
+            SELECT PA.ID_PACIENTE, PA.ID_PERSONA, PA.ID_MUNICIPIO, PA.FECHA_NACIMIENTO, PA.TELEFONO
+            FROM PACIENTE PA
+            WHERE PA.ID_PACIENTE = ?
+        ");
+        $stmt->execute([$idPaciente]);
+        $paciente = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$paciente) {
+            throw new Exception("Paciente asociado no encontrado.");
+        }
+
+        // Eliminar la cita
+        $stmtDeleteCita = $pdo->prepare("DELETE FROM CITA WHERE ID_CITA = ?");
+        $stmtDeleteCita->execute([$idCita]);
+
+        // Verificar si es potencial: algún campo crítico es NULL
+        if (
+            is_null($paciente['ID_MUNICIPIO']) ||
+            is_null($paciente['FECHA_NACIMIENTO']) ||
+            is_null($paciente['TELEFONO'])
+        ) {
+            $idPersona = $paciente['ID_PERSONA'];
+
+            // Eliminar paciente
+            $stmtDeletePaciente = $pdo->prepare("DELETE FROM PACIENTE WHERE ID_PACIENTE = ?");
+            $stmtDeletePaciente->execute([$idPaciente]);
+
+            // Eliminar persona
+            $stmtDeletePersona = $pdo->prepare("DELETE FROM PERSONA WHERE ID_PERSONA = ?");
+            $stmtDeletePersona->execute([$idPersona]);
+        }
+
+        $pdo->commit();
+        echo json_encode(["success" => true]);
+
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        echo json_encode(["success" => false, "error" => $e->getMessage()]);
+    }
+}
+
 elseif ($action === "FINISH") {
         $idCita = $_GET['id'];
         $data = json_decode(file_get_contents("php://input"), true);
