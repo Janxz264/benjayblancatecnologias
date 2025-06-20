@@ -112,6 +112,31 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
         console.error("Error: Element #changePasswordForm not found.");
     }
+     document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            document.getElementById("sidebar")?.classList.add("-translate-x-full");
+            document.getElementById("settingsPanel")?.classList.remove("translate-x-0");
+        }
+    });
+
+    // Clic fuera para cerrar paneles
+    document.addEventListener('click', function (event) {
+        const sidebar = document.getElementById("sidebar");
+        const settingsPanel = document.getElementById("settingsPanel");
+
+        const clickedSidebarToggle = event.target.closest('[onclick="toggleSidebar()"]');
+        const clickedSettingsToggle = event.target.closest('[onclick="toggleSettings()"]');
+
+        // Cerrar sidebar si se hace clic fuera y no en el botón
+        if (sidebar && !sidebar.contains(event.target) && !clickedSidebarToggle) {
+            sidebar.classList.add("-translate-x-full");
+        }
+
+        // Cerrar settings si se hace clic fuera y no en el botón
+        if (settingsPanel && !settingsPanel.contains(event.target) && !clickedSettingsToggle) {
+            settingsPanel.classList.remove("translate-x-0");
+        }
+    });
 });
 
 // Global DataTables initializer
