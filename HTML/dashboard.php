@@ -26,7 +26,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 
-<body class="d-flex flex-column vh-100 bg-gray">
+<body class="d-flex flex-column vh-100 bg-gray-300">
 
     <!-- Navbar -->
     <?php include 'navbar.html'; ?>
@@ -43,14 +43,14 @@
     <?php include 'leftmenu.html'; ?>
 
     <!-- Toggle Sidebar Button -->
-    <button class="fixed left-4 top-4 bg-gray-800 text-white p-2 rounded"
+    <button class="fixed left-4 top-4 bg-blue-700 text-white p-2 rounded"
             onclick="toggleSidebar()">☰</button>
 
     <!-- Right-Side Panel -->
     <?php include 'rightmenu.html'; ?>
 
     <!-- Gear Icon to Open Settings Panel -->
-    <button class="fixed right-4 top-4 bg-gray-900 text-white p-2 rounded z-50"
+    <button class="fixed right-4 top-4 bg-blue-700 text-white p-2 rounded z-50"
             onclick="toggleSettings()"><i class="fa fa-cog"></i></button>
 
     <!-- Footer -->

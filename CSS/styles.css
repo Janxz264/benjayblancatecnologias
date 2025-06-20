@@ -1,6 +1,6 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #819797; /* Grayish background */
+    background-color: #d6e9f5; /* Soft blue background */
     margin: 0;
 }
 
@@ -8,35 +8,34 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Ensures full-height scaling */
+    min-height: 100vh;
 }
 
 .card {
-    width: 350px; /* Slightly wider for better aesthetics */
+    width: 350px;
     border-radius: 10px;
     box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
 }
 
-/* Bootstrap overrides for better styling */
+/* Header Title */
 h2 {
-    color: #53ebd6;
+    color: #4a90e2;
 }
 
-/* Bootstrap already manages input styling, but adding minor refinements */
 .form-control {
     border-radius: 5px;
 }
 
-/* Custom teal button using Bootstrap */
+/* Light Blue Button */
 .btn-teal {
-    background-color: #005f5f;
+    background-color: #4a90e2;
     color: white;
     width: 100%;
     font-size: 16px;
 }
 
 .btn-teal:hover {
-    background-color: #004848;
+    background-color: #3a78c2;
 }
 
 .error-message {
@@ -46,7 +45,7 @@ h2 {
 
 /* Footer Styling */
 footer {
-    background: #005f5f;
+    background: #4a90e2;
     padding: 15px;
     text-align: center;
     position: fixed;
@@ -61,55 +60,53 @@ footer img {
 }
 
 #mainTitle {
-    font-size: 2.5rem; /* Adjust size */
-    text-align: center; /* Center the text */
-    font-weight: bold; /* Optional for emphasis */
+    font-size: 2.5rem;
+    text-align: center;
+    font-weight: bold;
 }
 
 .custom-header-bg {
-    background-color: #005f5f; /* Dark teal */
-    color: white; /* Ensures text remains visible */
-    border-top-left-radius: 8px; /* Slight rounding on modal corners */
+    background-color: #4a90e2;
+    color: white;
+    border-top-left-radius: 8px;
     border-top-right-radius: 8px;
-    padding: 10px; /* Adds spacing */
+    padding: 10px;
 }
 
 .custom-form-bg {
-    background-color: #819797; /* Soft gray-green */
-    padding: 15px; /* Adds spacing inside */
-    border-radius: 8px; /* Smooth rounded corners */
+    background-color: #d6e9f5;
+    padding: 15px;
+    border-radius: 8px;
 }
 
 .form-label {
-    font-weight: bold; /* Make text bold */
-    font-size: 18px; /* Slightly larger text */
-    color: black; /* Darker color for better visibility */
+    font-weight: bold;
+    font-size: 18px;
+    color: black;
 }
 
-/* Make checkbox more visible */
+/* Custom Checkbox */
 .custom-checkbox {
-    width: 20px; /* Increase checkbox size */
+    width: 20px;
     height: 20px;
-    border: 2px solid #333; /* Dark border for visibility */
-    border-radius: 4px; /* Slight rounding */
-    appearance: none; /* Ensures custom styling */
-    background-color: white; /* Stand out against form background */
-    cursor: pointer; /* Makes it clickable */
+    border: 2px solid #333;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    cursor: pointer;
 }
 
-/* Add a checkmark when selected */
 .custom-checkbox:checked {
-    background-color: #005f5f; /* Match your custom modal header */
-    border-color: #005f5f;
+    background-color: #4a90e2;
+    border-color: #4a90e2;
 }
 
-/* Center checkbox next to label */
 .form-check.d-flex {
-    gap: 10px; /* Space between label and checkbox */
+    gap: 10px;
 }
 
 button[disabled] {
-    opacity: 0.6; /* Makes it slightly transparent */
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
@@ -127,4 +124,3 @@ button[disabled]:hover::after {
     transform: translateX(-50%);
     white-space: nowrap;
 }
-
