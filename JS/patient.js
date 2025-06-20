@@ -152,10 +152,37 @@ function openPatientModal(isEdit = false, patient = null) {
         saveBtn.innerText = "Guardar";
         form.reset();
         document.getElementById("patientId").value = "";
-        loadStates();
-        document.getElementById("municipio").innerHTML = "<option>Seleccione un estado primero</option>";
-        loadAssurances();
-        loadDoctors();
+        // Reset manual assurance fields
+    document.getElementById("assuranceCheckbox").checked = false;
+    document.getElementById("assuranceFields").style.display = "none";
+    document.getElementById("assuranceSelectContainer").style.display = "none";
+    document.getElementById("assuranceSelect").value = "";
+    document.getElementById("assuranceSelect").disabled = true;
+    document.getElementById("assuranceName").value = "";
+    document.getElementById("assuranceName").disabled = true;
+    document.getElementById("assuranceManualField").style.display = "none";
+
+    // Reset manual doctor fields
+    document.getElementById("referredCheckbox").checked = false;
+    document.getElementById("doctorFields").style.display = "none";
+    document.getElementById("doctorSelectContainer").style.display = "none";
+    document.getElementById("doctorSelect").value = "";
+    document.getElementById("doctorSelect").disabled = true;
+    document.getElementById("doctorName").value = "";
+    document.getElementById("doctorName").disabled = true;
+    document.getElementById("doctorPaterno").value = "";
+    document.getElementById("doctorPaterno").disabled = true;
+    document.getElementById("doctorMaterno").value = "";
+    document.getElementById("doctorMaterno").disabled = true;
+    document.getElementById("doctorManualFields").style.display = "none";
+
+    // Reset estado y municipio
+    loadStates();
+    document.getElementById("municipio").innerHTML = "<option>Seleccione un estado primero</option>";
+    
+    // Cargar listas
+    loadAssurances();
+    loadDoctors();
     }
 
     new bootstrap.Modal(document.getElementById("patientModal")).show();
