@@ -184,8 +184,8 @@ elseif ($action === "GET" && isset($_GET['id'])) {
         FROM cita c
         JOIN paciente pa ON pa.ID_PACIENTE = c.ID_PACIENTE
         JOIN persona p ON p.ID_PERSONA = pa.ID_PERSONA
-        JOIN municipio m ON pa.ID_MUNICIPIO = m.ID_MUNICIPIO
-        JOIN estado e ON e.ID_ESTADO = m.ID_ESTADO
+        LEFT JOIN municipio m ON pa.ID_MUNICIPIO = m.ID_MUNICIPIO
+        LEFT JOIN estado e ON e.ID_ESTADO = m.ID_ESTADO
         LEFT JOIN seguro s ON s.ID_SEGURO = pa.ID_SEGURO
         LEFT JOIN persona d ON d.ID_PERSONA = pa.ID_DOCTOR_REFERENTE
         WHERE c.ID_CITA = ?
