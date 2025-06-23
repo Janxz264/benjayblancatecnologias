@@ -476,8 +476,12 @@ function viewAppointment(idCita) {
                 return;
             }
 
+            // Helper to handle null or empty values
+            const safe = (value) => value ? value : "No registrado";
+
             // Format the date using JavaScript
             const formattedDateTime = formatSpanishDateTime(data.FECHA_HORA);
+            const formattedBirthdate = data.FECHA_NACIMIENTO ? formatBirthdate(data.FECHA_NACIMIENTO) : "No registrado";
 
             // Generate modal content dynamically
             const modalContent = `
@@ -490,15 +494,15 @@ function viewAppointment(idCita) {
                             </div>
                             <div class="modal-body">
                                 <ul class="list-group">
-                                    <li class="list-group-item"><strong>Paciente:</strong> ${data.NOMBRE_COMPLETO}</li>
-                                    <li class="list-group-item"><strong>Teléfono:</strong> ${data.TELEFONO}</li>
-                                    <li class="list-group-item"><strong>Sexo:</strong> ${data.SEXO}</li>
-                                    <li class="list-group-item"><strong>Fecha de nacimiento:</strong> ${formatBirthdate(data.FECHA_NACIMIENTO)}</li>
-                                    <li class="list-group-item"><strong>Seguro:</strong> ${data.SEGURO ? data.SEGURO : "Sin seguro"}</li>
-                                    <li class="list-group-item"><strong>Médico referente:</strong> ${data.DOCTOR_REFERENTE}</li>
+                                    <li class="list-group-item"><strong>Paciente:</strong> ${safe(data.NOMBRE_COMPLETO)}</li>
+                                    <li class="list-group-item"><strong>Teléfono:</strong> ${safe(data.TELEFONO)}</li>
+                                    <li class="list-group-item"><strong>Sexo:</strong> ${safe(data.SEXO)}</li>
+                                    <li class="list-group-item"><strong>Fecha de nacimiento:</strong> ${formattedBirthdate}</li>
+                                    <li class="list-group-item"><strong>Seguro:</strong> ${safe(data.SEGURO)}</li>
+                                    <li class="list-group-item"><strong>Médico referente:</strong> ${safe(data.DOCTOR_REFERENTE)}</li>
                                     <li class="list-group-item"><strong>Fecha y hora de consulta:</strong> ${formattedDateTime}</li>
-                                    <li class="list-group-item"><strong>Motivo:</strong> ${data.MOTIVO_DE_CONSULTA}</li>
-                                    <li class="list-group-item"><strong>Observaciones:</strong> ${data.OBSERVACIONES ? data.OBSERVACIONES : "No registradas"}</li>
+                                    <li class="list-group-item"><strong>Motivo:</strong> ${safe(data.MOTIVO_DE_CONSULTA)}</li>
+                                    <li class="list-group-item"><strong>Observaciones:</strong> ${safe(data.OBSERVACIONES)}</li>
                                 </ul>
                             </div>
                             <div class="modal-footer">
