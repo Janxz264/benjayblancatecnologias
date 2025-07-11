@@ -82,5 +82,6 @@
     <script src="../JS/referrerdoctor.js"></script>
     <script src="../JS/assurance.js"></script>
     <script src="../JS/products.js"></script>
+    <script src="../JS/pedidos.js"></script>
 </body>
 </html>

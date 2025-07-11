@@ -505,7 +505,7 @@ function autoCalculateEndDate() {
     if (isNaN(startDate)) return;
 
     const defaultEnd = new Date(startDate);
-    defaultEnd.setMonth(defaultEnd.getMonth() + 6);
+    defaultEnd.setMonth(defaultEnd.getMonth() + 12);
 
     // Only auto-set if user hasn't manually modified fechaFin
     const userModified = fechaFin.getAttribute('data-user-modified') === 'true';
