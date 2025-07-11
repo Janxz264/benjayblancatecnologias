@@ -27,10 +27,17 @@ if ($action === "VIEW") {
                 p.PRECIO_DE_VENTA, 
                 p.NUMERO_DE_SERIE,
                 m.ID_MARCA,
-                pr.ID_PROVEEDOR
+                pr.ID_PROVEEDOR,
+                g.ID_GARANTIA,
+                g.FECHA_INICIO,
+                g.FECHA_FIN,
+                ma.FECHA AS 'FECHA_MANTTO',
+                ma.HECHO
             FROM producto p
             JOIN marca m ON p.ID_MARCA = m.ID_MARCA
-            JOIN proveedor pr ON p.ID_PROVEEDOR = pr.ID_PROVEEDOR;
+            JOIN proveedor pr ON p.ID_PROVEEDOR = pr.ID_PROVEEDOR
+            LEFT JOIN garantia g ON p.ID_PRODUCTO=g.ID_PRODUCTO
+            LEFT JOIN mantenimiento ma ON ma.ID_PRODUCTO=p.ID_PRODUCTO
         ");
 
         $stmt->execute();

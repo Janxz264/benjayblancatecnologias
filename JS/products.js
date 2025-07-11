@@ -157,10 +157,8 @@ function editProduct(id_producto) {
         return;
     }
 
-    // Open modal and preload dropdowns
-    openAddProductModal(true); // pass edit mode flag
+    openAddProductModal(true); // edit mode
 
-    // Load dropdowns and set selected values once populated
     retrieveBrands(() => {
         document.getElementById('marcaSelect').value = product.ID_MARCA;
     });
@@ -169,12 +167,33 @@ function editProduct(id_producto) {
         document.getElementById('proveedorSelect').value = product.ID_PROVEEDOR;
     });
 
-    // Fill other fields immediately
+    // Basic fields
     document.getElementById('productId').value = product.ID_PRODUCTO;
     document.getElementById('modeloInput').value = product.MODELO;
     document.getElementById('precioDistribuidor').value = parseFloat(product.PRECIO_DISTRIBUIDOR).toFixed(2);
     document.getElementById('precioVenta').value = parseFloat(product.PRECIO_DE_VENTA).toFixed(2);
     document.getElementById('numeroSerie').value = product.NUMERO_DE_SERIE;
+
+    // Warranty
+    const hasGarantia = !!product.ID_GARANTIA;
+    const garantiaCheckbox = document.getElementById('hasWarrantyCheckbox');
+    const fechaInicio = document.getElementById('fechaInicio');
+    const fechaFin = document.getElementById('fechaFin');
+    const warrantyWrapper = document.getElementById('warrantyFieldsWrapper');
+
+    garantiaCheckbox.checked = hasGarantia;
+
+    if (hasGarantia) {
+        warrantyWrapper.classList.remove('d-none');
+        fechaInicio.value = product.FECHA_INICIO ?? '';
+        fechaFin.value = product.FECHA_FIN ?? '';
+        fechaFin.setAttribute('data-user-modified', 'true'); // prevent auto-overwrite on change
+    } else {
+        warrantyWrapper.classList.add('d-none');
+        fechaInicio.value = '';
+        fechaFin.value = '';
+        fechaFin.removeAttribute('data-user-modified');
+    }
 }
 
 function retrieveBrands(callback) {
