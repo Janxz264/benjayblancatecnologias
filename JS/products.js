@@ -8,6 +8,26 @@ if (productosLink) {
     console.error("Error: Element #productosLink not found.");
 }
 
+function formatAsDecimal(input) {
+    input.addEventListener('input', () => {
+        let value = input.value;
+
+        // Allow only digits and one optional dot
+        value = value.replace(/[^0-9.]/g, '');
+
+        // If multiple dots, keep only the first
+        const parts = value.split('.');
+        const integerPart = parts[0];
+        const decimalPart = parts[1] ? parts[1].slice(0, 2) : '';
+
+        input.value = parts.length > 1 ? `${integerPart}.${decimalPart}` : integerPart;
+    });
+}
+
+// Apply to both price fields
+formatAsDecimal(document.getElementById('precioDistribuidor'));
+formatAsDecimal(document.getElementById('precioVenta'));
+
 function loadProducts() {
     document.getElementById("mainTitle").innerText = "Gestor de productos";
     const container = document.getElementById("mainContainer");
