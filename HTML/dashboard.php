@@ -68,6 +68,9 @@
     <!-- End cita modal -->
     <?php include 'endcitamodal.html'; ?>
 
+    <!-- Product ADD & EDIT modal -->
+    <?php include 'productmodal.html'; ?>
+
     <!-- Bootstrap JS Bundle (includes Popper.js) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 

@@ -20,3 +20,8 @@ function loadProducts(){
         </div>
     `;
 }
+
+function openAddProductModal() {
+    const modal = new bootstrap.Modal(document.getElementById('productModal'));
+    modal.show();
+}

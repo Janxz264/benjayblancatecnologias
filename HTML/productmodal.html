@@ -1,0 +1,60 @@
+<!-- Product Modal -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header custom-header-bg text-white">
+                <h5 class="modal-title" id="productModalLabel">Agregar / Editar Producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="productForm" class="custom-form-bg">
+                    <!-- Dropdown de Marca -->
+                    <div class="mb-3">
+                        <label for="marcaSelect" class="form-label font-semibold">Marca</label>
+                        <select id="marcaSelect" class="form-control border rounded" required>
+                            <option value="">-- Seleccione una marca --</option>
+                        </select>
+                    </div>
+
+                    <!-- Dropdown de Proveedor -->
+                    <div class="mb-3">
+                        <label for="proveedorSelect" class="form-label font-semibold">Proveedor</label>
+                        <select id="proveedorSelect" class="form-control border rounded" required>
+                            <option value="">-- Seleccione un proveedor --</option>
+                        </select>
+                    </div>
+
+                    <!-- Modelo -->
+                    <div class="mb-3">
+                        <label for="modeloInput" class="form-label font-semibold">Modelo</label>
+                        <input type="text" id="modeloInput" class="form-control border rounded" maxlength="500" required>
+                    </div>
+
+                    <!-- Precio de distribuidor -->
+                    <div class="mb-3">
+                        <label for="precioDistribuidor" class="form-label font-semibold">Precio de Distribuidor</label>
+                        <input type="number" id="precioDistribuidor" class="form-control border rounded" step="0.01" min="0" required>
+                    </div>
+
+                    <!-- Precio de venta -->
+                    <div class="mb-3">
+                        <label for="precioVenta" class="form-label font-semibold">Precio de Venta</label>
+                        <input type="number" id="precioVenta" class="form-control border rounded" step="0.01" min="0" required>
+                    </div>
+
+                    <!-- Número de serie -->
+                    <div class="mb-3">
+                        <label for="numeroSerie" class="form-label font-semibold">Número de Serie</label>
+                        <input type="text" id="numeroSerie" class="form-control border rounded" maxlength="200" required>
+                    </div>
+
+                    <input type="hidden" id="productId">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="submit" class="btn btn-success" id="saveProductBtn">Guardar Producto</button>
+            </div>
+        </div>
+    </div>
+</div>
