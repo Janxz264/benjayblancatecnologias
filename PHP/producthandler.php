@@ -145,8 +145,64 @@ if ($action === "VIEW") {
     } catch (Exception $e) {
         echo json_encode(["error" => $e->getMessage()]);
     }
-}
+} else if ($action === "EDIT") {
+    try {
+        $data = json_decode(file_get_contents('php://input'), true);
+        $productId = $data['id'] ?? null;
 
+        if (!$productId || !is_numeric($productId)) {
+            throw new Exception("ID de producto inválido.");
+        }
+
+        // Marca
+        if (!empty($data['nuevaMarca'])) {
+            $stmt = $pdo->prepare("INSERT INTO marca (NOMBRE) VALUES (:nombre)");
+            $stmt->execute(['nombre' => $data['nuevaMarca']]);
+            $idMarca = $pdo->lastInsertId();
+        } else if (isset($data['idMarca']) && is_numeric($data['idMarca'])) {
+            $idMarca = intval($data['idMarca']);
+        } else {
+            throw new Exception("Marca no válida.");
+        }
+
+        // Proveedor
+        if (!empty($data['nuevoProveedor'])) {
+            $stmt = $pdo->prepare("INSERT INTO proveedor (NOMBRE) VALUES (:nombre)");
+            $stmt->execute(['nombre' => $data['nuevoProveedor']]);
+            $idProveedor = $pdo->lastInsertId();
+        } else if (isset($data['idProveedor']) && is_numeric($data['idProveedor'])) {
+            $idProveedor = intval($data['idProveedor']);
+        } else {
+            throw new Exception("Proveedor no válido.");
+        }
+
+
+        $stmt = $pdo->prepare("
+            UPDATE producto SET
+                ID_MARCA = :id_marca,
+                ID_PROVEEDOR = :id_proveedor,
+                MODELO = :modelo,
+                PRECIO_DISTRIBUIDOR = :precio_distribuidor,
+                PRECIO_DE_VENTA = :precio_venta,
+                NUMERO_DE_SERIE = :numero_serie
+            WHERE ID_PRODUCTO = :id_producto
+        ");
+
+        $stmt->execute([
+            'id_marca' => $idMarca,
+            'id_proveedor' => $idProveedor,
+            'modelo' => $data['modelo'],
+            'precio_distribuidor' => $data['precioDistribuidor'],
+            'precio_venta' => $data['precioVenta'],
+            'numero_serie' => $data['numeroSerie'],
+            'id_producto' => $productId
+        ]);
+
+        echo json_encode(["success" => true]);
+    } catch (Exception $e) {
+        echo json_encode(["error" => $e->getMessage()]);
+    }
+}
 
 else {
     echo json_encode(["error" => "Acción no válida"]);

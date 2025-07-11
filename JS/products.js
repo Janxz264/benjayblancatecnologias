@@ -2,6 +2,8 @@ const productosLink = document.getElementById("productosLink");
 
 let productsCache = [];
 
+let currentEditMode = false;
+
 if (productosLink) {
     productosLink.addEventListener("click", function (event) {
         event.preventDefault();
@@ -106,11 +108,12 @@ function loadProducts() {
         });
 }
 
-function openAddProductModal() {
+function openAddProductModal(isEditMode = false) {
     const modal = new bootstrap.Modal(document.getElementById('productModal'));
     modal.show();
 
     document.getElementById('productForm').reset();
+    currentEditMode = isEditMode;
 
     // Reset Marca
     const marcaCheckbox = document.getElementById('addNewMarcaCheckbox');
@@ -150,7 +153,7 @@ function editProduct(id_producto) {
     }
 
     // Open modal and preload dropdowns
-    openAddProductModal();
+    openAddProductModal(true); // pass edit mode flag
 
     // Load dropdowns and set selected values once populated
     retrieveBrands(() => {
@@ -291,6 +294,9 @@ function deleteProduct(id_producto) {
 //Función para guardar un nuevo producto
 
 document.getElementById('saveProductBtn').addEventListener('click', function (e) {
+    const productId = document.getElementById("productId").value;
+    const isEdit = productId !== "";
+
     e.preventDefault();
 
     const marcaCheckbox = document.getElementById('addNewMarcaCheckbox');
@@ -376,11 +382,20 @@ document.getElementById('saveProductBtn').addEventListener('click', function (e)
         numeroSerie
     };
 
-    fetch("../PHP/producthandler.php?action=ADD", {
+    fetch(`../PHP/producthandler.php?action=${isEdit ? 'EDIT' : 'ADD'}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+            ...marcaData,
+            ...proveedorData,
+            modelo,
+            precioDistribuidor,
+            precioVenta,
+            numeroSerie,
+            ...(isEdit && { id: parseInt(productId) }) // send ID only if editing
+        })
     })
+
     .then(res => res.json())
     .then(response => {
         if (response.success) {
