@@ -22,9 +22,41 @@ function loadProducts(){
 }
 
 function openAddProductModal() {
+    // Open modal
     const modal = new bootstrap.Modal(document.getElementById('productModal'));
     modal.show();
+
+    // Reset form fields
+    document.getElementById('productForm').reset();
+
+    // Uncheck and reset "Agregar nueva Marca"
+    const marcaCheckbox = document.getElementById('addNewMarcaCheckbox');
+    const marcaWrapper = document.getElementById('newMarcaFieldWrapper');
+    const marcaInput = document.getElementById('newMarcaInput');
+    const marcaSelect = document.getElementById('marcaSelect');
+
+    marcaCheckbox.checked = false;
+    marcaWrapper.classList.add('d-none');
+    marcaInput.value = '';
+    marcaSelect.disabled = false;
+    marcaSelect.value = '';
+
+    // Uncheck and reset "Agregar nuevo Proveedor"
+    const proveedorCheckbox = document.getElementById('addNewProveedorCheckbox');
+    const proveedorWrapper = document.getElementById('newProveedorFieldWrapper');
+    const proveedorInput = document.getElementById('newProveedorInput');
+    const proveedorSelect = document.getElementById('proveedorSelect');
+
+    proveedorCheckbox.checked = false;
+    proveedorWrapper.classList.add('d-none');
+    proveedorInput.value = '';
+    proveedorSelect.disabled = false;
+    proveedorSelect.value = '';
+
+    // You can optionally reset the hidden productId too
+    document.getElementById('productId').value = '';
 }
+
 
 function toggleNewMarcaFields() {
     const checkbox = document.getElementById('addNewMarcaCheckbox');
