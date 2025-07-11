@@ -16,12 +16,36 @@
                         </select>
                     </div>
 
+                    <!-- Checkbox for nueva Marca -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="addNewMarcaCheckbox" onchange="toggleNewMarcaFields()">
+                        <label class="form-check-label" for="addNewMarcaCheckbox"><strong>¿Desea agregar una nueva marca?</strong></label>
+                    </div>
+
+                    <!-- Text field for nueva Marca (hidden by default) -->
+                    <div class="mb-3 d-none" id="newMarcaFieldWrapper">
+                        <label for="newMarcaInput" class="form-label font-semibold">Nombre de nueva Marca</label>
+                        <input type="text" id="newMarcaInput" class="form-control border rounded" maxlength="300">
+                    </div>
+
                     <!-- Dropdown de Proveedor -->
                     <div class="mb-3">
                         <label for="proveedorSelect" class="form-label font-semibold">Proveedor</label>
                         <select id="proveedorSelect" class="form-control border rounded" required>
                             <option value="">-- Seleccione un proveedor --</option>
                         </select>
+                    </div>
+
+                    <!-- Checkbox for nuevo Proveedor -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="addNewProveedorCheckbox" onchange="toggleNewProveedorFields()">
+                        <label class="form-check-label" for="addNewProveedorCheckbox"><strong>¿Desea agregar un nuevo proveedor?</strong></label>
+                    </div>
+
+                    <!-- Text field for nuevo Proveedor (hidden by default) -->
+                    <div class="mb-3 d-none" id="newProveedorFieldWrapper">
+                        <label for="newProveedorInput" class="form-label font-semibold">Nombre de nuevo Proveedor</label>
+                        <input type="text" id="newProveedorInput" class="form-control border rounded" maxlength="300">
                     </div>
 
                     <!-- Modelo -->

@@ -25,3 +25,37 @@ function openAddProductModal() {
     const modal = new bootstrap.Modal(document.getElementById('productModal'));
     modal.show();
 }
+
+function toggleNewMarcaFields() {
+    const checkbox = document.getElementById('addNewMarcaCheckbox');
+    const wrapper = document.getElementById('newMarcaFieldWrapper');
+    const input = document.getElementById('newMarcaInput');
+    const select = document.getElementById('marcaSelect');
+
+    if (checkbox.checked) {
+        wrapper.classList.remove('d-none');
+        select.value = '';
+        select.disabled = true;
+    } else {
+        wrapper.classList.add('d-none');
+        input.value = '';
+        select.disabled = false;
+    }
+}
+
+function toggleNewProveedorFields() {
+    const checkbox = document.getElementById('addNewProveedorCheckbox');
+    const wrapper = document.getElementById('newProveedorFieldWrapper');
+    const input = document.getElementById('newProveedorInput');
+    const select = document.getElementById('proveedorSelect');
+
+    if (checkbox.checked) {
+        wrapper.classList.remove('d-none');
+        select.value = '';
+        select.disabled = true;
+    } else {
+        wrapper.classList.add('d-none');
+        input.value = '';
+        select.disabled = false;
+    }
+}
