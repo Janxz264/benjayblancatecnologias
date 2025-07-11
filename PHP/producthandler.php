@@ -176,6 +176,7 @@ if ($action === "VIEW") {
             throw new Exception("Proveedor no válido.");
         }
 
+        $userModify = $_SESSION['user_id'] ?? null;
 
         $stmt = $pdo->prepare("
             UPDATE producto SET
@@ -184,7 +185,9 @@ if ($action === "VIEW") {
                 MODELO = :modelo,
                 PRECIO_DISTRIBUIDOR = :precio_distribuidor,
                 PRECIO_DE_VENTA = :precio_venta,
-                NUMERO_DE_SERIE = :numero_serie
+                NUMERO_DE_SERIE = :numero_serie,
+                USER_MODIFY = :user_modify,
+                MODIFIED = NOW()
             WHERE ID_PRODUCTO = :id_producto
         ");
 
@@ -195,6 +198,7 @@ if ($action === "VIEW") {
             'precio_distribuidor' => $data['precioDistribuidor'],
             'precio_venta' => $data['precioVenta'],
             'numero_serie' => $data['numeroSerie'],
+            'user_modify' => $userModify,
             'id_producto' => $productId
         ]);
 
