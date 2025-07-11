@@ -133,6 +133,11 @@ function openAddProductModal(isEditMode = false) {
     proveedorSelect.disabled = false;
     proveedorSelect.value = '';
 
+    //Reset Garantía
+    const garantiaCheckbox = document.getElementById('hasWarrantyCheckbox');
+    garantiaCheckbox.checked = false;
+    document.getElementById('warrantyFieldsWrapper').classList.add('d-none');
+
     document.getElementById('productId').value = '';
 
     // Load dropdowns
@@ -432,4 +437,49 @@ document.getElementById('saveProductBtn').addEventListener('click', function (e)
             confirmButtonText: 'Cerrar'
         });
     });
+});
+
+function toggleWarrantyFields() {
+    const checkbox = document.getElementById('hasWarrantyCheckbox');
+    const wrapper = document.getElementById('warrantyFieldsWrapper');
+    const fechaInicio = document.getElementById('fechaInicio');
+    const fechaFin = document.getElementById('fechaFin');
+
+    if (checkbox.checked) {
+        wrapper.classList.remove('d-none');
+
+        // Set today's date as default start
+        const today = new Date().toISOString().split('T')[0];
+        fechaInicio.value = today;
+
+        // Trigger auto-calculation of end date
+        autoCalculateEndDate();
+    } else {
+        wrapper.classList.add('d-none');
+        fechaInicio.value = '';
+        fechaFin.value = '';
+    }
+}
+
+function autoCalculateEndDate() {
+    const fechaInicio = document.getElementById('fechaInicio');
+    const fechaFin = document.getElementById('fechaFin');
+
+    const startDate = new Date(fechaInicio.value);
+    if (isNaN(startDate)) return;
+
+    const defaultEnd = new Date(startDate);
+    defaultEnd.setMonth(defaultEnd.getMonth() + 6);
+
+    // Only auto-set if user hasn't manually modified fechaFin
+    const userModified = fechaFin.getAttribute('data-user-modified') === 'true';
+    if (!userModified) {
+        const formattedEnd = defaultEnd.toISOString().split('T')[0];
+        fechaFin.value = formattedEnd;
+    }
+}
+
+document.getElementById('fechaInicio').addEventListener('change', autoCalculateEndDate);
+document.getElementById('fechaFin').addEventListener('input', function () {
+    this.setAttribute('data-user-modified', 'true');
 });

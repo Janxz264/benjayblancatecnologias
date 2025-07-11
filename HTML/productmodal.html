@@ -73,6 +73,24 @@
                     </div>
 
                     <input type="hidden" id="productId">
+
+                    <!-- Checkbox for Garantía -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="hasWarrantyCheckbox" onchange="toggleWarrantyFields()">
+                        <label class="form-check-label" for="hasWarrantyCheckbox"><strong>¿Cuenta con garantía?</strong></label>
+                    </div>
+
+                    <!-- Warranty date fields (hidden by default) -->
+                    <div id="warrantyFieldsWrapper" class="d-none">
+                        <div class="mb-3">
+                            <label for="fechaInicio" class="form-label font-semibold">Fecha de inicio de vigencia</label>
+                            <input type="date" id="fechaInicio" class="form-control border rounded">
+                        </div>
+                        <div class="mb-3">
+                            <label for="fechaFin" class="form-label font-semibold">Fecha de fin de vigencia</label>
+                            <input type="date" id="fechaFin" class="form-control border rounded">
+                        </div>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
