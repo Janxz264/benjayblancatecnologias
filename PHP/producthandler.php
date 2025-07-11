@@ -25,7 +25,9 @@ if ($action === "VIEW") {
                 p.MODELO, 
                 p.PRECIO_DISTRIBUIDOR, 
                 p.PRECIO_DE_VENTA, 
-                p.NUMERO_DE_SERIE
+                p.NUMERO_DE_SERIE,
+                m.ID_MARCA,
+                pr.ID_PROVEEDOR
             FROM producto p
             JOIN marca m ON p.ID_MARCA = m.ID_MARCA
             JOIN proveedor pr ON p.ID_PROVEEDOR = pr.ID_PROVEEDOR;

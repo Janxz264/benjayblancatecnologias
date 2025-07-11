@@ -1,4 +1,7 @@
 const productosLink = document.getElementById("productosLink");
+
+let productsCache = [];
+
 if (productosLink) {
     productosLink.addEventListener("click", function (event) {
         event.preventDefault();
@@ -91,6 +94,7 @@ function loadProducts() {
 
             tableHTML += `</tbody></table>`;
             container.innerHTML += tableHTML;
+            productsCache = data; // Store full product list globally
 
             // Refresh DataTable instance
             $('#productsTable').DataTable().destroy();
@@ -133,8 +137,39 @@ function openAddProductModal() {
     retrieveProviders();
 }
 
+function editProduct(id_producto) {
+    const product = productsCache.find(p => p.ID_PRODUCTO === id_producto);
+    if (!product) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Producto no encontrado',
+            text: 'No se pudo localizar el producto en caché.',
+            confirmButtonText: 'Cerrar'
+        });
+        return;
+    }
 
-function retrieveBrands() {
+    // Open modal and preload dropdowns
+    openAddProductModal();
+
+    // Load dropdowns and set selected values once populated
+    retrieveBrands(() => {
+        document.getElementById('marcaSelect').value = product.ID_MARCA;
+    });
+
+    retrieveProviders(() => {
+        document.getElementById('proveedorSelect').value = product.ID_PROVEEDOR;
+    });
+
+    // Fill other fields immediately
+    document.getElementById('productId').value = product.ID_PRODUCTO;
+    document.getElementById('modeloInput').value = product.MODELO;
+    document.getElementById('precioDistribuidor').value = parseFloat(product.PRECIO_DISTRIBUIDOR).toFixed(2);
+    document.getElementById('precioVenta').value = parseFloat(product.PRECIO_DE_VENTA).toFixed(2);
+    document.getElementById('numeroSerie').value = product.NUMERO_DE_SERIE;
+}
+
+function retrieveBrands(callback) {
     fetch("../PHP/producthandler.php?action=RETRIEVEBRANDS")
         .then(response => response.json())
         .then(brands => {
@@ -146,13 +181,14 @@ function retrieveBrands() {
                 option.textContent = brand.NOMBRE;
                 marcaSelect.appendChild(option);
             });
+            if (typeof callback === 'function') callback();
         })
         .catch(error => {
             console.error("Error al recuperar marcas:", error);
         });
 }
 
-function retrieveProviders() {
+function retrieveProviders(callback) {
     fetch("../PHP/producthandler.php?action=RETRIEVEPROVIDERS")
         .then(response => response.json())
         .then(providers => {
@@ -164,6 +200,7 @@ function retrieveProviders() {
                 option.textContent = provider.NOMBRE;
                 proveedorSelect.appendChild(option);
             });
+            if (typeof callback === 'function') callback();
         })
         .catch(error => {
             console.error("Error al recuperar proveedores:", error);
