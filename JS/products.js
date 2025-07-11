@@ -306,6 +306,7 @@ document.getElementById('saveProductBtn').addEventListener('click', function (e)
 
     const marcaCheckbox = document.getElementById('addNewMarcaCheckbox');
     const proveedorCheckbox = document.getElementById('addNewProveedorCheckbox');
+    const garantiaCheckbox = document.getElementById('hasWarrantyCheckbox');
 
     const marcaSelect = document.getElementById('marcaSelect');
     const newMarcaInput = document.getElementById('newMarcaInput');
@@ -368,6 +369,24 @@ document.getElementById('saveProductBtn').addEventListener('click', function (e)
         errors.push("El número de serie es obligatorio.");
     }
 
+    if (garantiaCheckbox.checked) {
+    const fechaInicio = document.getElementById('fechaInicio').value;
+    const fechaFin = document.getElementById('fechaFin').value;
+
+    if (!fechaInicio) {
+        errors.push("La fecha de inicio de garantía es obligatoria.");
+    }
+
+    if (!fechaFin) {
+        errors.push("La fecha de fin de garantía es obligatoria.");
+    }
+
+    // Optional: Validate logical order
+    if (fechaInicio && fechaFin && new Date(fechaFin) < new Date(fechaInicio)) {
+        errors.push("La fecha de fin no puede ser anterior a la fecha de inicio.");
+    }
+}
+
     if (errors.length > 0) {
         Swal.fire({
             icon: 'warning',
@@ -379,26 +398,24 @@ document.getElementById('saveProductBtn').addEventListener('click', function (e)
     }
 
     const payload = {
-        ...marcaData,
-        ...proveedorData,
-        modelo,
-        precioDistribuidor,
-        precioVenta,
-        numeroSerie
+    ...marcaData,
+    ...proveedorData,
+    modelo,
+    precioDistribuidor,
+    precioVenta,
+    numeroSerie,
+    ...(garantiaCheckbox.checked && {
+        garantia: true,
+        fechaInicioGarantia: document.getElementById('fechaInicio').value,
+        fechaFinGarantia: document.getElementById('fechaFin').value
+    }),
+    ...(isEdit && { id: parseInt(productId) })
     };
 
     fetch(`../PHP/producthandler.php?action=${isEdit ? 'EDIT' : 'ADD'}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            ...marcaData,
-            ...proveedorData,
-            modelo,
-            precioDistribuidor,
-            precioVenta,
-            numeroSerie,
-            ...(isEdit && { id: parseInt(productId) }) // send ID only if editing
-        })
+        body: JSON.stringify(payload)
     })
 
     .then(res => res.json())

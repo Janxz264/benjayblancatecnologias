@@ -108,7 +108,36 @@ if ($action === "VIEW") {
             'numero_serie' => $data['numeroSerie'],
             'user_create' => $userCreate
         ]);
+        
+        $productId = $pdo->lastInsertId();
 
+        $hasWarranty = isset($data['garantia']) && $data['garantia'] === true;
+        $fechaInicio = $hasWarranty ? ($data['fechaInicioGarantia'] ?? null) : null;
+        $fechaFin = $hasWarranty ? ($data['fechaFinGarantia'] ?? null) : null;
+
+        if ($hasWarranty) {
+            if (!$fechaInicio || !$fechaFin) {
+                throw new Exception("Fechas de garantía requeridas.");
+            }
+
+            if (strtotime($fechaFin) < strtotime($fechaInicio)) {
+                throw new Exception("La fecha de fin no puede ser anterior a la fecha de inicio.");
+            }
+
+            $stmt = $pdo->prepare("
+                INSERT INTO garantia (
+                    ID_PRODUCTO, USER_CREATE, FECHA_INICIO, FECHA_FIN
+                ) VALUES (
+                    :id_producto, :user_create, :fecha_inicio, :fecha_fin
+                )
+            ");
+            $stmt->execute([
+                'id_producto' => $productId,
+                'user_create' => $userCreate,
+                'fecha_inicio' => $fechaInicio,
+                'fecha_fin' => $fechaFin
+            ]);
+        }
         echo json_encode(["success" => true]);
     } catch (Exception $e) {
         echo json_encode(["error" => $e->getMessage()]);
@@ -149,6 +178,9 @@ if ($action === "VIEW") {
     try {
         $data = json_decode(file_get_contents('php://input'), true);
         $productId = $data['id'] ?? null;
+        $hasWarranty = isset($data['garantia']) && $data['garantia'] === true;
+        $fechaInicio = $hasWarranty ? ($data['fechaInicioGarantia'] ?? null) : null;
+        $fechaFin = $hasWarranty ? ($data['fechaFinGarantia'] ?? null) : null;
 
         if (!$productId || !is_numeric($productId)) {
             throw new Exception("ID de producto inválido.");
@@ -201,6 +233,63 @@ if ($action === "VIEW") {
             'user_modify' => $userModify,
             'id_producto' => $productId
         ]);
+
+        if ($hasWarranty) {
+        if (!$fechaInicio || !$fechaFin) {
+            throw new Exception("Fechas de garantía requeridas.");
+        }
+        if (strtotime($fechaFin) < strtotime($fechaInicio)) {
+            throw new Exception("La fecha de fin no puede ser anterior a la fecha de inicio.");
+        }
+
+        // Check if a garantia record exists
+        $stmt = $pdo->prepare("SELECT ID_GARANTIA FROM garantia WHERE ID_PRODUCTO = ?");
+        $stmt->execute([$productId]);
+        $existingGarantia = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($existingGarantia) {
+            // UPDATE existing garantia
+            $stmt = $pdo->prepare("
+                UPDATE garantia SET
+                    FECHA_INICIO = :inicio,
+                    FECHA_FIN = :fin,
+                    USER_MODIFY = :user,
+                    MODIFIED = NOW()
+                WHERE ID_PRODUCTO = :id_producto
+            ");
+            $stmt->execute([
+                'inicio' => $fechaInicio,
+                'fin' => $fechaFin,
+                'user' => $userModify,
+                'id_producto' => $productId
+            ]);
+        } else {
+            // INSERT new garantia
+            $stmt = $pdo->prepare("
+                INSERT INTO garantia (
+                    ID_PRODUCTO, USER_CREATE, FECHA_INICIO, FECHA_FIN
+                ) VALUES (
+                    :id_producto, :user_create, :fecha_inicio, :fecha_fin
+                )
+            ");
+            $stmt->execute([
+                'id_producto' => $productId,
+                'user_create' => $userModify,
+                'fecha_inicio' => $fechaInicio,
+                'fecha_fin' => $fechaFin
+            ]);
+        }
+    } else {
+        // Delete garantía if user unchecked it
+        $stmt = $pdo->prepare("
+            UPDATE garantia SET USER_MODIFY = :user, MODIFIED = NOW()
+            WHERE ID_PRODUCTO = :id_producto
+        ");
+        $stmt->execute(['user' => $userModify, 'id_producto' => $productId]);
+
+        $stmt = $pdo->prepare("DELETE FROM garantia WHERE ID_PRODUCTO = ?");
+        $stmt->execute([$productId]);
+    }
 
         echo json_encode(["success" => true]);
     } catch (Exception $e) {
