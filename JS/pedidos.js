@@ -136,3 +136,53 @@ function deletePedido(id_pedido) {
         }
     });
 }
+
+function openAddPedidoModal() {
+  const modal = new bootstrap.Modal(document.getElementById('pedidoModal'));
+  modal.show();
+
+  document.getElementById('pedidoForm').reset();
+
+  document.getElementById('productoSelect').disabled = false;
+  document.getElementById('productoSelect').value = '';
+  document.getElementById('addNewProductCheckbox').checked = false;
+  document.getElementById('embeddedProductForm').classList.add('d-none');
+
+  // Fetch product list dynamically
+  fetch("../PHP/producthandler.php?action=VIEW")
+    .then(res => res.json())
+    .then(products => {
+      const select = document.getElementById('productoSelect');
+      select.innerHTML = '<option value="">-- Seleccione un producto --</option>';
+      products.forEach(p => {
+        const option = document.createElement('option');
+        option.value = p.ID_PRODUCTO;
+        option.textContent = `${p.MODELO} | ${p.NUMERO_DE_SERIE}`;
+        select.appendChild(option);
+      });
+    });
+}
+
+function toggleNewProductMode() {
+  const checkbox = document.getElementById('addNewProductCheckbox');
+  const select = document.getElementById('productoSelect');
+  const productWrapper = document.getElementById('embeddedProductForm');
+
+  if (checkbox.checked) {
+    select.value = '';
+    select.disabled = true;
+    productWrapper.classList.remove('d-none');
+
+    // Optionally reset the embedded product form
+    if (document.getElementById('productForm')) {
+      document.getElementById('productForm').reset();
+    }
+  } else {
+    select.disabled = false;
+    productWrapper.classList.add('d-none');
+
+    if (document.getElementById('productForm')) {
+      document.getElementById('productForm').reset();
+    }
+  }
+}

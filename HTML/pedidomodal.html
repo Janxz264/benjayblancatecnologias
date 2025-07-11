@@ -1,0 +1,53 @@
+<!-- Pedido Modal -->
+<div class="modal fade" id="pedidoModal" tabindex="-1" aria-labelledby="pedidoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header custom-header-bg text-white">
+        <h5 class="modal-title" id="pedidoModalLabel">Agregar / Editar Pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <form id="pedidoForm" class="custom-form-bg">
+          <!-- Fecha de pedido -->
+          <div class="mb-3">
+            <label for="fechaPedido" class="form-label font-semibold">Fecha de pedido</label>
+            <input type="date" id="fechaPedido" class="form-control border rounded" required>
+          </div>
+
+          <!-- Fecha de entrega -->
+          <div class="mb-3">
+            <label for="fechaEntrega" class="form-label font-semibold">Fecha de entrega (opcional)</label>
+            <input type="date" id="fechaEntrega" class="form-control border rounded">
+          </div>
+
+          <!-- Dropdown productos -->
+          <div class="mb-3">
+            <label for="productoSelect" class="form-label font-semibold">Producto</label>
+            <select id="productoSelect" class="form-control border rounded" required>
+              <option value="">-- Seleccione un producto --</option>
+            </select>
+          </div>
+
+          <!-- Checkbox agregar nuevo producto -->
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="addNewProductCheckbox" onchange="toggleNewProductMode()">
+            <label class="form-check-label" for="addNewProductCheckbox">
+              <strong>¿Agregar nuevo producto?</strong>
+            </label>
+          </div>
+
+          <!-- Embedded product modal fields -->
+          <div id="embeddedProductForm" class="border rounded p-3 d-none">
+            <!-- Optionally you can dynamically load productmodal.html content here -->
+            <!-- OR reuse the productForm DOM and adapt it if embedded -->
+          </div>
+
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="savePedidoBtn">Guardar Pedido</button>
+      </div>
+    </div>
+  </div>
+</div>
