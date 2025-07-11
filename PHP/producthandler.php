@@ -174,6 +174,11 @@ if ($action === "VIEW") {
             throw new Exception("ID inválido.");
         }
 
+        // Delete warranty first (to avoid orphan constraint issues, if any)
+        $stmt = $pdo->prepare("DELETE FROM garantia WHERE ID_PRODUCTO = ?");
+        $stmt->execute([$id]);
+
+        // Then delete product
         $stmt = $pdo->prepare("DELETE FROM producto WHERE ID_PRODUCTO = ?");
         $stmt->execute([$id]);
 
@@ -181,6 +186,7 @@ if ($action === "VIEW") {
     } catch (Exception $e) {
         echo json_encode(["error" => $e->getMessage()]);
     }
+
 } else if ($action === "EDIT") {
     try {
         $data = json_decode(file_get_contents('php://input'), true);
