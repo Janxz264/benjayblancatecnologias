@@ -127,7 +127,24 @@ if ($action === "VIEW") {
     } catch (PDOException $e) {
         echo json_encode(["error" => "Error al recuperar proveedores", "details" => $e->getMessage()]);
     }
+} else if ($action === "REMOVE") {
+    try {
+        $data = json_decode(file_get_contents('php://input'), true);
+        $id = $data['id'] ?? null;
+
+        if (!$id || !is_numeric($id)) {
+            throw new Exception("ID inválido.");
+        }
+
+        $stmt = $pdo->prepare("DELETE FROM producto WHERE ID_PRODUCTO = ?");
+        $stmt->execute([$id]);
+
+        echo json_encode(["success" => true]);
+    } catch (Exception $e) {
+        echo json_encode(["error" => $e->getMessage()]);
+    }
 }
+
 
 else {
     echo json_encode(["error" => "Acción no válida"]);

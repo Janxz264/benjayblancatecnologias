@@ -184,6 +184,53 @@ function toggleNewProveedorFields() {
     }
 }
 
+function deleteProduct(id_producto) {
+    Swal.fire({
+        title: '¿Está seguro de que desea eliminar este producto?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch(`../PHP/producthandler.php?action=REMOVE`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: id_producto })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Producto eliminado',
+                        text: 'El producto fue eliminado correctamente.',
+                        confirmButtonText: 'Cerrar'
+                    });
+                    loadProducts(); // Refresh product list
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.error || 'No se pudo eliminar el producto.',
+                        confirmButtonText: 'Cerrar'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Error al eliminar producto:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de red',
+                    text: 'No se pudo contactar al servidor.',
+                    confirmButtonText: 'Cerrar'
+                });
+            });
+        }
+    });
+}
+
 //Función para guardar un nuevo producto
 
 document.getElementById('saveProductBtn').addEventListener('click', function (e) {
