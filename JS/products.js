@@ -83,41 +83,72 @@ function loadProducts() {
 }
 
 function openAddProductModal() {
-    // Open modal
     const modal = new bootstrap.Modal(document.getElementById('productModal'));
     modal.show();
 
-    // Reset form fields
     document.getElementById('productForm').reset();
 
-    // Uncheck and reset "Agregar nueva Marca"
+    // Reset Marca
     const marcaCheckbox = document.getElementById('addNewMarcaCheckbox');
-    const marcaWrapper = document.getElementById('newMarcaFieldWrapper');
-    const marcaInput = document.getElementById('newMarcaInput');
+    document.getElementById('newMarcaFieldWrapper').classList.add('d-none');
+    document.getElementById('newMarcaInput').value = '';
     const marcaSelect = document.getElementById('marcaSelect');
-
     marcaCheckbox.checked = false;
-    marcaWrapper.classList.add('d-none');
-    marcaInput.value = '';
     marcaSelect.disabled = false;
     marcaSelect.value = '';
 
-    // Uncheck and reset "Agregar nuevo Proveedor"
+    // Reset Proveedor
     const proveedorCheckbox = document.getElementById('addNewProveedorCheckbox');
-    const proveedorWrapper = document.getElementById('newProveedorFieldWrapper');
-    const proveedorInput = document.getElementById('newProveedorInput');
+    document.getElementById('newProveedorFieldWrapper').classList.add('d-none');
+    document.getElementById('newProveedorInput').value = '';
     const proveedorSelect = document.getElementById('proveedorSelect');
-
     proveedorCheckbox.checked = false;
-    proveedorWrapper.classList.add('d-none');
-    proveedorInput.value = '';
     proveedorSelect.disabled = false;
     proveedorSelect.value = '';
 
-    // You can optionally reset the hidden productId too
     document.getElementById('productId').value = '';
+
+    // Load dropdowns
+    retrieveBrands();
+    retrieveProviders();
 }
 
+
+function retrieveBrands() {
+    fetch("../PHP/producthandler.php?action=RETRIEVEBRANDS")
+        .then(response => response.json())
+        .then(brands => {
+            const marcaSelect = document.getElementById('marcaSelect');
+            marcaSelect.innerHTML = '<option value="">-- Seleccione una marca --</option>';
+            brands.forEach(brand => {
+                const option = document.createElement('option');
+                option.value = brand.ID_MARCA;
+                option.textContent = brand.NOMBRE;
+                marcaSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error("Error al recuperar marcas:", error);
+        });
+}
+
+function retrieveProviders() {
+    fetch("../PHP/producthandler.php?action=RETRIEVEPROVIDERS")
+        .then(response => response.json())
+        .then(providers => {
+            const proveedorSelect = document.getElementById('proveedorSelect');
+            proveedorSelect.innerHTML = '<option value="">-- Seleccione un proveedor --</option>';
+            providers.forEach(provider => {
+                const option = document.createElement('option');
+                option.value = provider.ID_PROVEEDOR;
+                option.textContent = provider.NOMBRE;
+                proveedorSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error("Error al recuperar proveedores:", error);
+        });
+}
 
 function toggleNewMarcaFields() {
     const checkbox = document.getElementById('addNewMarcaCheckbox');
@@ -152,3 +183,134 @@ function toggleNewProveedorFields() {
         select.disabled = false;
     }
 }
+
+//Función para guardar un nuevo producto
+
+document.getElementById('saveProductBtn').addEventListener('click', function (e) {
+    e.preventDefault();
+
+    const marcaCheckbox = document.getElementById('addNewMarcaCheckbox');
+    const proveedorCheckbox = document.getElementById('addNewProveedorCheckbox');
+
+    const marcaSelect = document.getElementById('marcaSelect');
+    const newMarcaInput = document.getElementById('newMarcaInput');
+    const proveedorSelect = document.getElementById('proveedorSelect');
+    const newProveedorInput = document.getElementById('newProveedorInput');
+
+    const modeloInput = document.getElementById('modeloInput');
+    const precioDistribuidorInput = document.getElementById('precioDistribuidor');
+    const precioVentaInput = document.getElementById('precioVenta');
+    const numeroSerieInput = document.getElementById('numeroSerie');
+
+    let errors = [];
+
+    let marcaData = null;
+    if (marcaCheckbox.checked) {
+        if (newMarcaInput.value.trim() === "") {
+            errors.push("Ingrese el nombre de la nueva marca.");
+        } else {
+            marcaData = { nuevaMarca: newMarcaInput.value.trim() };
+        }
+    } else {
+        if (marcaSelect.value === "") {
+            errors.push("Seleccione una marca válida.");
+        } else {
+            marcaData = { idMarca: parseInt(marcaSelect.value) };
+        }
+    }
+
+    let proveedorData = null;
+    if (proveedorCheckbox.checked) {
+        if (newProveedorInput.value.trim() === "") {
+            errors.push("Ingrese el nombre del nuevo proveedor.");
+        } else {
+            proveedorData = { nuevoProveedor: newProveedorInput.value.trim() };
+        }
+    } else {
+        if (proveedorSelect.value === "") {
+            errors.push("Seleccione un proveedor válido.");
+        } else {
+            proveedorData = { idProveedor: parseInt(proveedorSelect.value) };
+        }
+    }
+
+    const modelo = modeloInput.value.trim();
+    if (modelo === "") {
+        errors.push("El modelo es obligatorio.");
+    }
+
+    const precioDistribuidor = parseFloat(precioDistribuidorInput.value);
+    const precioVenta = parseFloat(precioVentaInput.value);
+    if (isNaN(precioDistribuidor) || precioDistribuidor < 0) {
+        errors.push("Precio de distribuidor inválido.");
+    }
+    if (isNaN(precioVenta) || precioVenta < 0) {
+        errors.push("Precio de venta inválido.");
+    }
+
+    const numeroSerie = numeroSerieInput.value.trim();
+    if (numeroSerie === "") {
+        errors.push("El número de serie es obligatorio.");
+    }
+
+    if (errors.length > 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Errores en el formulario',
+            html: `<ul style='text-align:left;'>${errors.map(e => `<li>${e}</li>`).join('')}</ul>`,
+            confirmButtonText: 'Corregir'
+        });
+        return;
+    }
+
+    const payload = {
+        ...marcaData,
+        ...proveedorData,
+        modelo,
+        precioDistribuidor,
+        precioVenta,
+        numeroSerie
+    };
+
+    fetch("../PHP/producthandler.php?action=ADD", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(response => {
+        if (response.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Producto guardado',
+                text: 'El producto fue registrado correctamente.',
+                confirmButtonText: 'Cerrar'
+            }).then(() => {
+            document.getElementById("productForm").reset();
+
+            // Get existing modal instance and close it
+            const modalEl = document.getElementById('productModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) modalInstance.hide();
+
+            loadProducts(); // Refresh product table
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al guardar',
+                text: response.error || 'Error inesperado en el servidor.',
+                confirmButtonText: 'Cerrar'
+            });
+        }
+    })
+    .catch(err => {
+        console.error("Error en la solicitud:", err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de red',
+            text: 'No se pudo enviar el formulario. Intenta nuevamente.',
+            confirmButtonText: 'Cerrar'
+        });
+    });
+});
