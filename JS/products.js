@@ -8,10 +8,11 @@ if (productosLink) {
     console.error("Error: Element #productosLink not found.");
 }
 
-function loadProducts(){
+function loadProducts() {
     document.getElementById("mainTitle").innerText = "Gestor de productos";
     const container = document.getElementById("mainContainer");
 
+    // Clear and insert the header + Add Product button
     container.innerHTML = `
         <div class="d-flex justify-content-between align-items-center mb-3">
             <button class="btn btn-success" onclick="openAddProductModal()">
@@ -19,6 +20,66 @@ function loadProducts(){
             </button>
         </div>
     `;
+
+    fetch("../PHP/producthandler.php?action=VIEW")
+        .then(response => response.json())
+        .then(data => {
+            if (!data || data.length === 0) {
+                container.innerHTML += "<h1>No existen productos registrados en la base de datos.</h1>";
+                return;
+            }
+
+            let tableHTML = `
+                <table id="productsTable" class="table table-bordered table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Marca</th>
+                            <th>Proveedor</th>
+                            <th>Modelo</th>
+                            <th>Precio Distribuidor</th>
+                            <th>Precio de Venta</th>
+                            <th>Número de Serie</th>
+                            <th>Editar</th>
+                            <th>Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach(product => {
+                tableHTML += `
+                    <tr>
+                        <td>${safeText(product.NOMBRE_MARCA)}</td>
+                        <td>${safeText(product.NOMBRE_PROVEEDOR)}</td>
+                        <td>${safeText(product.MODELO)}</td>
+                        <td>$${parseFloat(product.PRECIO_DISTRIBUIDOR).toFixed(2)}</td>
+                        <td>$${parseFloat(product.PRECIO_DE_VENTA).toFixed(2)}</td>
+                        <td>${safeText(product.NUMERO_DE_SERIE)}</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" onclick="editProduct(${product.ID_PRODUCTO})">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.ID_PRODUCTO})">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `</tbody></table>`;
+            container.innerHTML += tableHTML;
+
+            // Refresh DataTable instance
+            $('#productsTable').DataTable().destroy();
+            initializeDataTable("#productsTable");
+        })
+        .catch(error => {
+            console.error("Error fetching products:", error);
+            container.innerHTML += "<p>Error al obtener datos de productos.</p>";
+        });
 }
 
 function openAddProductModal() {
