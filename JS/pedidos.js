@@ -167,22 +167,36 @@ function toggleNewProductMode() {
   const checkbox = document.getElementById('addNewProductCheckbox');
   const select = document.getElementById('productoSelect');
   const productWrapper = document.getElementById('embeddedProductForm');
+  const productForm = document.getElementById('productForm');
+  const productModal = document.getElementById('productModal');
 
   if (checkbox.checked) {
     select.value = '';
     select.disabled = true;
     productWrapper.classList.remove('d-none');
 
-    // Optionally reset the embedded product form
-    if (document.getElementById('productForm')) {
-      document.getElementById('productForm').reset();
-    }
+    // Hide the original modal so it doesn't conflict
+    if (productModal) productModal.classList.add('d-none');
+
+    // Move the form visually
+    productWrapper.appendChild(productForm);
+
+    // Reset form
+    productForm.reset();
+    retrieveBrands();
+    retrieveProviders();
   } else {
     select.disabled = false;
     productWrapper.classList.add('d-none');
 
-    if (document.getElementById('productForm')) {
-      document.getElementById('productForm').reset();
+    // Return form to original modal location
+    const modalBody = document.querySelector('#productModal .modal-body');
+    if (modalBody && !modalBody.contains(productForm)) {
+      modalBody.appendChild(productForm);
     }
+
+    // Clear content visually
+    productForm.reset();
+    if (productModal) productModal.classList.remove('d-none');
   }
 }
