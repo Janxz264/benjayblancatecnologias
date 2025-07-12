@@ -60,7 +60,148 @@ if ($action === "VIEW") {
         echo json_encode(["error" => $e->getMessage()]);
     }
 
+} else if ($action === "ADD") {
+    try {
+        $data = json_decode(file_get_contents('php://input'), true);
+        $userCreate = $_SESSION['user_id'] ?? null;
+
+        if (!$userCreate) {
+            echo json_encode(["error" => "Usuario no autenticado"]);
+            exit;
+        }
+
+        // Validate pedido dates
+        if (empty($data['fechaPedido'])) {
+            throw new Exception("La fecha de pedido es obligatoria.");
+        }
+
+        $fechaPedido = $data['fechaPedido'];
+        $fechaEntrega = $data['fechaEntrega'] ?? null;
+
+        // Determine product source
+        $isNewProduct = !isset($data['idProducto']);
+        $productId = null;
+
+        if ($isNewProduct) {
+            // --- Insert nueva Marca ---
+            if (!empty($data['nuevaMarca'])) {
+                $stmt = $pdo->prepare("INSERT INTO marca (NOMBRE) VALUES (:nombre)");
+                $stmt->execute(['nombre' => $data['nuevaMarca']]);
+                $idMarca = $pdo->lastInsertId();
+            } else if (isset($data['idMarca']) && is_numeric($data['idMarca'])) {
+                $idMarca = intval($data['idMarca']);
+            } else {
+                throw new Exception("Marca no válida.");
+            }
+
+            // --- Insert nuevo Proveedor ---
+            if (!empty($data['nuevoProveedor'])) {
+                $stmt = $pdo->prepare("INSERT INTO proveedor (NOMBRE) VALUES (:nombre)");
+                $stmt->execute(['nombre' => $data['nuevoProveedor']]);
+                $idProveedor = $pdo->lastInsertId();
+            } else if (isset($data['idProveedor']) && is_numeric($data['idProveedor'])) {
+                $idProveedor = intval($data['idProveedor']);
+            } else {
+                throw new Exception("Proveedor no válido.");
+            }
+
+            // --- Validate producto fields ---
+            if (empty($data['modelo']) || !is_string($data['modelo'])) {
+                throw new Exception("Modelo es obligatorio y debe ser texto.");
+            }
+            if (!isset($data['precioDistribuidor']) || !is_numeric($data['precioDistribuidor'])) {
+                throw new Exception("Precio de distribuidor inválido.");
+            }
+            if (!isset($data['precioVenta']) || !is_numeric($data['precioVenta'])) {
+                throw new Exception("Precio de venta inválido.");
+            }
+            if (empty($data['numeroSerie']) || !is_string($data['numeroSerie'])) {
+                throw new Exception("Número de serie es obligatorio.");
+            }
+
+            // --- Insert producto ---
+            $stmt = $pdo->prepare("
+                INSERT INTO producto (
+                    ID_MARCA, ID_PROVEEDOR, MODELO, 
+                    PRECIO_DISTRIBUIDOR, PRECIO_DE_VENTA, 
+                    NUMERO_DE_SERIE, USER_CREATE
+                ) VALUES (
+                    :id_marca, :id_proveedor, :modelo,
+                    :precio_distribuidor, :precio_venta,
+                    :numero_serie, :user_create
+                )
+            ");
+            $stmt->execute([
+                'id_marca' => $idMarca,
+                'id_proveedor' => $idProveedor,
+                'modelo' => $data['modelo'],
+                'precio_distribuidor' => $data['precioDistribuidor'],
+                'precio_venta' => $data['precioVenta'],
+                'numero_serie' => $data['numeroSerie'],
+                'user_create' => $userCreate
+            ]);
+            $productId = $pdo->lastInsertId();
+
+            // --- Insert garantía if present ---
+            $hasWarranty = isset($data['garantia']) && $data['garantia'] === true;
+            $fechaInicio = $hasWarranty ? ($data['fechaInicioGarantia'] ?? null) : null;
+            $fechaFin = $hasWarranty ? ($data['fechaFinGarantia'] ?? null) : null;
+
+            if ($hasWarranty) {
+                if (!$fechaInicio || !$fechaFin) {
+                    throw new Exception("Fechas de garantía requeridas.");
+                }
+                if (strtotime($fechaFin) < strtotime($fechaInicio)) {
+                    throw new Exception("La fecha de fin no puede ser anterior a la fecha de inicio.");
+                }
+
+                $stmt = $pdo->prepare("
+                    INSERT INTO garantia (
+                        ID_PRODUCTO, USER_CREATE, FECHA_INICIO, FECHA_FIN
+                    ) VALUES (
+                        :id_producto, :user_create, :fecha_inicio, :fecha_fin
+                    )
+                ");
+                $stmt->execute([
+                    'id_producto' => $productId,
+                    'user_create' => $userCreate,
+                    'fecha_inicio' => $fechaInicio,
+                    'fecha_fin' => $fechaFin
+                ]);
+            }
+
+        } else {
+            // --- Use existing producto ---
+            $productId = intval($data['idProducto'] ?? 0);
+            if (!$productId) {
+                throw new Exception("ID de producto inválido.");
+            }
+        }
+
+        // --- Insert pedido ---
+        $stmt = $pdo->prepare("
+            INSERT INTO pedido (
+                ID_PRODUCTO, USER_CREATE, 
+                FECHA_DE_PEDIDO, FECHA_DE_ENTREGA
+            ) VALUES (
+                :id_producto, :user_create, 
+                :fecha_pedido, :fecha_entrega
+            )
+        ");
+        $stmt->execute([
+            'id_producto' => $productId,
+            'user_create' => $userCreate,
+            'fecha_pedido' => $fechaPedido,
+            'fecha_entrega' => $fechaEntrega
+        ]);
+
+        echo json_encode(["success" => true]);
+
+    } catch (Exception $e) {
+        echo json_encode(["error" => $e->getMessage()]);
+    }
 }
+
 
 else {
     echo json_encode(["error" => "Acción no válida"]);

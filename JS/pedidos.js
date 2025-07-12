@@ -200,3 +200,173 @@ function toggleNewProductMode() {
     if (productModal) productModal.classList.remove('d-none');
   }
 }
+
+document.getElementById('savePedidoBtn').addEventListener('click', function (e) {
+  e.preventDefault();
+
+  const isEdit = false; // add edit logic later if needed
+  const errors = [];
+
+  const fechaPedido = document.getElementById('fechaPedido').value;
+  const fechaEntrega = document.getElementById('fechaEntrega').value;
+  const addNewProductCheckbox = document.getElementById('addNewProductCheckbox');
+  const productoSelect = document.getElementById('productoSelect');
+
+  // Validación de fechas
+  if (!fechaPedido) {
+    errors.push("La fecha de pedido es obligatoria.");
+  }
+  if (fechaEntrega && new Date(fechaEntrega) < new Date(fechaPedido)) {
+    errors.push("La fecha de entrega no puede ser anterior a la fecha de pedido.");
+  }
+
+  let pedidoPayload = {
+    fechaPedido,
+    ...(fechaEntrega && { fechaEntrega })
+  };
+
+  if (addNewProductCheckbox.checked) {
+    // Extraer datos del producto nuevo usando misma lógica de addProduct
+    const productId = document.getElementById("productId").value;
+
+    const marcaCheckbox = document.getElementById('addNewMarcaCheckbox');
+    const proveedorCheckbox = document.getElementById('addNewProveedorCheckbox');
+    const garantiaCheckbox = document.getElementById('hasWarrantyCheckbox');
+
+    const marcaSelect = document.getElementById('marcaSelect');
+    const newMarcaInput = document.getElementById('newMarcaInput');
+    const proveedorSelect = document.getElementById('proveedorSelect');
+    const newProveedorInput = document.getElementById('newProveedorInput');
+
+    const modeloInput = document.getElementById('modeloInput');
+    const precioDistribuidorInput = document.getElementById('precioDistribuidor');
+    const precioVentaInput = document.getElementById('precioVenta');
+    const numeroSerieInput = document.getElementById('numeroSerie');
+
+    let marcaData = null;
+    if (marcaCheckbox.checked) {
+      if (newMarcaInput.value.trim() === "") {
+        errors.push("Ingrese el nombre de la nueva marca.");
+      } else {
+        marcaData = { nuevaMarca: newMarcaInput.value.trim() };
+      }
+    } else {
+      if (marcaSelect.value === "") {
+        errors.push("Seleccione una marca válida.");
+      } else {
+        marcaData = { idMarca: parseInt(marcaSelect.value) };
+      }
+    }
+
+    let proveedorData = null;
+    if (proveedorCheckbox.checked) {
+      if (newProveedorInput.value.trim() === "") {
+        errors.push("Ingrese el nombre del nuevo proveedor.");
+      } else {
+        proveedorData = { nuevoProveedor: newProveedorInput.value.trim() };
+      }
+    } else {
+      if (proveedorSelect.value === "") {
+        errors.push("Seleccione un proveedor válido.");
+      } else {
+        proveedorData = { idProveedor: parseInt(proveedorSelect.value) };
+      }
+    }
+
+    const modelo = modeloInput.value.trim();
+    const precioDistribuidor = parseFloat(precioDistribuidorInput.value);
+    const precioVenta = parseFloat(precioVentaInput.value);
+    const numeroSerie = numeroSerieInput.value.trim();
+
+    if (modelo === "") errors.push("El modelo es obligatorio.");
+    if (isNaN(precioDistribuidor) || precioDistribuidor < 0) {
+      errors.push("Precio de distribuidor inválido.");
+    }
+    if (isNaN(precioVenta) || precioVenta < 0) {
+      errors.push("Precio de venta inválido.");
+    }
+    if (numeroSerie === "") errors.push("El número de serie es obligatorio.");
+
+    if (garantiaCheckbox.checked) {
+      const fechaInicio = document.getElementById('fechaInicio').value;
+      const fechaFin = document.getElementById('fechaFin').value;
+
+      if (!fechaInicio) errors.push("La fecha de inicio de garantía es obligatoria.");
+      if (!fechaFin) errors.push("La fecha de fin de garantía es obligatoria.");
+      if (fechaInicio && fechaFin && new Date(fechaFin) < new Date(fechaInicio)) {
+        errors.push("La fecha de fin no puede ser anterior a la fecha de inicio.");
+      }
+
+      pedidoPayload.garantia = true;
+      pedidoPayload.fechaInicioGarantia = fechaInicio;
+      pedidoPayload.fechaFinGarantia = fechaFin;
+    }
+
+    Object.assign(pedidoPayload, {
+      ...marcaData,
+      ...proveedorData,
+      modelo,
+      precioDistribuidor,
+      precioVenta,
+      numeroSerie
+    });
+
+  } else {
+    if (productoSelect.value === "") {
+      errors.push("Debe seleccionar un producto existente.");
+    } else {
+      pedidoPayload.idProducto = parseInt(productoSelect.value);
+    }
+  }
+
+  if (errors.length > 0) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Errores en el formulario',
+      html: `<ul style='text-align:left;'>${errors.map(e => `<li>${e}</li>`).join('')}</ul>`,
+      confirmButtonText: 'Corregir'
+    });
+    return;
+  }
+
+  fetch(`../PHP/pedidohandler.php?action=${isEdit ? 'EDIT' : 'ADD'}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(pedidoPayload)
+  })
+    .then(res => res.json())
+    .then(response => {
+      if (response.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Pedido registrado',
+          text: 'El pedido fue procesado correctamente.',
+          confirmButtonText: 'Cerrar'
+        }).then(() => {
+          document.getElementById("pedidoForm").reset();
+          document.getElementById("productForm")?.reset(); // optional cleanup
+          const modalEl = document.getElementById('pedidoModal');
+          const modalInstance = bootstrap.Modal.getInstance(modalEl);
+          if (modalInstance) modalInstance.hide();
+          loadPedidos(); // Refresh your pedidos listing
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al guardar',
+          text: response.error || 'Error inesperado en el servidor.',
+          confirmButtonText: 'Cerrar'
+        });
+      }
+    })
+    .catch(err => {
+      console.error("Error en la solicitud:", err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de red',
+        text: 'No se pudo enviar el formulario. Intenta nuevamente.',
+        confirmButtonText: 'Cerrar'
+      });
+    });
+});
+
