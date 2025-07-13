@@ -122,6 +122,14 @@ function openAddProductModal(isEditMode = false, origin = null) {
     const modal = new bootstrap.Modal(document.getElementById('productModal'));
     modal.show();
 
+    const productModalEl = document.getElementById('productModal');
+    productModalEl.addEventListener('hidden.bs.modal', () => {
+    if (origin === 'pedido') {
+        const pedidoModal = new bootstrap.Modal(document.getElementById('pedidoModal'));
+        pedidoModal.show();
+    }
+    }, { once: true }); // ensures it fires only once per opening
+
     document.getElementById('productForm').reset();
     currentEditMode = isEditMode;
 
