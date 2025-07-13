@@ -11,7 +11,16 @@ function renderProductLists() {
   availableList.innerHTML = '';
   selectedList.innerHTML = '';
 
-  availableProducts.forEach(product => {
+  // Sort both arrays alphabetically by product.MODELO (case-insensitive)
+  const sortedAvailable = [...availableProducts].sort((a, b) =>
+    a.MODELO.localeCompare(b.MODELO, 'es', { sensitivity: 'base' })
+  );
+  const sortedSelected = [...selectedProducts].sort((a, b) =>
+    a.MODELO.localeCompare(b.MODELO, 'es', { sensitivity: 'base' })
+  );
+
+  // Render available products
+  sortedAvailable.forEach(product => {
     const li = document.createElement("li");
     li.className = "list-group-item d-flex justify-content-between align-items-center";
     li.innerHTML = `
@@ -20,7 +29,8 @@ function renderProductLists() {
     availableList.appendChild(li);
   });
 
-  selectedProducts.forEach(product => {
+  // Render selected products
+  sortedSelected.forEach(product => {
     const li = document.createElement("li");
     li.className = "list-group-item d-flex justify-content-between align-items-center bg-light";
     li.innerHTML = `
