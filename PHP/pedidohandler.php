@@ -19,27 +19,56 @@ if ($action === "VIEW") {
     try {
         $stmt = $pdo->prepare("
             SELECT 
-            pe.ID_PEDIDO,
-            DATE_FORMAT(pe.FECHA_DE_PEDIDO, '%d/%m/%Y') AS FECHA_DE_PEDIDO,
-            DATE_FORMAT(pe.FECHA_DE_ENTREGA, '%d/%m/%Y') AS FECHA_DE_ENTREGA,
-            pr.ID_PRODUCTO,
-            pr.MODELO,
-            pr.PRECIO_DISTRIBUIDOR,
-            pr.PRECIO_DE_VENTA,
-            pr.NUMERO_DE_SERIE,
-            ma.ID_MARCA,
-            ma.NOMBRE AS 'NOMBRE_MARCA',
-            pv.NOMBRE AS 'NOMBRE_PROVEEDOR'
-            FROM
-            pedido pe
-            LEFT JOIN producto pr ON pr.ID_PRODUCTO=pe.ID_PRODUCTO
-            LEFT JOIN marca ma ON ma.ID_MARCA=pr.ID_MARCA
-            LEFT JOIN proveedor pv ON pv.ID_PROVEEDOR=pr.ID_PROVEEDOR
+                pe.ID_PEDIDO,
+                DATE_FORMAT(pe.FECHA_DE_PEDIDO, '%d/%m/%Y') AS FECHA_DE_PEDIDO,
+                DATE_FORMAT(pe.FECHA_DE_ENTREGA, '%d/%m/%Y') AS FECHA_DE_ENTREGA,
+                pr.ID_PRODUCTO,
+                pr.MODELO,
+                pr.PRECIO_DISTRIBUIDOR,
+                pr.PRECIO_DE_VENTA,
+                pr.NUMERO_DE_SERIE,
+                ma.ID_MARCA,
+                ma.NOMBRE AS NOMBRE_MARCA,
+                pv.NOMBRE AS NOMBRE_PROVEEDOR
+            FROM pedido pe
+            LEFT JOIN pedido_producto pp ON pe.ID_PEDIDO = pp.ID_PEDIDO
+            LEFT JOIN producto pr ON pr.ID_PRODUCTO = pp.ID_PRODUCTO
+            LEFT JOIN marca ma ON ma.ID_MARCA = pr.ID_MARCA
+            LEFT JOIN proveedor pv ON pv.ID_PROVEEDOR = pr.ID_PROVEEDOR
+            ORDER BY pe.ID_PEDIDO
         ");
 
         $stmt->execute();
-        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode($products);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $result = [];
+        foreach ($rows as $row) {
+            $pedidoId = $row['ID_PEDIDO'];
+
+            if (!isset($result[$pedidoId])) {
+                $result[$pedidoId] = [
+                    'ID_PEDIDO' => $pedidoId,
+                    'FECHA_DE_PEDIDO' => $row['FECHA_DE_PEDIDO'],
+                    'FECHA_DE_ENTREGA' => $row['FECHA_DE_ENTREGA'],
+                    'PRODUCTOS' => []
+                ];
+            }
+
+            $producto = [
+                'ID_PRODUCTO' => $row['ID_PRODUCTO'],
+                'MODELO' => $row['MODELO'],
+                'PRECIO_DISTRIBUIDOR' => $row['PRECIO_DISTRIBUIDOR'],
+                'PRECIO_DE_VENTA' => $row['PRECIO_DE_VENTA'],
+                'NUMERO_DE_SERIE' => $row['NUMERO_DE_SERIE'],
+                'ID_MARCA' => $row['ID_MARCA'],
+                'NOMBRE_MARCA' => $row['NOMBRE_MARCA'],
+                'NOMBRE_PROVEEDOR' => $row['NOMBRE_PROVEEDOR']
+            ];
+
+            $result[$pedidoId]['PRODUCTOS'][] = $producto;
+        }
+
+        echo json_encode(array_values($result));
     } catch (PDOException $e) {
         echo json_encode(["error" => "Error al recuperar productos", "details" => $e->getMessage()]);
     }

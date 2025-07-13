@@ -15,7 +15,6 @@ function loadPedidos() {
     document.getElementById("mainTitle").innerText = "Gestor de pedidos";
     const container = document.getElementById("mainContainer");
 
-    // Clear and insert the header + Add Product button
     container.innerHTML = `
         <div class="d-flex justify-content-between align-items-center mb-3">
             <button class="btn btn-success" onclick="openAddPedidoModal()">
@@ -36,14 +35,11 @@ function loadPedidos() {
                 <table id="pedidosTable" class="table table-bordered table-striped">
                     <thead class="thead-dark">
                         <tr>
+                            <th>No. de pedido</th>
                             <th>Fecha de pedido</th>
                             <th>Fecha de entrega</th>
-                            <th>Marca</th>
-                            <th>Proveedor</th>
-                            <th>Modelo</th>
-                            <th>Precio Distribuidor</th>
-                            <th>Precio de Venta</th>
-                            <th>Número de Serie</th>
+                            <th>No. de productos</th>
+                            <th>Ver productos</th>
                             <th>Editar</th>
                             <th>Eliminar</th>
                         </tr>
@@ -52,16 +48,20 @@ function loadPedidos() {
             `;
 
             data.forEach(pedido => {
+                const productos = Array.isArray(pedido.PRODUCTOS) ? pedido.PRODUCTOS : [];
+                const numProductos = productos.length;
+
                 tableHTML += `
                     <tr>
+                        <td>${pedido.ID_PEDIDO}</td>
                         <td>${safeText(pedido.FECHA_DE_PEDIDO)}</td>
                         <td>${safeText(pedido.FECHA_DE_ENTREGA)}</td>
-                        <td>${safeText(pedido.NOMBRE_MARCA)}</td>
-                        <td>${safeText(pedido.NOMBRE_PROVEEDOR)}</td>
-                        <td>${safeText(pedido.MODELO)}</td>
-                        <td>$${parseFloat(pedido.PRECIO_DISTRIBUIDOR).toFixed(2)}</td>
-                        <td>$${parseFloat(pedido.PRECIO_DE_VENTA).toFixed(2)}</td>
-                        <td>${safeText(pedido.NUMERO_DE_SERIE)}</td>
+                        <td>${numProductos}</td>
+                        <td>
+                            <button class="btn btn-info btn-sm" onclick="verProductos(${pedido.ID_PEDIDO})">
+                                <i class="fas fa-box-open"></i> Ver productos
+                            </button>
+                        </td>
                         <td>
                             <button class="btn btn-primary btn-sm" onclick="editPedido(${pedido.ID_PEDIDO})">
                                 <i class="fas fa-edit"></i> Editar
@@ -78,9 +78,8 @@ function loadPedidos() {
 
             tableHTML += `</tbody></table>`;
             container.innerHTML += tableHTML;
-            pedidosCache = data; // Store full product list globally
+            pedidosCache = data; // Cache for later use (e.g. verProductos modal)
 
-            // Refresh DataTable instance
             $('#pedidosTable').DataTable().destroy();
             initializeDataTable("#pedidosTable");
         })
