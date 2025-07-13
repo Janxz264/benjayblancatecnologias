@@ -89,6 +89,23 @@ if ($action === "VIEW") {
         echo json_encode(["error" => $e->getMessage()]);
     }
 
+} else if ($action === "REMOVEPRODUCTO") {
+    try {
+        $data = json_decode(file_get_contents('php://input'), true);
+        $id_producto = $data['id_producto'] ?? null;
+        $id_pedido = $data['id_pedido'] ?? null;
+
+        if (!$id_producto || !$id_pedido || !is_numeric($id_producto) || !is_numeric($id_pedido)) {
+            throw new Exception("Datos inválidos.");
+        }
+
+        $stmt = $pdo->prepare("DELETE FROM pedido_producto WHERE ID_PRODUCTO = ? AND ID_PEDIDO = ?");
+        $stmt->execute([$id_producto, $id_pedido]);
+
+        echo json_encode(["success" => true]);
+    } catch (Exception $e) {
+        echo json_encode(["error" => $e->getMessage()]);
+    }
 } else if ($action === "ADD") {
     try {
         $data = json_decode(file_get_contents('php://input'), true);

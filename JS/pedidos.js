@@ -369,3 +369,134 @@ document.getElementById('savePedidoBtn').addEventListener('click', function (e) 
     });
 });
 
+function verProductos(pedidoID) {
+    const pedido = pedidosCache.find(p => p.ID_PEDIDO === pedidoID);
+
+    if (!pedido || !Array.isArray(pedido.PRODUCTOS) || pedido.PRODUCTOS.length === 0) {
+        alert("Este pedido no tiene productos asociados.");
+        return;
+    }
+
+    // Build modal HTML
+    const modalHTML = `
+        <div class="modal fade" id="productosModal" tabindex="-1" aria-labelledby="productosModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header custom-header-bg text-white">
+                        <h5 class="modal-title" id="productosModalLabel">Productos del Pedido #${pedidoID}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table id="productosTable" class="table table-bordered table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Marca</th>
+                                    <th>Proveedor</th>
+                                    <th>Modelo</th>
+                                    <th>Precio Distribuidor</th>
+                                    <th>Precio de Venta</th>
+                                    <th>Número de Serie</th>
+                                    <th>Quitar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${pedido.PRODUCTOS.map(prod => `
+                                    <tr class="table-light" data-id="${prod.ID_PRODUCTO}" data-pedido="${pedidoID}">
+                                        <td>${safeText(prod.NOMBRE_MARCA)}</td>
+                                        <td>${safeText(prod.NOMBRE_PROVEEDOR)}</td>
+                                        <td>${safeText(prod.MODELO)}</td>
+                                        <td>$${parseFloat(prod.PRECIO_DISTRIBUIDOR).toFixed(2)}</td>
+                                        <td>$${parseFloat(prod.PRECIO_DE_VENTA).toFixed(2)}</td>
+                                        <td>${safeText(prod.NUMERO_DE_SERIE)}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-danger" onclick="quitarProductodePedido(${prod.ID_PRODUCTO}, ${pedidoID})">
+                                                <i class="fas fa-times"></i> Quitar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button class="btn btn-success" onclick="agregarProductoAPedido(${pedidoID})">
+                            <i class="fas fa-plus"></i> Agregar Producto
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Inject and show the modal
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    const modalElement = new bootstrap.Modal(document.getElementById('productosModal'));
+    modalElement.show();
+
+setTimeout(() => {
+    initializeDataTable("#productosTable");
+}, 600);
+
+
+    // Cleanup on modal close
+    document.getElementById('productosModal').addEventListener('hidden.bs.modal', () => {
+        document.getElementById('productosModal').remove();
+    });
+}
+
+function quitarProductodePedido(ID_PRODUCTO, ID_PEDIDO) {
+    Swal.fire({
+        title: '¿Desea quitar este producto del pedido?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, quitarlo',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch("../PHP/pedidohandler.php?action=REMOVEPRODUCTO", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id_producto: ID_PRODUCTO, id_pedido: ID_PEDIDO })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove product row from modal
+                    const row = document.querySelector(`#productosTable tr[data-id='${ID_PRODUCTO}']`);
+                    if (row) row.remove();
+
+                    // Update pedidosCache
+                    const pedido = pedidosCache.find(p => p.ID_PEDIDO === ID_PEDIDO);
+                    if (pedido && Array.isArray(pedido.PRODUCTOS)) {
+                        pedido.PRODUCTOS = pedido.PRODUCTOS.filter(p => p.ID_PRODUCTO !== ID_PRODUCTO);
+                    }
+
+                    // Update the main table count cell
+                    const mainTableRows = document.querySelectorAll(`#pedidosTable tbody tr`);
+                    mainTableRows.forEach(tr => {
+                        const cells = tr.querySelectorAll("td");
+                        if (parseInt(cells[0]?.innerText) === ID_PEDIDO) {
+                            const countCell = cells[3];
+                            const currentCount = parseInt(countCell.innerText) || 0;
+                            countCell.innerText = Math.max(currentCount - 1, 0); // Prevent negatives
+                        }
+                    });
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Producto quitado del pedido exitosamente',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    throw new Error(data.error || "Error desconocido.");
+                }
+            })
+            .catch(err => {
+                Swal.fire('Error', err.message, 'error');
+            });
+        }
+    });
+}
