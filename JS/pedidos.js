@@ -3,6 +3,7 @@ const pedidosLink = document.getElementById("pedidosLink");
 let pedidosCache = [];
 let availableProducts = []; // Fetched from backend
 let selectedProducts = [];
+let savedFechaPedido = null;
 
 function renderProductLists() {
   const availableList = document.getElementById("availableProductsList");
@@ -222,6 +223,12 @@ function openAddPedidoModal() {
         availableProducts = products;
         renderProductLists(); // Refresh UI with both lists
     });
+}
+
+function fixFechaPedido() {
+  const fechaPedidoInput = document.getElementById('fechaPedido');
+  savedFechaPedido = fechaPedidoInput.value || null;
+  fechaPedidoInput.value = ''; // visually clears the field while the modal is away
 }
 
 document.getElementById('savePedidoBtn').addEventListener('click', function (e) {

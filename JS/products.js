@@ -125,10 +125,16 @@ function openAddProductModal(isEditMode = false, origin = null) {
     const productModalEl = document.getElementById('productModal');
     productModalEl.addEventListener('hidden.bs.modal', () => {
     if (origin === 'pedido') {
+        const fechaPedidoInput = document.getElementById('fechaPedido');
+        if (savedFechaPedido !== null) {
+        fechaPedidoInput.value = savedFechaPedido;
+        }
+        fechaPedidoInput.setAttribute('required', 'required'); // restore constraint
+
         const pedidoModal = new bootstrap.Modal(document.getElementById('pedidoModal'));
         pedidoModal.show();
     }
-    }, { once: true }); // ensures it fires only once per opening
+    }, { once: true });
 
     document.getElementById('productForm').reset();
     currentEditMode = isEditMode;
