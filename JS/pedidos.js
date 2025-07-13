@@ -1,6 +1,52 @@
 const pedidosLink = document.getElementById("pedidosLink");
 
 let pedidosCache = [];
+let availableProducts = []; // Fetched from backend
+let selectedProducts = [];
+
+function renderProductLists() {
+  const availableList = document.getElementById("availableProductsList");
+  const selectedList = document.getElementById("selectedProductsList");
+
+  availableList.innerHTML = '';
+  selectedList.innerHTML = '';
+
+  availableProducts.forEach(product => {
+    const li = document.createElement("li");
+    li.className = "list-group-item d-flex justify-content-between align-items-center";
+    li.innerHTML = `
+      ${product.MODELO} <span class="badge bg-primary cursor-pointer" onclick="addProduct(${product.ID_PRODUCTO})"><i class="fas fa-plus"></i></span>
+    `;
+    availableList.appendChild(li);
+  });
+
+  selectedProducts.forEach(product => {
+    const li = document.createElement("li");
+    li.className = "list-group-item d-flex justify-content-between align-items-center bg-light";
+    li.innerHTML = `
+      ${product.MODELO} <span class="badge bg-danger cursor-pointer" onclick="removeProduct(${product.ID_PRODUCTO})"><i class="fas fa-times"></i></span>
+    `;
+    selectedList.appendChild(li);
+  });
+}
+
+function addProduct(productID) {
+  const index = availableProducts.findIndex(p => p.ID_PRODUCTO === productID);
+  if (index !== -1) {
+    selectedProducts.push(availableProducts[index]);
+    availableProducts.splice(index, 1);
+    renderProductLists();
+  }
+}
+
+function removeProduct(productID) {
+  const index = selectedProducts.findIndex(p => p.ID_PRODUCTO === productID);
+  if (index !== -1) {
+    availableProducts.push(selectedProducts[index]);
+    selectedProducts.splice(index, 1);
+    renderProductLists();
+  }
+}
 
 if (pedidosLink) {
     pedidosLink.addEventListener("click", function (event) {
@@ -136,68 +182,36 @@ function deletePedido(id_pedido) {
     });
 }
 
-function openAddPedidoModal() {
-  const modal = new bootstrap.Modal(document.getElementById('pedidoModal'));
-  modal.show();
-
-  document.getElementById('pedidoForm').reset();
-
-  document.getElementById('productoSelect').disabled = false;
-  document.getElementById('productoSelect').value = '';
-  document.getElementById('addNewProductCheckbox').checked = false;
-  document.getElementById('embeddedProductForm').classList.add('d-none');
-
-  // Fetch product list dynamically
-  fetch("../PHP/producthandler.php?action=VIEW")
-    .then(res => res.json())
-    .then(products => {
-      const select = document.getElementById('productoSelect');
-      select.innerHTML = '<option value="">-- Seleccione un producto --</option>';
-      products.forEach(p => {
-        const option = document.createElement('option');
-        option.value = p.ID_PRODUCTO;
-        option.textContent = `${p.MODELO} | ${p.NUMERO_DE_SERIE}`;
-        select.appendChild(option);
-      });
-    });
+function retrieveProductos() {
+    return fetch("../PHP/producthandler.php?action=VIEW")
+        .then(res => {
+            if (!res.ok) throw new Error("No se pudo obtener la lista de productos.");
+            return res.json();
+        })
+        .then(data => Array.isArray(data) ? data : [])
+        .catch(err => {
+            console.error("Error al recuperar productos:", err);
+            Swal.fire("Error", err.message, "error");
+            return [];
+        });
 }
 
-function toggleNewProductMode() {
-  const checkbox = document.getElementById('addNewProductCheckbox');
-  const select = document.getElementById('productoSelect');
-  const productWrapper = document.getElementById('embeddedProductForm');
-  const productForm = document.getElementById('productForm');
-  const productModal = document.getElementById('productModal');
+function openAddPedidoModal() {
+    const modal = new bootstrap.Modal(document.getElementById('pedidoModal'));
+    modal.show();
 
-  if (checkbox.checked) {
-    select.value = '';
-    select.disabled = true;
-    productWrapper.classList.remove('d-none');
+    document.getElementById('pedidoForm').reset();
+    document.getElementById('embeddedProductForm').classList.add('d-none');
 
-    // Hide the original modal so it doesn't conflict
-    if (productModal) productModal.classList.add('d-none');
+    // Clear product arrays for fresh modal state
+    availableProducts = [];
+    selectedProducts = [];
 
-    // Move the form visually
-    productWrapper.appendChild(productForm);
-
-    // Reset form
-    productForm.reset();
-    retrieveBrands();
-    retrieveProviders();
-  } else {
-    select.disabled = false;
-    productWrapper.classList.add('d-none');
-
-    // Return form to original modal location
-    const modalBody = document.querySelector('#productModal .modal-body');
-    if (modalBody && !modalBody.contains(productForm)) {
-      modalBody.appendChild(productForm);
-    }
-
-    // Clear content visually
-    productForm.reset();
-    if (productModal) productModal.classList.remove('d-none');
-  }
+    // Fetch product list dynamically
+    retrieveProductos().then(products => {
+        availableProducts = products;
+        renderProductLists(); // Refresh UI with both lists
+    });
 }
 
 document.getElementById('savePedidoBtn').addEventListener('click', function (e) {
@@ -209,7 +223,6 @@ document.getElementById('savePedidoBtn').addEventListener('click', function (e) 
   const fechaPedido = document.getElementById('fechaPedido').value;
   const fechaEntrega = document.getElementById('fechaEntrega').value;
   const addNewProductCheckbox = document.getElementById('addNewProductCheckbox');
-  const productoSelect = document.getElementById('productoSelect');
 
   // Validación de fechas
   if (!fechaPedido) {
@@ -311,10 +324,11 @@ document.getElementById('savePedidoBtn').addEventListener('click', function (e) 
     });
 
   } else {
-    if (productoSelect.value === "") {
-      errors.push("Debe seleccionar un producto existente.");
+        if (selectedProducts.length === 0) {
+      errors.push("Debe seleccionar al menos un producto.");
     } else {
-      pedidoPayload.idProducto = parseInt(productoSelect.value);
+      const selectedIds = selectedProducts.map(p => parseInt(p.ID_PRODUCTO));
+      pedidoPayload.productos = selectedIds;
     }
   }
 

@@ -2,6 +2,8 @@ const productosLink = document.getElementById("productosLink");
 
 let productsCache = [];
 
+let originString;
+
 let currentEditMode = false;
 
 if (productosLink) {
@@ -108,7 +110,15 @@ function loadProducts() {
         });
 }
 
-function openAddProductModal(isEditMode = false) {
+function openAddProductModal(isEditMode = false, origin = null) {
+    const pedidoModalEl = document.getElementById('pedidoModal');
+    const pedidoModalInstance = bootstrap.Modal.getInstance(pedidoModalEl);
+    if (origin === 'pedido' && pedidoModalInstance) {
+        pedidoModalInstance.hide(); // Close pedido modal
+    }
+
+    originString=origin;
+
     const modal = new bootstrap.Modal(document.getElementById('productModal'));
     modal.show();
 
@@ -441,19 +451,30 @@ document.getElementById('saveProductBtn').addEventListener('click', function (e)
     .then(response => {
         if (response.success) {
             Swal.fire({
-                icon: 'success',
-                title: 'Producto guardado',
-                text: 'El producto fue registrado correctamente.',
-                confirmButtonText: 'Cerrar'
+            icon: 'success',
+            title: 'Producto guardado',
+            text: 'El producto fue registrado correctamente.',
+            confirmButtonText: 'Cerrar'
             }).then(() => {
             document.getElementById("productForm").reset();
-
-            // Get existing modal instance and close it
             const modalEl = document.getElementById('productModal');
             const modalInstance = bootstrap.Modal.getInstance(modalEl);
             if (modalInstance) modalInstance.hide();
 
-            loadProducts(); // Refresh product table
+            if (originString === "pedido") {
+                console.log("Es pedido");
+                // Return to pedido modal and refresh product list only
+                const pedidoModal = new bootstrap.Modal(document.getElementById('pedidoModal'));
+                pedidoModal.show();
+
+                retrieveProductos().then(productList => {
+                availableProducts = productList;
+                renderProductLists(); // refresh dual-list UI
+                });
+            } else {
+                console.log("No es pedido");
+                loadProducts(); // fallback for standard product page
+            }
             });
         } else {
             Swal.fire({

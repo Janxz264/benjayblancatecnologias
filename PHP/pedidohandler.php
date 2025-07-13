@@ -120,16 +120,16 @@ if ($action === "VIEW") {
             exit;
         }
 
-        // Validate pedido dates
+        // Validate dates
         if (empty($data['fechaPedido'])) {
             throw new Exception("La fecha de pedido es obligatoria.");
         }
 
         $fechaPedido = $data['fechaPedido'];
         $fechaEntrega = $data['fechaEntrega'] ?? null;
+        $productos = $data['productos'] ?? []; // array of product IDs
+        $isNewProduct = empty($productos); // true if creating a product inline
 
-        // Determine product source
-        $isNewProduct = !isset($data['idProducto']);
         $productId = null;
 
         if ($isNewProduct) {
@@ -138,7 +138,7 @@ if ($action === "VIEW") {
                 $stmt = $pdo->prepare("INSERT INTO marca (NOMBRE) VALUES (:nombre)");
                 $stmt->execute(['nombre' => $data['nuevaMarca']]);
                 $idMarca = $pdo->lastInsertId();
-            } else if (isset($data['idMarca']) && is_numeric($data['idMarca'])) {
+            } elseif (!empty($data['idMarca']) && is_numeric($data['idMarca'])) {
                 $idMarca = intval($data['idMarca']);
             } else {
                 throw new Exception("Marca no válida.");
@@ -149,7 +149,7 @@ if ($action === "VIEW") {
                 $stmt = $pdo->prepare("INSERT INTO proveedor (NOMBRE) VALUES (:nombre)");
                 $stmt->execute(['nombre' => $data['nuevoProveedor']]);
                 $idProveedor = $pdo->lastInsertId();
-            } else if (isset($data['idProveedor']) && is_numeric($data['idProveedor'])) {
+            } elseif (!empty($data['idProveedor']) && is_numeric($data['idProveedor'])) {
                 $idProveedor = intval($data['idProveedor']);
             } else {
                 throw new Exception("Proveedor no válido.");
@@ -172,8 +172,8 @@ if ($action === "VIEW") {
             // --- Insert producto ---
             $stmt = $pdo->prepare("
                 INSERT INTO producto (
-                    ID_MARCA, ID_PROVEEDOR, MODELO, 
-                    PRECIO_DISTRIBUIDOR, PRECIO_DE_VENTA, 
+                    ID_MARCA, ID_PROVEEDOR, MODELO,
+                    PRECIO_DISTRIBUIDOR, PRECIO_DE_VENTA,
                     NUMERO_DE_SERIE, USER_CREATE
                 ) VALUES (
                     :id_marca, :id_proveedor, :modelo,
@@ -191,13 +191,13 @@ if ($action === "VIEW") {
                 'user_create' => $userCreate
             ]);
             $productId = $pdo->lastInsertId();
+            $productos = [$productId]; // wrap as array
 
             // --- Insert garantía if present ---
-            $hasWarranty = isset($data['garantia']) && $data['garantia'] === true;
-            $fechaInicio = $hasWarranty ? ($data['fechaInicioGarantia'] ?? null) : null;
-            $fechaFin = $hasWarranty ? ($data['fechaFinGarantia'] ?? null) : null;
+            if (!empty($data['garantia']) && $data['garantia'] === true) {
+                $fechaInicio = $data['fechaInicioGarantia'] ?? null;
+                $fechaFin = $data['fechaFinGarantia'] ?? null;
 
-            if ($hasWarranty) {
                 if (!$fechaInicio || !$fechaFin) {
                     throw new Exception("Fechas de garantía requeridas.");
                 }
@@ -219,39 +219,42 @@ if ($action === "VIEW") {
                     'fecha_fin' => $fechaFin
                 ]);
             }
-
-        } else {
-            // --- Use existing producto ---
-            $productId = intval($data['idProducto'] ?? 0);
-            if (!$productId) {
-                throw new Exception("ID de producto inválido.");
-            }
         }
 
         // --- Insert pedido ---
         $stmt = $pdo->prepare("
             INSERT INTO pedido (
-                ID_PRODUCTO, USER_CREATE, 
-                FECHA_DE_PEDIDO, FECHA_DE_ENTREGA
+                USER_CREATE, FECHA_DE_PEDIDO, FECHA_DE_ENTREGA
             ) VALUES (
-                :id_producto, :user_create, 
-                :fecha_pedido, :fecha_entrega
+                :user_create, :fecha_pedido, :fecha_entrega
             )
         ");
         $stmt->execute([
-            'id_producto' => $productId,
             'user_create' => $userCreate,
             'fecha_pedido' => $fechaPedido,
             'fecha_entrega' => $fechaEntrega
         ]);
 
-        echo json_encode(["success" => true]);
+        $idPedido = $pdo->lastInsertId();
 
+        // --- Relacionar productos con el pedido ---
+        foreach ($productos as $idProd) {
+            if (!is_numeric($idProd)) continue;
+            $stmt = $pdo->prepare("
+                INSERT INTO pedido_producto (ID_PEDIDO, ID_PRODUCTO)
+                VALUES (:id_pedido, :id_producto)
+            ");
+            $stmt->execute([
+                'id_pedido' => $idPedido,
+                'id_producto' => $idProd
+            ]);
+        }
+
+        echo json_encode(["success" => true]);
     } catch (Exception $e) {
         echo json_encode(["error" => $e->getMessage()]);
     }
 }
-
 
 else {
     echo json_encode(["error" => "Acción no válida"]);
