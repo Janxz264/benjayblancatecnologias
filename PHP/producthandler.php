@@ -178,7 +178,11 @@ if ($action === "VIEW") {
         $stmt = $pdo->prepare("DELETE FROM garantia WHERE ID_PRODUCTO = ?");
         $stmt->execute([$id]);
 
-        // Then delete product
+        // Delete from pedido_producto where this product is linked
+        $stmt = $pdo->prepare("DELETE FROM pedido_producto WHERE ID_PRODUCTO = ?");
+        $stmt->execute([$id]);
+
+        // Then delete product itself
         $stmt = $pdo->prepare("DELETE FROM producto WHERE ID_PRODUCTO = ?");
         $stmt->execute([$id]);
 
