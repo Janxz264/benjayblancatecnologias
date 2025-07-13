@@ -222,7 +222,6 @@ document.getElementById('savePedidoBtn').addEventListener('click', function (e) 
 
   const fechaPedido = document.getElementById('fechaPedido').value;
   const fechaEntrega = document.getElementById('fechaEntrega').value;
-  const addNewProductCheckbox = document.getElementById('addNewProductCheckbox');
 
   // Validación de fechas
   if (!fechaPedido) {
@@ -237,99 +236,11 @@ document.getElementById('savePedidoBtn').addEventListener('click', function (e) 
     ...(fechaEntrega && { fechaEntrega })
   };
 
-  if (addNewProductCheckbox.checked) {
-    // Extraer datos del producto nuevo usando misma lógica de addProduct
-    const productId = document.getElementById("productId").value;
-
-    const marcaCheckbox = document.getElementById('addNewMarcaCheckbox');
-    const proveedorCheckbox = document.getElementById('addNewProveedorCheckbox');
-    const garantiaCheckbox = document.getElementById('hasWarrantyCheckbox');
-
-    const marcaSelect = document.getElementById('marcaSelect');
-    const newMarcaInput = document.getElementById('newMarcaInput');
-    const proveedorSelect = document.getElementById('proveedorSelect');
-    const newProveedorInput = document.getElementById('newProveedorInput');
-
-    const modeloInput = document.getElementById('modeloInput');
-    const precioDistribuidorInput = document.getElementById('precioDistribuidor');
-    const precioVentaInput = document.getElementById('precioVenta');
-    const numeroSerieInput = document.getElementById('numeroSerie');
-
-    let marcaData = null;
-    if (marcaCheckbox.checked) {
-      if (newMarcaInput.value.trim() === "") {
-        errors.push("Ingrese el nombre de la nueva marca.");
-      } else {
-        marcaData = { nuevaMarca: newMarcaInput.value.trim() };
-      }
-    } else {
-      if (marcaSelect.value === "") {
-        errors.push("Seleccione una marca válida.");
-      } else {
-        marcaData = { idMarca: parseInt(marcaSelect.value) };
-      }
-    }
-
-    let proveedorData = null;
-    if (proveedorCheckbox.checked) {
-      if (newProveedorInput.value.trim() === "") {
-        errors.push("Ingrese el nombre del nuevo proveedor.");
-      } else {
-        proveedorData = { nuevoProveedor: newProveedorInput.value.trim() };
-      }
-    } else {
-      if (proveedorSelect.value === "") {
-        errors.push("Seleccione un proveedor válido.");
-      } else {
-        proveedorData = { idProveedor: parseInt(proveedorSelect.value) };
-      }
-    }
-
-    const modelo = modeloInput.value.trim();
-    const precioDistribuidor = parseFloat(precioDistribuidorInput.value);
-    const precioVenta = parseFloat(precioVentaInput.value);
-    const numeroSerie = numeroSerieInput.value.trim();
-
-    if (modelo === "") errors.push("El modelo es obligatorio.");
-    if (isNaN(precioDistribuidor) || precioDistribuidor < 0) {
-      errors.push("Precio de distribuidor inválido.");
-    }
-    if (isNaN(precioVenta) || precioVenta < 0) {
-      errors.push("Precio de venta inválido.");
-    }
-    if (numeroSerie === "") errors.push("El número de serie es obligatorio.");
-
-    if (garantiaCheckbox.checked) {
-      const fechaInicio = document.getElementById('fechaInicio').value;
-      const fechaFin = document.getElementById('fechaFin').value;
-
-      if (!fechaInicio) errors.push("La fecha de inicio de garantía es obligatoria.");
-      if (!fechaFin) errors.push("La fecha de fin de garantía es obligatoria.");
-      if (fechaInicio && fechaFin && new Date(fechaFin) < new Date(fechaInicio)) {
-        errors.push("La fecha de fin no puede ser anterior a la fecha de inicio.");
-      }
-
-      pedidoPayload.garantia = true;
-      pedidoPayload.fechaInicioGarantia = fechaInicio;
-      pedidoPayload.fechaFinGarantia = fechaFin;
-    }
-
-    Object.assign(pedidoPayload, {
-      ...marcaData,
-      ...proveedorData,
-      modelo,
-      precioDistribuidor,
-      precioVenta,
-      numeroSerie
-    });
-
+    if (!Array.isArray(selectedProducts) || selectedProducts.length === 0) {
+    errors.push("Debe agregar al menos un producto al pedido.");
   } else {
-        if (selectedProducts.length === 0) {
-      errors.push("Debe seleccionar al menos un producto.");
-    } else {
-      const selectedIds = selectedProducts.map(p => parseInt(p.ID_PRODUCTO));
-      pedidoPayload.productos = selectedIds;
-    }
+    const selectedIds = selectedProducts.map(p => parseInt(p.ID_PRODUCTO));
+    pedidoPayload.productos = selectedIds;
   }
 
   if (errors.length > 0) {
