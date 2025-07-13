@@ -81,6 +81,11 @@ if ($action === "VIEW") {
             throw new Exception("ID inválido.");
         }
 
+        // Delete product relations first
+        $stmtRel = $pdo->prepare("DELETE FROM pedido_producto WHERE ID_PEDIDO = ?");
+        $stmtRel->execute([$id]);
+
+        // Now delete the pedido itself
         $stmt = $pdo->prepare("DELETE FROM pedido WHERE ID_PEDIDO = ?");
         $stmt->execute([$id]);
 
@@ -88,7 +93,6 @@ if ($action === "VIEW") {
     } catch (Exception $e) {
         echo json_encode(["error" => $e->getMessage()]);
     }
-
 } else if ($action === "REMOVEPRODUCTO") {
     try {
         $data = json_decode(file_get_contents('php://input'), true);
