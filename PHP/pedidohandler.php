@@ -254,6 +254,52 @@ if ($action === "VIEW") {
     } catch (Exception $e) {
         echo json_encode(["error" => $e->getMessage()]);
     }
+} else if ($action === "EDIT") {
+    try {
+        $data = json_decode(file_get_contents('php://input'), true);
+        $idPedido = $data['idPedido'] ?? null;
+        $userModify = $_SESSION['user_id'] ?? null;
+
+        if (!$userModify) {
+            echo json_encode(["error" => "Usuario no autenticado"]);
+            exit;
+        }
+
+        if (!$idPedido || !is_numeric($idPedido)) {
+            throw new Exception("ID de pedido inválido.");
+        }
+
+        if (empty($data['fechaPedido'])) {
+            throw new Exception("La fecha de pedido es obligatoria.");
+        }
+
+        $fechaPedido = $data['fechaPedido'];
+        $fechaEntrega = $data['fechaEntrega'] ?? null;
+
+        if ($fechaEntrega && strtotime($fechaEntrega) < strtotime($fechaPedido)) {
+            throw new Exception("La fecha de entrega no puede ser anterior a la fecha de pedido.");
+        }
+
+        $stmt = $pdo->prepare("
+            UPDATE pedido
+            SET 
+                FECHA_DE_PEDIDO = :fecha_pedido,
+                FECHA_DE_ENTREGA = :fecha_entrega,
+                USER_MODIFY = :user_modify,
+                MODIFIED = NOW()
+            WHERE ID_PEDIDO = :id_pedido
+        ");
+        $stmt->execute([
+            'fecha_pedido' => $fechaPedido,
+            'fecha_entrega' => $fechaEntrega,
+            'user_modify' => $userModify,
+            'id_pedido' => $idPedido
+        ]);
+
+        echo json_encode(["success" => true]);
+    } catch (Exception $e) {
+        echo json_encode(["error" => $e->getMessage()]);
+    }
 }
 
 else {

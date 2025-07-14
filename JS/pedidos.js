@@ -442,3 +442,88 @@ function quitarProductodePedido(ID_PRODUCTO, ID_PEDIDO) {
         }
     });
 }
+
+function editPedido(ID_PEDIDO) {
+  const pedido = pedidosCache.find(p => p.ID_PEDIDO === ID_PEDIDO);
+  if (!pedido) {
+    Swal.fire("Error", "Pedido no encontrado en memoria.", "error");
+    return;
+  }
+
+  const fechaPedidoFormatted = convertToDateInputFormat(pedido.FECHA_DE_PEDIDO);
+  const fechaEntregaFormatted = convertToDateInputFormat(pedido.FECHA_DE_ENTREGA);
+
+  document.getElementById("edit_fechaPedido").value = fechaPedidoFormatted || "";
+  document.getElementById("edit_fechaEntrega").value = fechaEntregaFormatted || "";
+
+  document.getElementById("id_pedido_editar").setAttribute("value",ID_PEDIDO);
+
+  const modal = new bootstrap.Modal(document.getElementById("editPedidoModal"));
+  modal.show();
+}
+
+function convertToDateInputFormat(dateStr) {
+  // Expects input like "16/07/2025"
+  const [day, month, year] = dateStr.split('/');
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+}
+
+function editarPedido() {
+  const fechaPedido = document.getElementById("edit_fechaPedido").value;
+  const fechaEntrega = document.getElementById("edit_fechaEntrega").value;
+  const ID_PEDIDO = document.getElementById("id_pedido_editar").value;
+  let errors = [];
+
+  if (!fechaPedido) {
+    errors.push("La fecha de pedido es obligatoria.");
+  }
+
+  if (fechaEntrega && new Date(fechaEntrega) < new Date(fechaPedido)) {
+    errors.push("La fecha de entrega no puede ser anterior a la fecha de pedido.");
+  }
+
+  if (errors.length > 0) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Errores de validación',
+      html: `<ul style='text-align:left;'>${errors.map(e => `<li>${e}</li>`).join('')}</ul>`,
+      confirmButtonText: 'Corregir'
+    });
+    return;
+  }
+
+  const payload = {
+    idPedido: ID_PEDIDO,
+    fechaPedido,
+    fechaEntrega
+  };
+
+  fetch("../PHP/pedidohandler.php?action=EDIT", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(response => {
+    if (response.success) {
+      Swal.fire({
+        icon: "success",
+        title: "Pedido actualizado",
+        text: "Las fechas fueron modificadas exitosamente.",
+        confirmButtonText: "Cerrar"
+      }).then(() => {
+        const modalEl = document.getElementById("editPedidoModal");
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) modalInstance.hide();
+
+        loadPedidos(); // Refresh table
+      });
+    } else {
+      throw new Error(response.error || "Error desconocido.");
+    }
+  })
+  .catch(err => {
+    console.error("Error en editarPedido:", err);
+    Swal.fire("Error", err.message, "error");
+  });
+}

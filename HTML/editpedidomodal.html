@@ -1,0 +1,31 @@
+<!-- Edit Pedido Modal -->
+<div class="modal fade" id="editPedidoModal" tabindex="-1" aria-labelledby="editPedidoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header custom-header-bg text-white">
+        <h5 class="modal-title" id="editPedidoModalLabel">Editar Fechas de Pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editPedidoForm" class="custom-form-bg">
+          <!-- Fecha de pedido -->
+          <div class="mb-3">
+            <label for="edit_fechaPedido" class="form-label font-semibold">Fecha de pedido</label>
+            <input type="date" id="edit_fechaPedido" class="form-control border rounded">
+          </div>
+
+          <!-- Fecha de entrega -->
+          <div class="mb-3">
+            <label for="edit_fechaEntrega" class="form-label font-semibold">Fecha de entrega</label>
+            <input type="date" id="edit_fechaEntrega" class="form-control border rounded" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <input type="hidden" id="id_pedido_editar">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="editarPedido()">Cambiar fecha</button>
+      </div>
+    </div>
+  </div>
+</div>
