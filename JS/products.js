@@ -66,6 +66,7 @@ function loadProducts() {
                             <th>Precio Distribuidor</th>
                             <th>Precio de Venta</th>
                             <th>Número de Serie</th>
+                            <th>Ver detalles</th>
                             <th>Editar</th>
                             <th>Eliminar</th>
                         </tr>
@@ -82,6 +83,11 @@ function loadProducts() {
                         <td>$${parseFloat(product.PRECIO_DISTRIBUIDOR).toFixed(2)}</td>
                         <td>$${parseFloat(product.PRECIO_DE_VENTA).toFixed(2)}</td>
                         <td>${safeText(product.NUMERO_DE_SERIE)}</td>
+                        <td>
+                            <button class="btn btn-info btn-sm" onclick="viewProduct(${product.ID_PRODUCTO})">
+                                <i class="fa fa-search"></i> Ver detalles
+                            </button>
+                        </td>
                         <td>
                             <button class="btn btn-primary btn-sm" onclick="editProduct(${product.ID_PRODUCTO})">
                                 <i class="fas fa-edit"></i> Editar
@@ -554,3 +560,106 @@ document.getElementById('fechaInicio').addEventListener('change', autoCalculateE
 document.getElementById('fechaFin').addEventListener('input', function () {
     this.setAttribute('data-user-modified', 'true');
 });
+
+function viewProduct(ID_PRODUCTO) {
+  fetch(`../PHP/producthandler.php?action=VIEWPRODUCT&id=${ID_PRODUCTO}`)
+    .then(res => res.json())
+    .then(data => {
+      if (!data || !data.producto) {
+        Swal.fire("Error", "No se encontraron datos del producto.", "error");
+        return;
+      }
+
+        const prod = data.producto;
+
+        // Match exact field names from PHP
+        const marca = prod.marca_nombre || "No especificada";
+        const proveedor = prod.proveedor_nombre || "No especificado";
+        const modelo = prod.producto_modelo || "-";
+        const precioDistribuidor = prod.producto_precio_distribuidor ? `$${parseFloat(prod.producto_precio_distribuidor).toFixed(2)}` : "-";
+        const precioVenta = prod.producto_precio_venta ? `$${parseFloat(prod.producto_precio_venta).toFixed(2)}` : "-";
+        const serie = prod.producto_numero_serie || "-";
+
+        // Garantía
+        let garantiaStatus = "No tiene garantía.";
+        if (prod.garantia_fecha_inicio && prod.garantia_fecha_fin) {
+        const hoy = new Date();
+        const inicio = new Date(prod.garantia_fecha_inicio);
+        const fin = new Date(prod.garantia_fecha_fin);
+        const inicioStr = formatDateDMY(prod.garantia_fecha_inicio);
+        const finStr = formatDateDMY(prod.garantia_fecha_fin);
+
+        if (hoy > fin) {
+            garantiaStatus = `Garantía vencida (de ${inicioStr} a ${finStr})`;
+        } else {
+            garantiaStatus = `Garantía activa (de ${inicioStr} a ${finStr})`;
+        }
+        }
+
+        // Mantenimiento
+        let mantenimientoStatus = "Sin registro de mantenimiento.";
+        if (prod.mantenimiento_fecha) {
+        const fechaMantenimiento = new Date(prod.mantenimiento_fecha);
+        const hoy = new Date();
+        const fechaStr = formatDateDMY(prod.mantenimiento_fecha);
+        const hecho = prod.mantenimiento_hecho ? "✅ Completado" : "⚠️ Pendiente";
+
+        if (hoy > fechaMantenimiento && !prod.mantenimiento_hecho) {
+            mantenimientoStatus = `Mantenimiento vencido desde ${fechaStr} — ${hecho}`;
+        } else {
+            mantenimientoStatus = `Mantenimiento para el ${fechaStr} — ${hecho}`;
+        }
+        }
+
+      // Build modal HTML
+      const modalHTML = `
+        <div class="modal fade" id="viewProductModal" tabindex="-1">
+          <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header custom-header-bg text-white">
+                <h5 class="modal-title">Detalles del producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+              </div>
+              <div class="modal-body">
+                <table class="table table-sm table-bordered">
+                  <tbody>
+                    <tr><th>Marca</th><td>${marca}</td></tr>
+                    <tr><th>Proveedor</th><td>${proveedor}</td></tr>
+                    <tr><th>Modelo</th><td>${modelo}</td></tr>
+                    <tr><th>Precio distribuidor</th><td>${precioDistribuidor}</td></tr>
+                    <tr><th>Precio de venta</th><td>${precioVenta}</td></tr>
+                    <tr><th>Número de serie</th><td>${serie}</td></tr>
+                    <tr><th>Garantía</th><td>${garantiaStatus}</td></tr>
+                    <tr><th>Mantenimiento</th><td>${mantenimientoStatus}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+      const modal = new bootstrap.Modal(document.getElementById("viewProductModal"));
+      modal.show();
+
+      // Cleanup on close
+      document.getElementById("viewProductModal").addEventListener("hidden.bs.modal", () => {
+        document.getElementById("viewProductModal").remove();
+      });
+    })
+    .catch(err => {
+      console.error("Error al cargar detalles de producto:", err);
+      Swal.fire("Error", "No se pudo cargar la información del producto.", "error");
+    });
+}
+
+function formatDateDMY(dateStr) {
+  if (!dateStr) return "-";
+  const [year, month, day] = dateStr.split("-");
+  return `${day}/${month}/${year}`;
+}
