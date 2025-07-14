@@ -316,6 +316,26 @@ if ($action === "VIEW") {
             'id_pedido' => $idPedido
         ]);
 
+        // Calculate base maintenance date
+        $baseDate = $fechaEntrega ?? $fechaPedido;
+        $mantenimientoFecha = date('Y-m-d', strtotime($baseDate . ' +6 months'));
+
+        // Update mantenimiento.FECHA for linked products
+        $stmt = $pdo->prepare("
+            UPDATE mantenimiento
+            SET 
+                FECHA = :fecha,
+                USER_MODIFY = :user_modify,
+                MODIFIED = NOW()
+            WHERE ID_PRODUCTO IN (
+                SELECT ID_PRODUCTO FROM pedido_producto WHERE ID_PEDIDO = :id_pedido
+            )
+        ");
+        $stmt->execute([
+            'fecha' => $mantenimientoFecha,
+            'user_modify' => $userModify,
+            'id_pedido' => $idPedido
+        ]);
         echo json_encode(["success" => true]);
     } catch (Exception $e) {
         echo json_encode(["error" => $e->getMessage()]);
