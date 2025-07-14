@@ -657,9 +657,3 @@ function viewProduct(ID_PRODUCTO) {
       Swal.fire("Error", "No se pudo cargar la información del producto.", "error");
     });
 }
-
-function formatDateDMY(dateStr) {
-  if (!dateStr) return "-";
-  const [year, month, day] = dateStr.split("-");
-  return `${day}/${month}/${year}`;
-}

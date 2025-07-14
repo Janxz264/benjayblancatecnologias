@@ -89,5 +89,6 @@
     <script src="../JS/assurance.js"></script>
     <script src="../JS/products.js"></script>
     <script src="../JS/pedidos.js"></script>
+    <script src="../JS/mantenimiento.js"></script>
 </body>
 </html>
