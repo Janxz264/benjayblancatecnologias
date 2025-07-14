@@ -62,7 +62,12 @@ function removeProduct(productID) {
 if (pedidosLink) {
     pedidosLink.addEventListener("click", function (event) {
         event.preventDefault();
+        
         loadPedidos();
+        // Fetch product list dynamically
+        retrieveProductos().then(products => {
+            availableProducts = products;
+        });
     });
 } else {
     console.error("Error: Element #pedidosLink not found.");
@@ -526,4 +531,120 @@ function editarPedido() {
     console.error("Error en editarPedido:", err);
     Swal.fire("Error", err.message, "error");
   });
+}
+
+function agregarProductoAPedido(ID_PEDIDO) {
+
+  const pedido = pedidosCache.find(p => p.ID_PEDIDO === ID_PEDIDO);
+  if (!pedido) {
+    Swal.fire("Error", "Pedido no encontrado en caché.", "error");
+    return;
+  }
+
+  // Get already-added product IDs
+  const existingIds = pedido.PRODUCTOS.map(p => p.ID_PRODUCTO);
+
+  // Filter out already-selected products
+  const filteredAvailable = availableProducts.filter(p => !existingIds.includes(p.ID_PRODUCTO));
+
+  if (filteredAvailable.length === 0) {
+    Swal.fire("Info", "No hay productos disponibles para agregar a este pedido.", "info");
+    return;
+  }
+
+  // Build a simple select modal
+  let optionsHTML = filteredAvailable.map(p => `
+    <option value="${p.ID_PRODUCTO}">
+      ${p.NOMBRE_MARCA} - ${p.MODELO} - $${parseFloat(p.PRECIO_DE_VENTA).toFixed(2)}
+    </option>
+  `).join('');
+
+  const modalHTML = `
+    <div class="modal fade" id="addProductToPedidoModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header custom-header-bg text-white">
+            <h5 class="modal-title">Agregar Producto al Pedido #${ID_PEDIDO}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <select id="productSelectForPedido" class="form-select">
+              <option value="">-- Seleccione un producto --</option>
+              ${optionsHTML}
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button class="btn btn-primary" onclick="confirmAddProduct(${ID_PEDIDO})">Agregar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", modalHTML);
+  const modal = new bootstrap.Modal(document.getElementById("addProductToPedidoModal"));
+  modal.show();
+
+  // Cleanup on close
+  document.getElementById("addProductToPedidoModal").addEventListener("hidden.bs.modal", () => {
+    document.getElementById("addProductToPedidoModal").remove();
+  });
+}
+
+function confirmAddProduct(ID_PEDIDO) {
+  const select = document.getElementById("productSelectForPedido");
+  const selectedId = parseInt(select.value);
+
+  if (!selectedId) {
+    Swal.fire("Advertencia", "Seleccione un producto válido.", "warning");
+    return;
+  }
+
+  const payload = { idPedido: ID_PEDIDO, idProducto: selectedId };
+
+  fetch("../PHP/pedidohandler.php?action=EDITADD", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+    .then(res => res.json())
+    .then(response => {
+      if (!response.success) throw new Error(response.error || "Error inesperado.");
+
+      Swal.fire("Éxito", "Producto agregado al pedido.", "success");
+
+      // Add row to productosTable
+      const producto = availableProducts.find(p => p.ID_PRODUCTO === selectedId);
+      const rowHTML = `
+        <tr class="table-light odd" data-id="${producto.ID_PRODUCTO}" data-pedido="${ID_PEDIDO}">
+          <td class="sorting_1">${producto.NOMBRE_MARCA}</td>
+          <td>${producto.NOMBRE_PROVEEDOR}</td>
+          <td>${producto.MODELO}</td>
+          <td>$${parseFloat(producto.PRECIO_DISTRIBUIDOR).toFixed(2)}</td>
+          <td>$${parseFloat(producto.PRECIO_DE_VENTA).toFixed(2)}</td>
+          <td>${producto.NUMERO_DE_SERIE}</td>
+          <td>
+            <button class="btn btn-sm btn-danger" onclick="quitarProductodePedido(${producto.ID_PRODUCTO}, ${ID_PEDIDO})">
+              <i class="fas fa-times"></i> Quitar
+            </button>
+          </td>
+        </tr>
+      `;
+
+      const tbody = document.querySelector("#productosTable tbody");
+      if (tbody) tbody.insertAdjacentHTML("beforeend", rowHTML);
+
+      // Update cache
+      const pedido = pedidosCache.find(p => p.ID_PEDIDO === ID_PEDIDO);
+      if (pedido) pedido.PRODUCTOS.push(producto);
+
+      const modalEl = document.getElementById("addProductToPedidoModal");
+      const modalInstance = bootstrap.Modal.getInstance(modalEl);
+      if (modalInstance) modalInstance.hide();
+    })
+    .catch(err => {
+      console.error("Error al agregar producto al pedido:", err);
+      Swal.fire("Error", err.message, "error");
+    });
 }

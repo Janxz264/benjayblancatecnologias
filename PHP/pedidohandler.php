@@ -300,6 +300,40 @@ if ($action === "VIEW") {
     } catch (Exception $e) {
         echo json_encode(["error" => $e->getMessage()]);
     }
+} else if ($action === "EDITADD") {
+    try {
+        $data = json_decode(file_get_contents('php://input'), true);
+        $idPedido = $data['idPedido'] ?? null;
+        $idProducto = $data['idProducto'] ?? null;
+
+        if (!is_numeric($idPedido) || !is_numeric($idProducto)) {
+            throw new Exception("IDs de pedido y producto inválidos.");
+        }
+
+        // Optional: Check for existing link to avoid duplicates
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) FROM pedido_producto
+            WHERE ID_PEDIDO = ? AND ID_PRODUCTO = ?
+        ");
+        $stmt->execute([$idPedido, $idProducto]);
+        if ($stmt->fetchColumn() > 0) {
+            throw new Exception("El producto ya está asociado a este pedido.");
+        }
+
+        // Insert new relation
+        $stmt = $pdo->prepare("
+            INSERT INTO pedido_producto (ID_PEDIDO, ID_PRODUCTO)
+            VALUES (:id_pedido, :id_producto)
+        ");
+        $stmt->execute([
+            'id_pedido' => $idPedido,
+            'id_producto' => $idProducto
+        ]);
+
+        echo json_encode(["success" => true]);
+    } catch (Exception $e) {
+        echo json_encode(["error" => $e->getMessage()]);
+    }
 }
 
 else {
