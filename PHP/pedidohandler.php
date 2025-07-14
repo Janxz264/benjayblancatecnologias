@@ -240,6 +240,11 @@ if ($action === "VIEW") {
         // --- Relacionar productos con el pedido ---
         foreach ($productos as $idProd) {
             if (!is_numeric($idProd)) continue;
+
+            $baseDate = $fechaEntrega ?? $fechaPedido;
+            $mantenimientoFecha = date('Y-m-d', strtotime($baseDate . ' +6 months'));
+
+            // Link producto to pedido
             $stmt = $pdo->prepare("
                 INSERT INTO pedido_producto (ID_PEDIDO, ID_PRODUCTO)
                 VALUES (:id_pedido, :id_producto)
@@ -247,6 +252,21 @@ if ($action === "VIEW") {
             $stmt->execute([
                 'id_pedido' => $idPedido,
                 'id_producto' => $idProd
+            ]);
+
+            // --- Insert mantenimiento record ---
+            $stmt = $pdo->prepare("
+                INSERT INTO mantenimiento (
+                    ID_PRODUCTO, USER_CREATE, FECHA, HECHO
+                ) VALUES (
+                    :id_producto, :user_create, :fecha, :hecho
+                )
+            ");
+            $stmt->execute([
+                'id_producto' => $idProd,
+                'user_create' => $userCreate,
+                'fecha' => $mantenimientoFecha,
+                'hecho' => 0 // default to not done
             ]);
         }
 
