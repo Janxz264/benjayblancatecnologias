@@ -77,7 +77,7 @@ function loadMaintenances() {
             accionBtn = `<button class="btn btn-sm btn-success" onclick="agregarFechaMantto(${item.producto_id})">
                         <i class="fas fa-plus"></i> Agregar fecha</button>`;
         } else {
-            accionBtn = `<button class="btn btn-sm btn-primary" onclick="editarFechaMantto(${item.producto_id})">
+            accionBtn = `<button class="btn btn-sm btn-primary" onclick="editarFechaMantto(${item.producto_id}, '${item.mantenimiento_fecha}')">
                         <i class="fas fa-edit"></i> Editar fecha</button>`;
         }
         }
@@ -250,6 +250,9 @@ function confirmarAgregarFechaMantto(ID_PRODUCTO) {
     .then(response => {
       if (!response.success) throw new Error(response.error || "Error al guardar fecha.");
       Swal.fire("Éxito", "Fecha agregada correctamente.", "success");
+      // Close the modal first
+        const modalInstance = bootstrap.Modal.getInstance(document.getElementById("manttoFechaModal"));
+        if (modalInstance) modalInstance.hide();
       loadMaintenances();
     })
     .catch(err => {
@@ -258,9 +261,8 @@ function confirmarAgregarFechaMantto(ID_PRODUCTO) {
     });
 }
 
-function editarFechaMantto(ID_PRODUCTO) {
-  const cachedFecha = document.querySelector(`#hechoCheckbox_${ID_PRODUCTO}`)?.getAttribute("data-fecha");
-  const fechaBase = cachedFecha || ""; // fallback to empty if not cached
+function editarFechaMantto(ID_PRODUCTO,fechaRaw) {
+  const fechaBase = fechaRaw ? fechaRaw : "";
 
   const modalHTML = `
     <div class="modal fade" id="editFechaModal" tabindex="-1">
@@ -306,6 +308,9 @@ function confirmarEditarFechaMantto(ID_PRODUCTO) {
     .then(response => {
       if (!response.success) throw new Error(response.error || "Error al actualizar fecha.");
       Swal.fire("Éxito", "Fecha actualizada correctamente.", "success");
+        // Close the modal first
+        const modalInstance = bootstrap.Modal.getInstance(document.getElementById("editFechaModal"));
+        if (modalInstance) modalInstance.hide();
       loadMaintenances();
     })
     .catch(err => {
