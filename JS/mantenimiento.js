@@ -206,16 +206,18 @@ function confirmarTerminarMantto(ID_PRODUCTO) {
 }
 
 function agregarFechaMantto(ID_PRODUCTO) {
+  const minFecha = getTodayISO();
+
   const modalHTML = `
     <div class="modal fade" id="manttoFechaModal" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header bg-success text-white">
+          <div class="modal-header custom-header-bg text-white">
             <h5 class="modal-title">Agregar fecha de mantenimiento</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body">
-            <input type="date" id="manttoFechaInput" class="form-control" />
+            <input type="date" id="manttoFechaInput" class="form-control" min="${minFecha}" />
           </div>
           <div class="modal-footer">
             <button class="btn btn-success" onclick="confirmarAgregarFechaMantto(${ID_PRODUCTO})">Guardar</button>
@@ -233,6 +235,7 @@ function agregarFechaMantto(ID_PRODUCTO) {
     document.getElementById("manttoFechaModal").remove();
   });
 }
+
 
 function confirmarAgregarFechaMantto(ID_PRODUCTO) {
   const fecha = document.getElementById("manttoFechaInput").value;
@@ -261,8 +264,9 @@ function confirmarAgregarFechaMantto(ID_PRODUCTO) {
     });
 }
 
-function editarFechaMantto(ID_PRODUCTO,fechaRaw) {
-  const fechaBase = fechaRaw ? fechaRaw : "";
+function editarFechaMantto(ID_PRODUCTO, fechaRaw) {
+  const fechaBase = fechaRaw || ""; // 'YYYY-MM-DD' works as-is for input[type="date"]
+  const minFecha = getTodayISO();   // still limits to today and later
 
   const modalHTML = `
     <div class="modal fade" id="editFechaModal" tabindex="-1">
@@ -273,7 +277,7 @@ function editarFechaMantto(ID_PRODUCTO,fechaRaw) {
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body">
-            <input type="date" id="editFechaInput" class="form-control" value="${fechaBase}" />
+            <input type="date" id="editFechaInput" class="form-control" value="${fechaBase}" min="${minFecha}" />
           </div>
           <div class="modal-footer">
             <button class="btn btn-primary" onclick="confirmarEditarFechaMantto(${ID_PRODUCTO})">Actualizar</button>
@@ -291,6 +295,8 @@ function editarFechaMantto(ID_PRODUCTO,fechaRaw) {
     document.getElementById("editFechaModal").remove();
   });
 }
+
+
 
 function confirmarEditarFechaMantto(ID_PRODUCTO) {
   const fecha = document.getElementById("editFechaInput").value;
@@ -345,4 +351,12 @@ function confirmarTerminarMantto(ID_PRODUCTO) {
         Swal.fire("Error", err.message, "error");
       });
   });
+}
+
+function getTodayISO() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 }
