@@ -246,6 +246,8 @@ function openAddAppointmentModal() {
 
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('appointmentDate').value = today;
+    document.getElementById('appointmentDate').setAttribute('min', today);
+    
     loadPatientsForAppointment();
 }
 
