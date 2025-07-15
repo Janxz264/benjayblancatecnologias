@@ -62,7 +62,9 @@ if ($action === "VIEW") {
         LEFT JOIN proveedor prov ON prod.ID_PROVEEDOR = prov.ID_PROVEEDOR
         LEFT JOIN garantia gar ON prod.ID_PRODUCTO = gar.ID_PRODUCTO
         LEFT JOIN mantenimiento man ON prod.ID_PRODUCTO = man.ID_PRODUCTO
-        WHERE man.HECHO != 1 OR man.HECHO IS NULL
+        WHERE
+        (man.HECHO != 1 OR man.HECHO IS NULL)
+        AND (man.FECHA IS NULL OR man.FECHA >= CURDATE())
         ");
 
         $stmt->execute();
@@ -71,7 +73,7 @@ if ($action === "VIEW") {
     } catch (PDOException $e) {
         echo json_encode(["error" => "Error al recuperar productos", "details" => $e->getMessage()]);
     }
-} else if ($action === "VIEWDONE"){
+} else if ($action === "VIEWPAST"){
             try {
         $stmt = $pdo->prepare("
                     SELECT 
@@ -118,7 +120,11 @@ if ($action === "VIEW") {
         LEFT JOIN proveedor prov ON prod.ID_PROVEEDOR = prov.ID_PROVEEDOR
         LEFT JOIN garantia gar ON prod.ID_PRODUCTO = gar.ID_PRODUCTO
         LEFT JOIN mantenimiento man ON prod.ID_PRODUCTO = man.ID_PRODUCTO
-        WHERE man.HECHO = 1
+        WHERE
+        (
+            man.FECHA < CURDATE()
+            OR (man.FECHA = CURDATE() AND man.HECHO = 1)
+        )
         ");
 
         $stmt->execute();

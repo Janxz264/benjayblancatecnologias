@@ -1,5 +1,16 @@
 const mantenimientoLink = document.getElementById("mantenimientoLink");
 
+const mantenimientoPastLink = document.getElementById("mantenimientoPastLink");
+
+if (mantenimientoPastLink) {
+    mantenimientoPastLink.addEventListener("click", function (event) {
+        event.preventDefault();
+        loadPastMaintenances();
+    });
+} else {
+    console.error("Error: Element #mantenimientoPastLink not found.");
+}
+
 if (mantenimientoLink) {
     mantenimientoLink.addEventListener("click", function (event) {
         event.preventDefault();
@@ -12,7 +23,6 @@ if (mantenimientoLink) {
 function loadMaintenances() {
   document.getElementById("mainTitle").innerText = "Gestor de mantenimiento de productos";
   const container = document.getElementById("mainContainer");
-
   container.innerHTML = ``;
 
   fetch("../PHP/maintenancehandler.php?action=VIEW")
@@ -41,66 +51,55 @@ function loadMaintenances() {
 
       const hoy = new Date();
 
-        data.forEach(item => {
+      data.forEach(item => {
         const fechaRaw = item.mantenimiento_fecha;
         const hecho = item.mantenimiento_hecho ?? false;
         const fecha = fechaRaw ? formatDateDMY(fechaRaw) : "No registrada";
         const fechaMantto = fechaRaw ? new Date(`${fechaRaw}T00:00:00`) : null;
-        const hoy = new Date();
+
         const isSameDay = (a, b) =>
-        a?.getFullYear() === b.getFullYear() &&
-        a?.getMonth() === b.getMonth() &&
-        a?.getDate() === b.getDate();
+          a?.getFullYear() === b.getFullYear() &&
+          a?.getMonth() === b.getMonth() &&
+          a?.getDate() === b.getDate();
 
         const isToday = isSameDay(fechaMantto, hoy);
+        const isFuture = fechaMantto && fechaMantto > hoy;
 
-        const isPast = fechaMantto && fechaMantto < hoy;
+        let estado = "🕒 Pendiente";
+        if (!fechaMantto) estado = "❌ Sin fecha registrada";
 
-        let estado = "❌ No registrada";
-        let accionBtn = "";
-        let realizadoHTML = "";
 
-        if (fechaRaw) {
-            estado = hecho
-            ? "✅ Completado"
-            : isToday
-                ? "🕒 Pendiente"
-                : isPast
-                ? "⚠️ Vencido"
-                : "🕒 Pendiente";
-
-            if (!hecho) {
-            accionBtn = `<button class="btn btn-sm btn-primary" onclick="editarFechaMantto(${item.producto_id})">
-                            <i class="fas fa-edit"></i> Editar fecha</button>`;
-
-            if (isToday) {
-                realizadoHTML = `<button class="btn btn-sm btn-success" onclick="confirmarTerminarMantto(${item.producto_id})">
-                                <i class="fas fa-check"></i> Finalizar</button>`;
-            } else if (isPast) {
-                realizadoHTML = `<i class="fas fa-times-circle text-danger"></i>`;
-            } else {
-                realizadoHTML = `<button class="btn btn-sm btn-secondary" disabled>
-                                <i class="fas fa-lock"></i></button>`;
-            }
-            }
-        } else {
+        // Only include future or today entries not marked as done
+        if ((!fechaMantto || isToday || isFuture) && !hecho) {
+          let accionBtn = "";
+        if (!hecho) {
+        if (!fechaMantto) {
             accionBtn = `<button class="btn btn-sm btn-success" onclick="agregarFechaMantto(${item.producto_id})">
                         <i class="fas fa-plus"></i> Agregar fecha</button>`;
-            realizadoHTML = `<span class="text-muted">—</span>`;
+        } else {
+            accionBtn = `<button class="btn btn-sm btn-primary" onclick="editarFechaMantto(${item.producto_id})">
+                        <i class="fas fa-edit"></i> Editar fecha</button>`;
         }
+        }
+          let realizadoHTML = isToday
+            ? `<button class="btn btn-sm btn-success" onclick="confirmarTerminarMantto(${item.producto_id})">
+                 <i class="fas fa-check"></i> Finalizar</button>`
+            : `<button class="btn btn-sm btn-secondary" disabled>
+                 <i class="fas fa-lock"></i></button>`;
 
-        tableHTML += `
+          tableHTML += `
             <tr>
-            <td>${safeText(item.marca_nombre)}</td>
-            <td>${safeText(item.proveedor_nombre)}</td>
-            <td>${safeText(item.producto_modelo)}</td>
-            <td>${fecha}</td>
-            <td>${estado}</td>
-            <td>${accionBtn}</td>
-            <td class="text-center">${realizadoHTML}</td>
+              <td>${safeText(item.marca_nombre)}</td>
+              <td>${safeText(item.proveedor_nombre)}</td>
+              <td>${safeText(item.producto_modelo)}</td>
+              <td>${fecha}</td>
+              <td>${estado}</td>
+              <td>${accionBtn}</td>
+              <td class="text-center">${realizadoHTML}</td>
             </tr>
-        `;
-        });
+          `;
+        }
+      });
 
       tableHTML += `</tbody></table>`;
       container.innerHTML += tableHTML;
@@ -111,6 +110,70 @@ function loadMaintenances() {
     .catch(error => {
       console.error("Error fetching maintenance data:", error);
       container.innerHTML += "<p>Error al obtener datos de mantenimiento.</p>";
+    });
+}
+
+function loadPastMaintenances() {
+  document.getElementById("mainTitle").innerText = "Historial de mantenimientos anteriores";
+  const container = document.getElementById("mainContainer");
+  container.innerHTML = ``;
+
+  fetch("../PHP/maintenancehandler.php?action=VIEWPAST")
+    .then(response => response.json())
+    .then(data => {
+      if (!data || data.length === 0) {
+        container.innerHTML += "<h1>No hay registros anteriores de mantenimiento.</h1>";
+        return;
+      }
+
+      let tableHTML = `
+        <table id="pastMaintenanceTable" class="table table-bordered table-striped">
+          <thead class="thead-dark">
+            <tr>
+              <th>Marca</th>
+              <th>Proveedor</th>
+              <th>Modelo</th>
+              <th>Fecha de Mantenimiento</th>
+              <th>Estado</th>
+              <th>Realizado</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      data.forEach(item => {
+        const fecha = item.mantenimiento_fecha ? formatDateDMY(item.mantenimiento_fecha) : "No registrada";
+        const hecho = item.mantenimiento_hecho ?? false;
+
+        const estado = hecho
+          ? "Realizado"
+          : "No realizado";
+
+        const realizadoHTML = hecho
+          ? `<i class="fas fa-check-circle text-success"></i>`
+          : `<i class="fas fa-times-circle text-danger"></i>`;
+
+        tableHTML += `
+          <tr>
+            <td>${safeText(item.marca_nombre)}</td>
+            <td>${safeText(item.proveedor_nombre)}</td>
+            <td>${safeText(item.producto_modelo)}</td>
+            <td>${fecha}</td>
+            <td>${estado}</td>
+            <td class="text-center">${realizadoHTML}</td>
+          </tr>
+        `;
+      });
+
+      tableHTML += `</tbody></table>`;
+      container.innerHTML += tableHTML;
+
+      $('#pastMaintenanceTable').DataTable().destroy();
+      initializeDataTable("#pastMaintenanceTable");
+    })
+    .catch(error => {
+      console.error("Error fetching past maintenance data:", error);
+      container.innerHTML += "<p>Error al obtener mantenimientos pasados.</p>";
     });
 }
 
