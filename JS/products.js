@@ -590,24 +590,31 @@ function viewProduct(ID_PRODUCTO) {
         const finStr = formatDateDMY(prod.garantia_fecha_fin);
 
         if (hoy > fin) {
-            garantiaStatus = `Garantía vencida (de ${inicioStr} a ${finStr})`;
+            garantiaStatus = `<i class="fas fa-exclamation-triangle text-danger me-1"></i> Garantía vencida (de ${inicioStr} a ${finStr})`;
         } else {
-            garantiaStatus = `Garantía activa (de ${inicioStr} a ${finStr})`;
+            garantiaStatus = `<i class="fas fa-shield-alt text-success me-1"></i> Garantía activa (de ${inicioStr} a ${finStr})`;
         }
         }
 
         // Mantenimiento
         let mantenimientoStatus = "Sin registro de mantenimiento.";
         if (prod.mantenimiento_fecha) {
-        const fechaMantenimiento = new Date(prod.mantenimiento_fecha);
+        const fechaMantenimiento = new Date(`${prod.mantenimiento_fecha}T00:00:00`);
         const hoy = new Date();
         const fechaStr = formatDateDMY(prod.mantenimiento_fecha);
-        const hecho = prod.mantenimiento_hecho ? "✅ Completado" : "⚠️ Pendiente";
+        const hecho = prod.mantenimiento_hecho === 1;
 
-        if (hoy > fechaMantenimiento && !prod.mantenimiento_hecho) {
-            mantenimientoStatus = `Mantenimiento vencido desde ${fechaStr} — ${hecho}`;
+        const isSameDay = (a, b) =>
+            a.getFullYear() === b.getFullYear() &&
+            a.getMonth() === b.getMonth() &&
+            a.getDate() === b.getDate();
+
+        if (hecho) {
+            mantenimientoStatus = `✅ Completado el ${fechaStr}`;
+        } else if (fechaMantenimiento < hoy && !isSameDay(fechaMantenimiento, hoy)) {
+            mantenimientoStatus = `❌ No realizado desde ${fechaStr}`;
         } else {
-            mantenimientoStatus = `Mantenimiento para el ${fechaStr} — ${hecho}`;
+            mantenimientoStatus = `🕒 Pendiente para el ${fechaStr}`;
         }
         }
 
