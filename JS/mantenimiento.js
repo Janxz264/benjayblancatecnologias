@@ -149,9 +149,11 @@ function loadPastMaintenances() {
         const hecho = item.mantenimiento_hecho === 1;
         const fechaMantto = fechaRaw ? new Date(`${fechaRaw}T00:00:00`) : null;
 
-        // Estado logic
         let estadoTexto = "";
-        if (hecho) {
+
+        if (item.has_upcoming_mantto && hecho) {
+          estadoTexto = `<span><i class="fas fa-sync-alt text-primary me-1"></i> Reprogramado</span>`;
+        } else if (hecho) {
           estadoTexto = `<span><i class="fas fa-check-circle text-success me-1"></i> Realizado</span>`;
         } else {
           estadoTexto = `<span><i class="fas fa-times-circle text-danger me-1"></i> No realizado</span>`;
@@ -159,11 +161,9 @@ function loadPastMaintenances() {
 
         let accionBtn = "";
 
-        if (!item.hasUpcomingMantto) {
-          accionBtn = hecho
-            ? `<button class="btn btn-sm btn-success" onclick="openReactivateMantto(${item.producto_id})">
-                <i class="fas fa-calendar-plus"></i> Reprogramar mantto.</button>`
-            : ``;
+        if (!item.has_upcoming_mantto && hecho) {
+          accionBtn = `<button class="btn btn-sm btn-success" onclick="openReactivateMantto(${item.producto_id})">
+                        <i class="fas fa-calendar-plus"></i> Reprogramar mantto.</button>`;
         }
 
         tableHTML += `

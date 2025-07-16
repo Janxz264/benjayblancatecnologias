@@ -113,7 +113,15 @@ if ($action === "VIEW") {
         man.FECHA AS mantenimiento_fecha,
         man.HECHO AS mantenimiento_hecho,
         man.CREATED AS mantenimiento_created,
-        man.MODIFIED AS mantenimiento_modified
+        man.MODIFIED AS mantenimiento_modified,
+
+        EXISTS (
+            SELECT 1
+            FROM mantenimiento m2
+            WHERE m2.ID_PRODUCTO = prod.ID_PRODUCTO
+            AND m2.FECHA >= CURDATE()
+            AND m2.HECHO = 0
+        ) AS has_upcoming_mantto
 
         FROM producto prod
         LEFT JOIN marca mar ON prod.ID_MARCA = mar.ID_MARCA
@@ -148,6 +156,7 @@ if ($action === "VIEW") {
             throw new Exception("ID de producto inválido.");
         }
 
+        // Mark the mantenimiento with the latest (MAX) fecha for this product
         $stmt = $pdo->prepare("
             UPDATE mantenimiento
             SET 
@@ -155,7 +164,12 @@ if ($action === "VIEW") {
                 USER_MODIFY = :user_modify,
                 MODIFIED = NOW()
             WHERE ID_PRODUCTO = :id_producto
-              AND FECHA = CURDATE()
+              AND FECHA = (
+                SELECT MAX(FECHA)
+                FROM mantenimiento
+                WHERE ID_PRODUCTO = :id_producto
+              )
+              AND HECHO = 0
         ");
         $stmt->execute([
             'user_modify' => $userModify,
@@ -163,7 +177,7 @@ if ($action === "VIEW") {
         ]);
 
         if ($stmt->rowCount() === 0) {
-            throw new Exception("No se encontró mantenimiento para hoy o ya fue marcado.");
+            throw new Exception("No se encontró mantenimiento pendiente para esta fecha más reciente.");
         }
 
         echo json_encode(["success" => true]);
