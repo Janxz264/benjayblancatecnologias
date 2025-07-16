@@ -114,7 +114,7 @@ function loadMaintenances() {
 }
 
 function loadPastMaintenances() {
-  document.getElementById("mainTitle").innerText = "Historial de mantenimientos anteriores";
+  document.getElementById("mainTitle").innerText = "Historial de mantenimientos";
   const container = document.getElementById("mainContainer");
   container.innerHTML = ``;
 
@@ -122,7 +122,7 @@ function loadPastMaintenances() {
     .then(response => response.json())
     .then(data => {
       if (!data || data.length === 0) {
-        container.innerHTML += "<h1>No hay registros anteriores de mantenimiento.</h1>";
+        container.innerHTML += "<h1>No hay registros en el pasado de mantenimiento.</h1>";
         return;
       }
 
@@ -135,23 +135,36 @@ function loadPastMaintenances() {
               <th>Modelo</th>
               <th>Fecha de Mantenimiento</th>
               <th>Estado</th>
-              <th>Realizado</th>
+              <th>Acción</th>
             </tr>
           </thead>
           <tbody>
       `;
 
+      const hoy = new Date();
+
       data.forEach(item => {
-        const fecha = item.mantenimiento_fecha ? formatDateDMY(item.mantenimiento_fecha) : "No registrada";
-        const hecho = item.mantenimiento_hecho ?? false;
+        const fechaRaw = item.mantenimiento_fecha;
+        const fecha = fechaRaw ? formatDateDMY(fechaRaw) : "No registrada";
+        const hecho = item.mantenimiento_hecho === 1;
+        const fechaMantto = fechaRaw ? new Date(`${fechaRaw}T00:00:00`) : null;
 
-        const estado = hecho
-          ? "Realizado"
-          : "No realizado";
+        // Estado logic
+        let estadoTexto = "";
+        if (hecho) {
+          estadoTexto = `<span><i class="fas fa-check-circle text-success me-1"></i> Realizado</span>`;
+        } else {
+          estadoTexto = `<span><i class="fas fa-times-circle text-danger me-1"></i> No realizado</span>`;
+        }
 
-        const realizadoHTML = hecho
-          ? `<i class="fas fa-check-circle text-success"></i>`
-          : `<i class="fas fa-times-circle text-danger"></i>`;
+        let accionBtn = "";
+
+        if (!item.hasUpcomingMantto) {
+          accionBtn = hecho
+            ? `<button class="btn btn-sm btn-success" onclick="openReactivateMantto(${item.producto_id})">
+                <i class="fas fa-calendar-plus"></i> Reprogramar mantto.</button>`
+            : ``;
+        }
 
         tableHTML += `
           <tr>
@@ -159,8 +172,8 @@ function loadPastMaintenances() {
             <td>${safeText(item.proveedor_nombre)}</td>
             <td>${safeText(item.producto_modelo)}</td>
             <td>${fecha}</td>
-            <td>${estado}</td>
-            <td class="text-center">${realizadoHTML}</td>
+            <td>${estadoTexto}</td>
+            <td>${accionBtn}</td>
           </tr>
         `;
       });
@@ -296,8 +309,6 @@ function editarFechaMantto(ID_PRODUCTO, fechaRaw) {
   });
 }
 
-
-
 function confirmarEditarFechaMantto(ID_PRODUCTO) {
   const fecha = document.getElementById("editFechaInput").value;
   if (!fecha) {
@@ -359,4 +370,62 @@ function getTodayISO() {
   const mm = String(today.getMonth() + 1).padStart(2, '0');
   const dd = String(today.getDate()).padStart(2, '0');
   return `${yyyy}-${mm}-${dd}`;
+}
+
+function openReactivateMantto(idProducto) {
+  const minFecha = new Date().toISOString().split("T")[0];
+
+  const modalHTML = `
+    <div class="modal fade" id="reactivateModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title">Programar nuevo mantenimiento</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <input type="date" id="reactivateFechaInput" class="form-control" min="${minFecha}" required>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-success" onclick="confirmarReactivateMantto(${idProducto})">Guardar</button>
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML("beforeend", modalHTML);
+  const modal = new bootstrap.Modal(document.getElementById("reactivateModal"));
+  modal.show();
+
+  document.getElementById("reactivateModal").addEventListener("hidden.bs.modal", () => {
+    document.getElementById("reactivateModal").remove();
+  });
+}
+
+function confirmarReactivateMantto(idProducto) {
+  const fecha = document.getElementById("reactivateFechaInput").value;
+  if (!fecha) {
+    Swal.fire("Error", "Debe seleccionar una fecha válida.", "error");
+    return;
+  }
+
+  const modalInstance = bootstrap.Modal.getInstance(document.getElementById("reactivateModal"));
+  if (modalInstance) modalInstance.hide();
+
+  fetch("../PHP/maintenancehandler.php?action=ADDFECHA", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idProducto, fecha })
+  })
+    .then(res => res.json())
+    .then(response => {
+      if (!response.success) throw new Error(response.error || "Error al reprogramar mantenimiento.");
+      Swal.fire("Éxito", "Mantenimiento programado correctamente.", "success");
+      loadPastMaintenances(); // Refresh view
+    })
+    .catch(err => {
+      console.error("Reactivate error:", err);
+      Swal.fire("Error", err.message, "error");
+    });
 }
