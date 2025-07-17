@@ -152,7 +152,7 @@ function loadPastMaintenances() {
         let estadoTexto = "";
 
         if (item.has_upcoming_mantto && hecho) {
-          estadoTexto = `<span><i class="fas fa-sync-alt text-primary me-1"></i> Reprogramado</span>`;
+          estadoTexto = `<span><i class="fas fa-sync-alt text-primary me-1"></i> Realizado y reprogramado</span>`;
         } else if (hecho) {
           estadoTexto = `<span><i class="fas fa-check-circle text-success me-1"></i> Realizado</span>`;
         } else {
@@ -162,8 +162,9 @@ function loadPastMaintenances() {
         let accionBtn = "";
 
         if (!item.has_upcoming_mantto && hecho) {
-          accionBtn = `<button class="btn btn-sm btn-success" onclick="openReactivateMantto(${item.producto_id})">
-                        <i class="fas fa-calendar-plus"></i> Reprogramar mantto.</button>`;
+          accionBtn = `<button class="btn btn-sm btn-success" 
+               onclick="openReactivateMantto(${item.producto_id}, '${item.mantenimiento_fecha}')">
+               <i class="fas fa-calendar-plus"></i> Reprogramar mantto.</button>`;
         }
 
         tableHTML += `
@@ -372,7 +373,11 @@ function getTodayISO() {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function openReactivateMantto(idProducto) {
+function openReactivateMantto(idProducto, recordDateStr) {
+  const recordDate = new Date(recordDateStr);
+  const sixMonthsLater = new Date(recordDate.setMonth(recordDate.getMonth() + 6));
+  const formattedDate = sixMonthsLater.toISOString().split("T")[0];
+
   const minFecha = new Date().toISOString().split("T")[0];
 
   const modalHTML = `
@@ -384,7 +389,8 @@ function openReactivateMantto(idProducto) {
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body">
-            <input type="date" id="reactivateFechaInput" class="form-control" min="${minFecha}" required>
+            <input type="date" id="reactivateFechaInput" class="form-control" 
+                   min="${minFecha}" value="${formattedDate}" required>
           </div>
           <div class="modal-footer">
             <button class="btn btn-success" onclick="confirmarReactivateMantto(${idProducto})">Guardar</button>
