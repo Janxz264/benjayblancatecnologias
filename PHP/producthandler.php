@@ -18,26 +18,35 @@ $action = $_GET['action'] ?? '';
 if ($action === "VIEW") {
     try {
         $stmt = $pdo->prepare("
-            SELECT 
-                p.ID_PRODUCTO, 
-                m.NOMBRE AS NOMBRE_MARCA, 
-                pr.NOMBRE AS NOMBRE_PROVEEDOR, 
-                p.MODELO, 
-                p.PRECIO_DISTRIBUIDOR, 
-                p.PRECIO_DE_VENTA, 
-                p.NUMERO_DE_SERIE,
-                m.ID_MARCA,
-                pr.ID_PROVEEDOR,
-                g.ID_GARANTIA,
-                g.FECHA_INICIO,
-                g.FECHA_FIN,
-                ma.FECHA AS 'FECHA_MANTTO',
-                ma.HECHO
-            FROM producto p
-            JOIN marca m ON p.ID_MARCA = m.ID_MARCA
-            JOIN proveedor pr ON p.ID_PROVEEDOR = pr.ID_PROVEEDOR
-            LEFT JOIN garantia g ON p.ID_PRODUCTO=g.ID_PRODUCTO
-            LEFT JOIN mantenimiento ma ON ma.ID_PRODUCTO=p.ID_PRODUCTO
+        WITH UltimoMantto AS (
+        SELECT *
+        FROM mantenimiento ma1
+        WHERE ma1.FECHA = (
+            SELECT MAX(ma2.FECHA)
+            FROM mantenimiento ma2
+            WHERE ma2.ID_PRODUCTO = ma1.ID_PRODUCTO
+        )
+        )
+        SELECT 
+        p.ID_PRODUCTO, 
+        m.NOMBRE AS NOMBRE_MARCA, 
+        pr.NOMBRE AS NOMBRE_PROVEEDOR, 
+        p.MODELO, 
+        p.PRECIO_DISTRIBUIDOR, 
+        p.PRECIO_DE_VENTA, 
+        p.NUMERO_DE_SERIE,
+        m.ID_MARCA,
+        pr.ID_PROVEEDOR,
+        g.ID_GARANTIA,
+        g.FECHA_INICIO,
+        g.FECHA_FIN,
+        ma.FECHA AS FECHA_MANTTO,
+        ma.HECHO
+        FROM producto p
+        JOIN marca m ON p.ID_MARCA = m.ID_MARCA
+        JOIN proveedor pr ON p.ID_PROVEEDOR = pr.ID_PROVEEDOR
+        LEFT JOIN garantia g ON p.ID_PRODUCTO = g.ID_PRODUCTO
+        LEFT JOIN UltimoMantto ma ON ma.ID_PRODUCTO = p.ID_PRODUCTO;
         ");
 
         $stmt->execute();
