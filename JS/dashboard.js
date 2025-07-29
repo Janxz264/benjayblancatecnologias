@@ -151,7 +151,7 @@ function initializeDataTable(tableId) {
         searching: true,
         ordering: true,
         language: {
-            url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+            url: '/benjayblancatecnologias/assets/i18n/es-ES.json'
         }
     });
 }
