@@ -44,11 +44,16 @@ $(document).ready(function () {
                 }
             },
             error: function (xhr, status, error) {
-                console.error("AJAX Error:", error);
+                //console.warn("HTML error page:", xhr.responseText);
+
                 Swal.fire({
                     icon: "error",
-                    title: "Error inesperado",
-                    text: "Hubo un problema con el servidor. Inténtalo de nuevo más tarde.",
+                    title: "Error del servidor",
+                    html: `
+                        <div style="max-height:400px;overflow:auto;border:1px solid #ccc;background:#fff;padding:10px;">
+                            ${xhr.responseText}
+                        </div>
+                    `,
                     confirmButtonColor: "#005f5f"
                 });
             }
