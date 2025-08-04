@@ -358,6 +358,14 @@ function verProductos(pedidoID, isEditable) {
         return;
     }
 
+    let totalDistribuidor = 0;
+    let totalVenta = 0;
+
+    pedido.PRODUCTOS.forEach(prod => {
+        totalDistribuidor += parseFloat(prod.PRECIO_DISTRIBUIDOR);
+        totalVenta += parseFloat(prod.PRECIO_DE_VENTA);
+    });
+
     // Build modal HTML
     const modalHTML = `
         <div class="modal fade" id="productosModal" tabindex="-1" aria-labelledby="productosModalLabel" aria-hidden="true">
@@ -398,6 +406,14 @@ function verProductos(pedidoID, isEditable) {
                                     </tr>
                                 `).join('')}
                             </tbody>
+                            <tfoot>
+                              <tr class="table-info fw-bold">
+                                <td colspan="3" class="text-center">TOTAL</td>
+                                <td id="totalDistribuidor" class="text-center">$0.00</td>
+                                <td id="totalVenta" class="text-center">$0.00</td>
+                                <td></td>
+                              </tr>
+                            </tfoot>
                         </table>
                     </div>
                     <div class="modal-footer">
@@ -419,10 +435,12 @@ function verProductos(pedidoID, isEditable) {
     const modalElement = new bootstrap.Modal(document.getElementById('productosModal'));
     modalElement.show();
 
-setTimeout(() => {
-    initializeDataTable("#productosTable");
-}, 600);
+    setTimeout(() => {
+        initializeDataTable("#productosTable");
 
+        document.getElementById('totalDistribuidor').textContent = `$${totalDistribuidor.toFixed(2)}`;
+        document.getElementById('totalVenta').textContent = `$${totalVenta.toFixed(2)}`;
+    }, 600);
 
     // Cleanup on modal close
     document.getElementById('productosModal').addEventListener('hidden.bs.modal', () => {
@@ -457,6 +475,9 @@ function quitarProductodePedido(ID_PRODUCTO, ID_PEDIDO) {
                     if (pedido && Array.isArray(pedido.PRODUCTOS)) {
                         pedido.PRODUCTOS = pedido.PRODUCTOS.filter(p => p.ID_PRODUCTO !== ID_PRODUCTO);
                     }
+
+                    //Recalcular totales
+                    actualizarTotales(ID_PEDIDO);
 
                     // Update the main table count cell
                     const mainTableRows = document.querySelectorAll(`#pedidosTable tbody tr`);
@@ -677,6 +698,9 @@ function confirmAddProduct(ID_PEDIDO) {
       const pedido = pedidosCache.find(p => p.ID_PEDIDO === ID_PEDIDO);
       if (pedido) pedido.PRODUCTOS.push(producto);
 
+      //Recalcular totales
+      actualizarTotales(ID_PEDIDO);
+
       const modalEl = document.getElementById("addProductToPedidoModal");
       const modalInstance = bootstrap.Modal.getInstance(modalEl);
       if (modalInstance) modalInstance.hide();
@@ -685,4 +709,22 @@ function confirmAddProduct(ID_PEDIDO) {
       console.error("Error al agregar producto al pedido:", err);
       Swal.fire("Error", err.message, "error");
     });
+}
+
+function actualizarTotales(pedidoID) {
+    const pedido = pedidosCache.find(p => p.ID_PEDIDO === pedidoID);
+    if (!pedido) return;
+
+    let totalDistribuidor = 0;
+    let totalVenta = 0;
+
+    pedido.PRODUCTOS.forEach(prod => {
+        totalDistribuidor += parseFloat(prod.PRECIO_DISTRIBUIDOR);
+        totalVenta += parseFloat(prod.PRECIO_DE_VENTA);
+    });
+
+    const distCell = document.getElementById('totalDistribuidor');
+    const ventaCell = document.getElementById('totalVenta');
+    if (distCell) distCell.textContent = `$${totalDistribuidor.toFixed(2)}`;
+    if (ventaCell) ventaCell.textContent = `$${totalVenta.toFixed(2)}`;
 }
