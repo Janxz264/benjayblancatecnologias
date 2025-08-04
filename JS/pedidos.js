@@ -148,9 +148,13 @@ function loadPedidos() {
                         <td>${estatusIcon} ${estatusText}</td>
                         <td>${numProductos}</td>
                         <td>
-                            <button class="btn btn-info btn-sm" onclick="verProductos(${pedido.ID_PEDIDO})">
+                            ${isEditable ? `
+                            <button class="btn btn-info btn-sm" onclick="verProductos(${pedido.ID_PEDIDO},true)">
                                 <i class="fas fa-box-open"></i> Ver productos
                             </button>
+                              ` : `<button class="btn btn-info btn-sm" onclick="verProductos(${pedido.ID_PEDIDO},false)">
+                                <i class="fas fa-box-open"></i> Ver productos
+                            </button>`}
                         </td>
                         <td>
                             ${isEditable ? `
@@ -346,7 +350,7 @@ document.getElementById('savePedidoBtn').addEventListener('click', function (e) 
     });
 });
 
-function verProductos(pedidoID) {
+function verProductos(pedidoID, isEditable) {
     const pedido = pedidosCache.find(p => p.ID_PEDIDO === pedidoID);
 
     if (!pedido || !Array.isArray(pedido.PRODUCTOS) || pedido.PRODUCTOS.length === 0) {
@@ -373,7 +377,7 @@ function verProductos(pedidoID) {
                                     <th>Precio Distribuidor</th>
                                     <th>Precio de Venta</th>
                                     <th>Número de Serie</th>
-                                    <th>Quitar</th>
+                                    ${isEditable ? `<th>Quitar</th>` : ``}
                                 </tr>
                             </thead>
                             <tbody>
@@ -385,11 +389,12 @@ function verProductos(pedidoID) {
                                         <td>$${parseFloat(prod.PRECIO_DISTRIBUIDOR).toFixed(2)}</td>
                                         <td>$${parseFloat(prod.PRECIO_DE_VENTA).toFixed(2)}</td>
                                         <td>${safeText(prod.NUMERO_DE_SERIE)}</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-danger" onclick="quitarProductodePedido(${prod.ID_PRODUCTO}, ${pedidoID})">
+                                        ${isEditable ? `
+                                            <td><button class="btn btn-sm btn-danger" onclick="quitarProductodePedido(${prod.ID_PRODUCTO}, ${pedidoID})">
                                                 <i class="fas fa-times"></i> Quitar
-                                            </button>
-                                        </td>
+                                            </button></td>` :
+                                            ''
+                                        }
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -397,9 +402,12 @@ function verProductos(pedidoID) {
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                        <button class="btn btn-success" onclick="agregarProductoAPedido(${pedidoID})">
-                            <i class="fas fa-plus"></i> Agregar Producto
-                        </button>
+                        ${isEditable ? `
+                          <button class="btn btn-success" onclick="agregarProductoAPedido(${pedidoID})">
+                              <i class="fas fa-plus"></i> Agregar Producto
+                          </button>` :
+                          ''
+                      }
                     </div>
                 </div>
             </div>
