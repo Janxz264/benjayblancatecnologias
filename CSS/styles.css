@@ -124,3 +124,8 @@ button[disabled]:hover::after {
     transform: translateX(-50%);
     white-space: nowrap;
 }
+
+table th,
+table td {
+    text-align: center;
+}

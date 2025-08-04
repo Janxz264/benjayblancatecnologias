@@ -135,6 +135,8 @@ function loadPedidos() {
                     estatusIcon = '<i class="fas fa-check-circle text-muted"></i>';
                 }
 
+                const isEditable = estatusText === "Por entregar";
+
                 const productos = Array.isArray(pedido.PRODUCTOS) ? pedido.PRODUCTOS : [];
                 const numProductos = productos.length;
 
@@ -151,14 +153,16 @@ function loadPedidos() {
                             </button>
                         </td>
                         <td>
-                            <button class="btn btn-primary btn-sm" onclick="editPedido(${pedido.ID_PEDIDO})">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
+                            ${isEditable ? `
+                                <button class="btn btn-primary btn-sm" onclick="editPedido(${pedido.ID_PEDIDO})">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>` : '<span class="text-muted"><i class="fas fa-ban"></i></span>'}
                         </td>
                         <td>
-                            <button class="btn btn-danger btn-sm" onclick="deletePedido(${pedido.ID_PEDIDO})">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
+                            ${isEditable ? `
+                                <button class="btn btn-danger btn-sm" onclick="deletePedido(${pedido.ID_PEDIDO})">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>` : '<span class="text-muted"><i class="fas fa-ban"></i></span>'}
                         </td>
                     </tr>
                 `;
