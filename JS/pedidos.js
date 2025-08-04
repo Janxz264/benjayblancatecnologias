@@ -100,6 +100,7 @@ function loadPedidos() {
                             <th>No. de pedido</th>
                             <th>Fecha de pedido</th>
                             <th>Fecha de entrega</th>
+                            <th><i class="fas fa-flag"></i> Estatus</th>
                             <th>No. de productos</th>
                             <th>Ver productos</th>
                             <th>Editar</th>
@@ -109,7 +110,31 @@ function loadPedidos() {
                     <tbody>
             `;
 
+            function parseFechaDDMMYYYY(fechaStr) {
+                const [dia, mes, año] = fechaStr.split('/');
+                return new Date(Date.UTC(año, mes - 1, dia)); // Force to UTC midnight
+            }
+
             data.forEach(pedido => {
+
+                const entregaDate = parseFechaDDMMYYYY(pedido.FECHA_DE_ENTREGA);
+                const now = new Date();
+                const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+
+                let estatusText = "";
+                let estatusIcon = "";
+
+                if (entregaDate.getTime() === todayUTC.getTime()) {
+                    estatusText = "Llega hoy";
+                    estatusIcon = '<i class="fas fa-truck-moving text-success"></i>';
+                } else if (entregaDate > todayUTC) {
+                    estatusText = "Por entregar";
+                    estatusIcon = '<i class="fas fa-clock text-warning"></i>';
+                } else {
+                    estatusText = "Entregado";
+                    estatusIcon = '<i class="fas fa-check-circle text-muted"></i>';
+                }
+
                 const productos = Array.isArray(pedido.PRODUCTOS) ? pedido.PRODUCTOS : [];
                 const numProductos = productos.length;
 
@@ -118,6 +143,7 @@ function loadPedidos() {
                         <td>${pedido.ID_PEDIDO}</td>
                         <td>${safeText(pedido.FECHA_DE_PEDIDO)}</td>
                         <td>${safeText(pedido.FECHA_DE_ENTREGA)}</td>
+                        <td>${estatusIcon} ${estatusText}</td>
                         <td>${numProductos}</td>
                         <td>
                             <button class="btn btn-info btn-sm" onclick="verProductos(${pedido.ID_PEDIDO})">
