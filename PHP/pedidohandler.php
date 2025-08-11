@@ -165,9 +165,6 @@ if ($action === "VIEW") {
             if (!isset($data['precioVenta']) || !is_numeric($data['precioVenta'])) {
                 throw new Exception("Precio de venta inválido.");
             }
-            if (empty($data['numeroSerie']) || !is_string($data['numeroSerie'])) {
-                throw new Exception("Número de serie es obligatorio.");
-            }
 
             // --- Insert producto ---
             $stmt = $pdo->prepare("

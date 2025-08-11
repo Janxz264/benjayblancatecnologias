@@ -414,9 +414,6 @@ document.getElementById('saveProductBtn').addEventListener('click', function (e)
     }
 
     const numeroSerie = numeroSerieInput.value.trim();
-    if (numeroSerie === "") {
-        errors.push("El número de serie es obligatorio.");
-    }
 
     if (garantiaCheckbox.checked) {
     const fechaInicio = document.getElementById('fechaInicio').value;
