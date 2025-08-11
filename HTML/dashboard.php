@@ -90,5 +90,6 @@
     <script src="../JS/products.js"></script>
     <script src="../JS/pedidos.js"></script>
     <script src="../JS/mantenimiento.js"></script>
+    <script src="../JS/pacienteproducto.js"></script>
 </body>
 </html>
