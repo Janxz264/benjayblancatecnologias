@@ -1,7 +1,7 @@
 $(document).ready(function () {
     $("#loginForm").submit(function (event) {
-        event.preventDefault(); // Stop the form from submitting traditionally
-        event.stopPropagation(); // Ensures JavaScript fully intercepts it
+        event.preventDefault();
+        event.stopPropagation();
 
         const username = $("#username").val().trim();
         const password = $("#password").val().trim();
@@ -16,13 +16,16 @@ $(document).ready(function () {
             return;
         }
 
+        // Show spinner before AJAX
+        $("#loadingSpinner").fadeIn();
+
         $.ajax({
-            url: "/benjayblancatecnologias/PHP/login.php", // Absolute path to avoid routing errors
+            url: "/benjayblancatecnologias/PHP/login.php",
             type: "POST",
             data: { username, password },
             dataType: "json",
             success: function (response) {
-                console.log("Response:", response);
+                $("#loadingSpinner").fadeOut(); // Hide spinner
 
                 if (response.success) {
                     Swal.fire({
@@ -44,7 +47,7 @@ $(document).ready(function () {
                 }
             },
             error: function (xhr, status, error) {
-                //console.warn("HTML error page:", xhr.responseText);
+                $("#loadingSpinner").fadeOut(); // Hide spinner
 
                 Swal.fire({
                     icon: "error",
@@ -60,3 +63,10 @@ $(document).ready(function () {
         });
     });
 });
+
+function showSpinner() {
+    $("#loadingSpinner").fadeIn();
+}
+function hideSpinner() {
+    $("#loadingSpinner").fadeOut();
+}
