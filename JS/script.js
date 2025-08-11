@@ -65,8 +65,9 @@ $(document).ready(function () {
 });
 
 function showSpinner() {
-    $("#loadingSpinner").fadeIn();
+    $("#loadingSpinner").addClass("active");
 }
+
 function hideSpinner() {
-    $("#loadingSpinner").fadeOut();
+    $("#loadingSpinner").removeClass("active");
 }

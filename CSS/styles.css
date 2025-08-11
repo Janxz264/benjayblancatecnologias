@@ -138,9 +138,17 @@ table td {
     height: 100vh;
     background: rgba(255, 255, 255, 0.6);
     z-index: 9999;
-    display: none; /* Only this one */
+    display: flex; /* Keep flex layout */
     justify-content: center;
     align-items: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#loadingSpinner.active {
+    visibility: visible;
+    opacity: 1;
 }
 
 .spinner {
