@@ -130,12 +130,26 @@ table td {
     text-align: center;
 }
 
+#loadingSpinner {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.6);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .spinner {
-    border: 8px solid #f3f3f3;
-    border-top: 8px solid #005f5f;
+    border: 12px solid #f3f3f3;
+    border-top: 12px solid #005f5f;
     border-radius: 50%;
-    width: 60px;
-    height: 60px;
+    width: 30vmin;
+    height: 30vmin;
     animation: spin 1s linear infinite;
 }
 
