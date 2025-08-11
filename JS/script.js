@@ -16,8 +16,8 @@ $(document).ready(function () {
             return;
         }
 
-        // Show spinner before AJAX
-        $("#loadingSpinner").fadeIn();
+        // ✅ Use class toggle instead of fadeIn
+        showSpinner();
 
         $.ajax({
             url: "/benjayblancatecnologias/PHP/login.php",
@@ -25,7 +25,7 @@ $(document).ready(function () {
             data: { username, password },
             dataType: "json",
             success: function (response) {
-                $("#loadingSpinner").fadeOut(); // Hide spinner
+                hideSpinner(); // ✅ Use class toggle
 
                 if (response.success) {
                     Swal.fire({
@@ -47,7 +47,7 @@ $(document).ready(function () {
                 }
             },
             error: function (xhr, status, error) {
-                $("#loadingSpinner").fadeOut(); // Hide spinner
+                hideSpinner(); // ✅ Use class toggle
 
                 Swal.fire({
                     icon: "error",
@@ -64,6 +64,7 @@ $(document).ready(function () {
     });
 });
 
+// ✅ These now match your CSS logic
 function showSpinner() {
     $("#loadingSpinner").addClass("active");
 }
