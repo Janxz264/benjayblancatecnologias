@@ -16,8 +16,7 @@ $(document).ready(function () {
             return;
         }
 
-        // ✅ Use class toggle instead of fadeIn
-        showSpinner();
+        showSpinner("Iniciando sesión...");
 
         $.ajax({
             url: "/benjayblancatecnologias/PHP/login.php",
@@ -25,7 +24,7 @@ $(document).ready(function () {
             data: { username, password },
             dataType: "json",
             success: function (response) {
-                hideSpinner(); // ✅ Use class toggle
+                hideSpinner();
 
                 if (response.success) {
                     Swal.fire({
@@ -47,7 +46,7 @@ $(document).ready(function () {
                 }
             },
             error: function (xhr, status, error) {
-                hideSpinner(); // ✅ Use class toggle
+                hideSpinner();
 
                 Swal.fire({
                     icon: "error",
@@ -64,8 +63,8 @@ $(document).ready(function () {
     });
 });
 
-// ✅ These now match your CSS logic
-function showSpinner() {
+function showSpinner(message = "Cargando...") {
+    $("#loadingMessage").text(message);
     $("#loadingSpinner").addClass("active");
 }
 

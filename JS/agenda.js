@@ -45,9 +45,13 @@ function loadCurrentAppointments() {
         </div>
     `;
 
+    showSpinner("Cargando agenda del día");
+
     fetch("../PHP/agendahandler.php?action=VIEWCURRENT")
         .then(response => response.json())
         .then(data => {
+            hideSpinner();
+
             if (data.error) {
                 container.innerHTML += `<p class="text-danger">Error: ${data.error}</p>`;
                 return;
@@ -76,19 +80,17 @@ function loadCurrentAppointments() {
             `;
 
             const today = new Date();
-            today.setHours(0, 0, 0, 0); // Remove time for accurate comparison
+            today.setHours(0, 0, 0, 0);
 
             data.forEach(appointment => {
                 const appointmentDate = new Date(appointment.FECHA_HORA);
                 appointmentDate.setHours(0, 0, 0, 0);
 
-                // Determine if the appointment is today or in the future
                 const isToday = appointmentDate.getTime() === today.getTime();
                 const formattedDate = isToday 
                     ? `Hoy a las ${formatDateTime(appointment.FECHA_HORA)}` 
                     : formatDateTime(appointment.FECHA_HORA);
 
-                // Configure Finalizar button behavior
                 const finalizarButton = isToday 
                     ? `<button class="btn btn-info btn-sm" onclick="finishAppointment(${appointment.ID_CITA})">
                         <i class="fa fa-calendar-check"></i> Finalizar Cita
@@ -125,6 +127,7 @@ function loadCurrentAppointments() {
             initializeDataTable("#appointmentsTable");
         })
         .catch(error => {
+            hideSpinner();
             console.error("Error fetching appointments:", error);
             container.innerHTML += "<p class='text-danger'>Error al obtener citas.</p>";
         });
@@ -133,14 +136,19 @@ function loadCurrentAppointments() {
 function loadPastAppointments() {
     document.getElementById("mainTitle").innerText = "Historial de Citas";
     const container = document.getElementById("mainContainer");
+
     container.innerHTML = `
         <div class="d-flex justify-content-between align-items-center mb-3">
         </div>
     `;
 
+    showSpinner("Cargando historial de agenda médica...");
+
     fetch("../PHP/agendahandler.php?action=VIEWPAST")
         .then(response => response.json())
         .then(data => {
+            hideSpinner();
+
             if (data.error) {
                 container.innerHTML += `<p class="text-danger">Error: ${data.error}</p>`;
                 return;
@@ -185,6 +193,7 @@ function loadPastAppointments() {
             initializeDataTable("#appointmentsTable");
         })
         .catch(error => {
+            hideSpinner();
             console.error("Error fetching appointments:", error);
             container.innerHTML += "<p class='text-danger'>Error al obtener citas.</p>";
         });
