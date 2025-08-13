@@ -1,3 +1,4 @@
+// login.js
 $(document).ready(function () {
     $("#loginForm").submit(function (event) {
         event.preventDefault();
@@ -62,12 +63,3 @@ $(document).ready(function () {
         });
     });
 });
-
-function showSpinner(message = "Cargando...") {
-    $("#loadingMessage").text(message);
-    $("#loadingSpinner").addClass("active");
-}
-
-function hideSpinner() {
-    $("#loadingSpinner").removeClass("active");
-}
