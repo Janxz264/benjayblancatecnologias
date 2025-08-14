@@ -56,4 +56,24 @@ if ($action === "VIEW") {
     $patients = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode($patients);
+} else if ($action === "VIEWAVAILABLEPRODUCTS") {
+    // Fetch products not yet assigned to any patient
+    $stmt = $pdo->prepare("
+        SELECT 
+            pr.ID_PRODUCTO,
+            pr.MODELO,
+            pr.NUMERO_DE_SERIE,
+            pr.PRECIO_DE_VENTA,
+            m.NOMBRE AS NOMBRE_MARCA,
+            prov.NOMBRE AS NOMBRE_PROVEEDOR
+        FROM PRODUCTO pr
+        LEFT JOIN MARCA m ON pr.ID_MARCA = m.ID_MARCA
+        LEFT JOIN PROVEEDOR prov ON pr.ID_PROVEEDOR = prov.ID_PROVEEDOR
+        WHERE pr.ID_PACIENTE IS NULL
+        ORDER BY pr.MODELO ASC;
+    ");
+    $stmt->execute();
+    $availableProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    echo json_encode($availableProducts);
 }

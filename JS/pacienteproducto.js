@@ -125,6 +125,69 @@ function unlinkProducto(idProducto) {
     // Confirm and send unlink request
 }
 
-function openAssignProductoModal(idPaciente) {
-    // Open modal to assign a product to this patient
+function openAvailableProductsModal(onSelectCallback = null) {
+    // Remove existing modal if present
+    const existingModal = document.getElementById("availableProductsModal");
+    if (existingModal) existingModal.remove();
+
+    // Create modal container
+    const modal = document.createElement("div");
+    modal.id = "availableProductsModal";
+    modal.className = "position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center";
+    modal.style.backgroundColor = "rgba(0,0,0,0.5)";
+    modal.style.zIndex = "1050";
+
+    // Inner modal content
+    modal.innerHTML = `
+        <div class="bg-white p-4 rounded shadow" style="min-width: 300px;">
+            <h5 class="mb-3">Seleccionar producto disponible</h5>
+            <select id="availableProductSelect" class="form-select mb-3">
+                <option disabled selected>Cargando productos...</option>
+            </select>
+            <div class="d-flex justify-content-end">
+                <button class="btn btn-secondary me-2" onclick="document.getElementById('availableProductsModal').remove()">Cerrar</button>
+                <button class="btn btn-primary" onclick="handleProductSelection()">Seleccionar</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Fetch available products
+    fetch("../PHP/pacienteproductohandler.php?action=VIEWAVAILABLEPRODUCTS")
+        .then(res => res.json())
+        .then(products => {
+            const select = document.getElementById("availableProductSelect");
+            select.innerHTML = "";
+
+            if (!products || products.length === 0) {
+                select.innerHTML = `<option disabled selected>No hay productos disponibles</option>`;
+                return;
+            }
+
+            products.forEach(prod => {
+                const option = document.createElement("option");
+                option.value = prod.ID_PRODUCTO;
+                option.textContent = `${prod.MODELO} - ${prod.NUMERO_DE_SERIE || "Sin serie"}`;
+                select.appendChild(option);
+            });
+        })
+        .catch(err => {
+            console.error("Error fetching available products:", err);
+            const select = document.getElementById("availableProductSelect");
+            select.innerHTML = `<option disabled selected>Error al cargar productos</option>`;
+        });
+
+    // Selection handler
+    window.handleProductSelection = function () {
+        const select = document.getElementById("availableProductSelect");
+        const selectedId = select.value;
+        if (!selectedId) return;
+
+        if (typeof onSelectCallback === "function") {
+            onSelectCallback(selectedId);
+        }
+
+        modal.remove();
+    };
 }
