@@ -5,5 +5,7 @@ function showSpinner(message = "Cargando...") {
 }
 
 function hideSpinner() {
-    $("#loadingSpinner").removeClass("active");
+    setTimeout(() => {
+        $("#loadingSpinner").removeClass("active");
+    }, 300);
 }
