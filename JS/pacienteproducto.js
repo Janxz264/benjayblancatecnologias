@@ -8,7 +8,7 @@ if (patientsProductsLink) {
     console.error("Error: Element #patientsProductsLink not found.");
 }
 
-function loadPacienteProductos() {
+function loadPatientsProducts() {
     document.getElementById("mainTitle").innerText = "Productos por paciente";
     const container = document.getElementById("mainContainer");
     container.innerHTML = "";
