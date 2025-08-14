@@ -45,7 +45,7 @@ function loadCurrentAppointments() {
         </div>
     `;
 
-    showSpinner("Cargando agenda del día");
+    showSpinner("Cargando agenda...");
 
     fetch("../PHP/agendahandler.php?action=VIEWCURRENT")
         .then(response => response.json())

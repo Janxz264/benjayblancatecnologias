@@ -85,9 +85,13 @@ function loadPedidos() {
         </div>
     `;
 
+    showSpinner("Cargando pedidos...");
+
     fetch("../PHP/pedidohandler.php?action=VIEW")
         .then(response => response.json())
         .then(data => {
+            hideSpinner();
+
             if (!data || data.length === 0) {
                 container.innerHTML += "<h1>No existen pedidos registrados en la base de datos.</h1>";
                 return;
@@ -112,11 +116,10 @@ function loadPedidos() {
 
             function parseFechaDDMMYYYY(fechaStr) {
                 const [dia, mes, año] = fechaStr.split('/');
-                return new Date(Date.UTC(año, mes - 1, dia)); // Force to UTC midnight
+                return new Date(Date.UTC(año, mes - 1, dia));
             }
 
             data.forEach(pedido => {
-
                 const entregaDate = parseFechaDDMMYYYY(pedido.FECHA_DE_ENTREGA);
                 const now = new Date();
                 const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
@@ -136,7 +139,6 @@ function loadPedidos() {
                 }
 
                 const isEditable = estatusText === "Por entregar";
-
                 const productos = Array.isArray(pedido.PRODUCTOS) ? pedido.PRODUCTOS : [];
                 const numProductos = productos.length;
 
@@ -148,13 +150,9 @@ function loadPedidos() {
                         <td>${estatusIcon} ${estatusText}</td>
                         <td>${numProductos}</td>
                         <td>
-                            ${isEditable ? `
-                            <button class="btn btn-info btn-sm" onclick="verProductos(${pedido.ID_PEDIDO},true)">
+                            <button class="btn btn-info btn-sm" onclick="verProductos(${pedido.ID_PEDIDO}, ${isEditable})">
                                 <i class="fas fa-box-open"></i> Ver productos
                             </button>
-                              ` : `<button class="btn btn-info btn-sm" onclick="verProductos(${pedido.ID_PEDIDO},false)">
-                                <i class="fas fa-box-open"></i> Ver productos
-                            </button>`}
                         </td>
                         <td>
                             ${isEditable ? `
@@ -174,14 +172,15 @@ function loadPedidos() {
 
             tableHTML += `</tbody></table>`;
             container.innerHTML += tableHTML;
-            pedidosCache = data; // Cache for later use (e.g. verProductos modal)
+            pedidosCache = data;
 
             $('#pedidosTable').DataTable().destroy();
             initializeDataTable("#pedidosTable");
         })
         .catch(error => {
+            hideSpinner();
             console.error("Error fetching pedidos:", error);
-            container.innerHTML += "<p>Error al obtener datos de pedidos.</p>";
+            container.innerHTML += "<p class='text-danger'>Error al obtener datos de pedidos.</p>";
         });
 }
 
