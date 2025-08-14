@@ -44,6 +44,17 @@ function loadPatientsProducts() {
                 }
             });
 
+            const totalProducts = data.filter(item => item.ID_PRODUCTO).length;
+            const linkedProducts = data.filter(item => item.ID_PRODUCTO && item.ID_PACIENTE).length;
+
+            if (Object.keys(grouped).length > 0 && totalProducts > 0 && linkedProducts === 0) {
+                container.innerHTML = `
+                    <h1>Hay productos registrados pero ninguno está asignado a un paciente.</h1>
+                    <p>Puede asignarlos desde la sección correspondiente.</p>
+                `;
+                return;
+            }
+
             let tableHTML = "";
 
             if (Object.keys(grouped).length > 0) {
