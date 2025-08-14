@@ -24,9 +24,13 @@ function loadPatients() {
         </div>
     `;
 
+    showSpinner("Cargando pacientes...");
+
     fetch("../PHP/patienthandler.php?action=VIEW")
         .then(response => response.json())
         .then(data => {
+            hideSpinner();
+
             if (data.length === 0) {
                 container.innerHTML += "<h1>No existen pacientes registrados en la base de datos.</h1>";
                 return;
@@ -83,8 +87,9 @@ function loadPatients() {
             initializeDataTable("#patientsTable");
         })
         .catch(error => {
+            hideSpinner();
             console.error("Error fetching patients:", error);
-            container.innerHTML += "<p>Error al obtener datos.</p>";
+            container.innerHTML += "<p class='text-danger'>Error al obtener datos.</p>";
         });
 }
 
