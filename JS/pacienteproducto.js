@@ -21,69 +21,87 @@ function loadPatientsProducts() {
             hideSpinner();
 
             if (!data || data.length === 0) {
-                container.innerHTML = "<h1>No hay productos asignados a pacientes.</h1>";
+                container.innerHTML = "<h1>No existen ni pacientes ni productos registrados, registre uno en la sección que corresponda.</h1>";
                 return;
             }
 
-            // Group products by patient
             const grouped = {};
+            let orphanProducts = [];
+
             data.forEach(item => {
-                const idPaciente = item.ID_PACIENTE;
-                if (!grouped[idPaciente]) {
-                    grouped[idPaciente] = {
-                        nombre: item.NOMBRE_COMPLETO,
-                        productos: []
-                    };
+                if (item.ID_PACIENTE) {
+                    if (!grouped[item.ID_PACIENTE]) {
+                        grouped[item.ID_PACIENTE] = {
+                            nombre: item.NOMBRE_COMPLETO,
+                            productos: []
+                        };
+                    }
+                    if (item.ID_PRODUCTO) {
+                        grouped[item.ID_PACIENTE].productos.push(item);
+                    }
+                } else if (item.ID_PRODUCTO) {
+                    orphanProducts.push(item);
                 }
-                grouped[idPaciente].productos.push(item);
             });
 
-            let tableHTML = `
-                <table id="pacienteProductosTable" class="table table-bordered table-striped">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th>Paciente</th>
-                            <th># Productos</th>
-                            <th>Lista de Productos</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+            let tableHTML = "";
 
-            Object.entries(grouped).forEach(([idPaciente, info]) => {
-                const productosHTML = info.productos.map(prod => `
-                    <div class="border p-2 mb-2 rounded bg-light">
-                        <strong>${safeText(prod.MODELO)}</strong><br>
-                        Serie: ${safeText(prod.NUMERO_DE_SERIE)}<br>
-                        Marca: ${safeText(prod.NOMBRE_MARCA)}<br>
-                        Proveedor: ${safeText(prod.NOMBRE_PROVEEDOR)}<br>
-                        Precio: $${parseFloat(prod.PRECIO_DE_VENTA).toFixed(2)}<br>
-                        <button class="btn btn-danger btn-sm mt-1" onclick="unlinkProducto(${prod.ID_PRODUCTO})">
-                            <i class="fas fa-trash"></i> Eliminar
-                        </button>
-                    </div>
-                `).join("");
-
+            if (Object.keys(grouped).length > 0) {
                 tableHTML += `
-                    <tr>
-                        <td>${safeText(info.nombre)}</td>
-                        <td>${info.productos.length}</td>
-                        <td>${productosHTML}</td>
-                        <td>
-                            <button class="btn btn-success btn-sm" onclick="openAssignProductoModal(${idPaciente})">
-                                <i class="fas fa-plus"></i> Agregar Producto
-                            </button>
-                        </td>
-                    </tr>
+                    <table id="pacienteProductosTable" class="table table-bordered table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Paciente</th>
+                                <th># Productos</th>
+                                <th>Lista de Productos</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                 `;
-            });
 
-            tableHTML += `</tbody></table>`;
+                Object.entries(grouped).forEach(([idPaciente, info]) => {
+                    const productosHTML = info.productos.map(prod => `
+                        <div class="border p-2 mb-2 rounded bg-light">
+                            <strong>${safeText(prod.MODELO)}</strong><br>
+                            Serie: ${safeText(prod.NUMERO_DE_SERIE)}<br>
+                            Marca: ${safeText(prod.NOMBRE_MARCA)}<br>
+                            Proveedor: ${safeText(prod.NOMBRE_PROVEEDOR)}<br>
+                            Precio: $${parseFloat(prod.PRECIO_DE_VENTA).toFixed(2)}<br>
+                            <button class="btn btn-danger btn-sm mt-1" onclick="unlinkProducto(${prod.ID_PRODUCTO})">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    `).join("");
+
+                    tableHTML += `
+                        <tr>
+                            <td>${safeText(info.nombre)}</td>
+                            <td>${info.productos.length}</td>
+                            <td>${productosHTML || "<em>Sin productos asignados</em>"}</td>
+                            <td>
+                                <button class="btn btn-success btn-sm" onclick="openAssignProductoModal(${idPaciente})">
+                                    <i class="fas fa-plus"></i> Agregar Producto
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableHTML += `</tbody></table>`;
+            }
+
+            if (orphanProducts.length > 0 && Object.keys(grouped).length === 0) {
+                container.innerHTML = "<h1>No existe ningún paciente al cuál asignarle un producto, registre un paciente para poder vincular el producto al mismo.</h1>";
+                return;
+            }
+
             container.innerHTML = tableHTML;
 
-            $('#pacienteProductosTable').DataTable().destroy();
-            initializeDataTable("#pacienteProductosTable");
+            if (tableHTML) {
+                $('#pacienteProductosTable').DataTable().destroy();
+                initializeDataTable("#pacienteProductosTable");
+            }
         })
         .catch(error => {
             hideSpinner();
