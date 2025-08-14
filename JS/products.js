@@ -39,7 +39,6 @@ function loadProducts() {
     document.getElementById("mainTitle").innerText = "Gestor de productos";
     const container = document.getElementById("mainContainer");
 
-    // Clear and insert the header + Add Product button
     container.innerHTML = `
         <div class="d-flex justify-content-between align-items-center mb-3">
             <button class="btn btn-success" onclick="openAddProductModal()">
@@ -48,9 +47,13 @@ function loadProducts() {
         </div>
     `;
 
+    showSpinner("Cargando productos...");
+
     fetch("../PHP/producthandler.php?action=VIEW")
         .then(response => response.json())
         .then(data => {
+            hideSpinner();
+
             if (!data || data.length === 0) {
                 container.innerHTML += "<h1>No existen productos registrados en la base de datos.</h1>";
                 return;
@@ -104,15 +107,15 @@ function loadProducts() {
 
             tableHTML += `</tbody></table>`;
             container.innerHTML += tableHTML;
-            productsCache = data; // Store full product list globally
+            productsCache = data;
 
-            // Refresh DataTable instance
             $('#productsTable').DataTable().destroy();
             initializeDataTable("#productsTable");
         })
         .catch(error => {
+            hideSpinner();
             console.error("Error fetching products:", error);
-            container.innerHTML += "<p>Error al obtener datos de productos.</p>";
+            container.innerHTML += "<p class='text-danger'>Error al obtener datos de productos.</p>";
         });
 }
 
