@@ -25,9 +25,13 @@ function loadMaintenances() {
   const container = document.getElementById("mainContainer");
   container.innerHTML = ``;
 
+  showSpinner("Cargando mantenimientos...");
+
   fetch("../PHP/maintenancehandler.php?action=VIEW")
     .then(response => response.json())
     .then(data => {
+      hideSpinner();
+
       if (!data || data.length === 0) {
         container.innerHTML += "<h1>No hay registros de mantenimiento disponibles.</h1>";
         return;
@@ -68,19 +72,16 @@ function loadMaintenances() {
         let estado = "🕒 Pendiente";
         if (!fechaMantto) estado = "❌ Sin fecha registrada";
 
-
-        // Only include future or today entries not marked as done
         if ((!fechaMantto || isToday || isFuture) && !hecho) {
           let accionBtn = "";
-        if (!hecho) {
-        if (!fechaMantto) {
+          if (!fechaMantto) {
             accionBtn = `<button class="btn btn-sm btn-success" onclick="agregarFechaMantto(${item.producto_id})">
-                        <i class="fas fa-plus"></i> Agregar fecha</button>`;
-        } else {
+                          <i class="fas fa-plus"></i> Agregar fecha</button>`;
+          } else {
             accionBtn = `<button class="btn btn-sm btn-primary" onclick="editarFechaMantto(${item.producto_id}, '${item.mantenimiento_fecha}')">
-                        <i class="fas fa-edit"></i> Editar fecha</button>`;
-        }
-        }
+                          <i class="fas fa-edit"></i> Editar fecha</button>`;
+          }
+
           let realizadoHTML = isToday
             ? `<button class="btn btn-sm btn-success" onclick="confirmarTerminarMantto(${item.producto_id})">
                  <i class="fas fa-check"></i> Finalizar</button>`
@@ -108,8 +109,9 @@ function loadMaintenances() {
       initializeDataTable("#maintenanceTable");
     })
     .catch(error => {
+      hideSpinner();
       console.error("Error fetching maintenance data:", error);
-      container.innerHTML += "<p>Error al obtener datos de mantenimiento.</p>";
+      container.innerHTML += "<p class='text-danger'>Error al obtener datos de mantenimiento.</p>";
     });
 }
 
@@ -118,9 +120,13 @@ function loadPastMaintenances() {
   const container = document.getElementById("mainContainer");
   container.innerHTML = ``;
 
+  showSpinner("Cargando historial de mantenimientos...");
+
   fetch("../PHP/maintenancehandler.php?action=VIEWPAST")
     .then(response => response.json())
     .then(data => {
+      hideSpinner();
+
       if (!data || data.length === 0) {
         container.innerHTML += "<h1>No hay registros en el pasado de mantenimiento.</h1>";
         return;
@@ -141,16 +147,12 @@ function loadPastMaintenances() {
           <tbody>
       `;
 
-      const hoy = new Date();
-
       data.forEach(item => {
         const fechaRaw = item.mantenimiento_fecha;
         const fecha = fechaRaw ? formatDateDMY(fechaRaw) : "No registrada";
         const hecho = item.mantenimiento_hecho === 1;
-        const fechaMantto = fechaRaw ? new Date(`${fechaRaw}T00:00:00`) : null;
 
         let estadoTexto = "";
-
         if (item.has_upcoming_mantto && hecho) {
           estadoTexto = `<span><i class="fas fa-sync-alt text-primary me-1"></i> Realizado y reprogramado</span>`;
         } else if (hecho) {
@@ -160,7 +162,6 @@ function loadPastMaintenances() {
         }
 
         let accionBtn = "";
-
         if (!item.has_upcoming_mantto && hecho) {
           accionBtn = `<button class="btn btn-sm btn-success" 
                onclick="openReactivateMantto(${item.producto_id}, '${item.mantenimiento_fecha}')">
@@ -186,8 +187,9 @@ function loadPastMaintenances() {
       initializeDataTable("#pastMaintenanceTable");
     })
     .catch(error => {
+      hideSpinner();
       console.error("Error fetching past maintenance data:", error);
-      container.innerHTML += "<p>Error al obtener mantenimientos pasados.</p>";
+      container.innerHTML += "<p class='text-danger'>Error al obtener mantenimientos pasados.</p>";
     });
 }
 
