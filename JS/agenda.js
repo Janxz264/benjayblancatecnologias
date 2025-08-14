@@ -142,7 +142,7 @@ function loadPastAppointments() {
         </div>
     `;
 
-    showSpinner("Cargando historial de agenda médica...");
+    showSpinner("Cargando historial de citas...");
 
     fetch("../PHP/agendahandler.php?action=VIEWPAST")
         .then(response => response.json())
