@@ -569,27 +569,29 @@ document.getElementById('fechaFin').addEventListener('input', function () {
 });
 
 function viewProduct(ID_PRODUCTO) {
+  showSpinner("Cargando detalles del producto...");
+
   fetch(`../PHP/producthandler.php?action=VIEWPRODUCT&id=${ID_PRODUCTO}`)
     .then(res => res.json())
     .then(data => {
+      hideSpinner();
+
       if (!data || !data.producto) {
         Swal.fire("Error", "No se encontraron datos del producto.", "error");
         return;
       }
 
-        const prod = data.producto;
+      const prod = data.producto;
 
-        // Match exact field names from PHP
-        const marca = prod.marca_nombre || "No especificada";
-        const proveedor = prod.proveedor_nombre || "No especificado";
-        const modelo = prod.producto_modelo || "-";
-        const precioDistribuidor = prod.producto_precio_distribuidor ? `$${parseFloat(prod.producto_precio_distribuidor).toFixed(2)}` : "-";
-        const precioVenta = prod.producto_precio_venta ? `$${parseFloat(prod.producto_precio_venta).toFixed(2)}` : "-";
-        const serie = prod.producto_numero_serie || "-";
+      const marca = prod.marca_nombre || "No especificada";
+      const proveedor = prod.proveedor_nombre || "No especificado";
+      const modelo = prod.producto_modelo || "-";
+      const precioDistribuidor = prod.producto_precio_distribuidor ? `$${parseFloat(prod.producto_precio_distribuidor).toFixed(2)}` : "-";
+      const precioVenta = prod.producto_precio_venta ? `$${parseFloat(prod.producto_precio_venta).toFixed(2)}` : "-";
+      const serie = prod.producto_numero_serie || "-";
 
-        // Garantía
-        let garantiaStatus = "No tiene garantía.";
-        if (prod.garantia_fecha_inicio && prod.garantia_fecha_fin) {
+      let garantiaStatus = "No tiene garantía.";
+      if (prod.garantia_fecha_inicio && prod.garantia_fecha_fin) {
         const hoy = new Date();
         const inicio = new Date(prod.garantia_fecha_inicio);
         const fin = new Date(prod.garantia_fecha_fin);
@@ -597,35 +599,33 @@ function viewProduct(ID_PRODUCTO) {
         const finStr = formatDateDMY(prod.garantia_fecha_fin);
 
         if (hoy > fin) {
-            garantiaStatus = `<i class="fas fa-exclamation-triangle text-danger me-1"></i> Garantía vencida (de ${inicioStr} a ${finStr})`;
+          garantiaStatus = `<i class="fas fa-exclamation-triangle text-danger me-1"></i> Garantía vencida (de ${inicioStr} a ${finStr})`;
         } else {
-            garantiaStatus = `<i class="fas fa-shield-alt text-success me-1"></i> Garantía activa (de ${inicioStr} a ${finStr})`;
+          garantiaStatus = `<i class="fas fa-shield-alt text-success me-1"></i> Garantía activa (de ${inicioStr} a ${finStr})`;
         }
-        }
+      }
 
-        // Mantenimiento
-        let mantenimientoStatus = "Sin registro de mantenimiento.";
-        if (prod.mantenimiento_fecha) {
+      let mantenimientoStatus = "Sin registro de mantenimiento.";
+      if (prod.mantenimiento_fecha) {
         const fechaMantenimiento = new Date(`${prod.mantenimiento_fecha}T00:00:00`);
         const hoy = new Date();
         const fechaStr = formatDateDMY(prod.mantenimiento_fecha);
         const hecho = prod.mantenimiento_hecho === 1;
 
         const isSameDay = (a, b) =>
-            a.getFullYear() === b.getFullYear() &&
-            a.getMonth() === b.getMonth() &&
-            a.getDate() === b.getDate();
+          a.getFullYear() === b.getFullYear() &&
+          a.getMonth() === b.getMonth() &&
+          a.getDate() === b.getDate();
 
         if (hecho) {
-            mantenimientoStatus = `✅ Completado el ${fechaStr}`;
+          mantenimientoStatus = `✅ Completado el ${fechaStr}`;
         } else if (fechaMantenimiento < hoy && !isSameDay(fechaMantenimiento, hoy)) {
-            mantenimientoStatus = `❌ No realizado desde ${fechaStr}`;
+          mantenimientoStatus = `❌ No realizado desde ${fechaStr}`;
         } else {
-            mantenimientoStatus = `🕒 Pendiente para el ${fechaStr}`;
+          mantenimientoStatus = `🕒 Pendiente para el ${fechaStr}`;
         }
-        }
+      }
 
-      // Build modal HTML
       const modalHTML = `
         <div class="modal fade" id="viewProductModal" tabindex="-1">
           <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -661,12 +661,12 @@ function viewProduct(ID_PRODUCTO) {
       const modal = new bootstrap.Modal(document.getElementById("viewProductModal"));
       modal.show();
 
-      // Cleanup on close
       document.getElementById("viewProductModal").addEventListener("hidden.bs.modal", () => {
         document.getElementById("viewProductModal").remove();
       });
     })
     .catch(err => {
+      hideSpinner();
       console.error("Error al cargar detalles de producto:", err);
       Swal.fire("Error", "No se pudo cargar la información del producto.", "error");
     });
