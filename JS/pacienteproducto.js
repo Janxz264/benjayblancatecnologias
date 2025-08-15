@@ -139,8 +139,8 @@ function openAvailableProductsModal(idPaciente, onSelectCallback = null) {
 
     // Inner modal content
     modal.innerHTML = `
-        <div class="bg-white p-4 rounded shadow" style="min-width: 300px;">
-            <h5 class="mb-3">Seleccionar producto disponible</h5>
+        <div class="custom-form-bg p-4 rounded shadow" style="min-width: 300px;">
+            <h5 class="mb-3">Seleccionar productos disponibles</h5>
             <div id="availableProductList" class="mb-3" style="max-height: 300px; overflow-y: auto;">
                 <p>Cargando productos...</p>
             </div>
