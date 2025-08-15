@@ -122,7 +122,54 @@ function loadPatientsProducts() {
 }
 
 function unlinkProducto(idProducto) {
-    // Confirm and send unlink request
+    Swal.fire({
+        title: '¿Está seguro?',
+        text: '¿Está seguro de que desea quitarle este producto a este paciente? Esto permitirá agregar el producto a otro paciente.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, quitar',
+        cancelButtonText: 'Cancelar'
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch('../PHP/pacienteproductohandler.php?action=REMOVE', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `idProducto=${encodeURIComponent(idProducto)}`
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Producto desvinculado',
+                        text: response.message || 'El producto ha sido removido del paciente.',
+                        confirmButtonText: 'Entendido'
+                    }).then(() => {
+                        // RELOAD ON SUCCES
+                        loadPatientsProducts();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.error || 'No se pudo quitar el producto.',
+                        confirmButtonText: 'Cerrar'
+                    });
+                }
+            })
+            .catch(err => {
+                console.error("Error unlinking product:", err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de conexión',
+                    text: 'No se pudo conectar con el servidor.',
+                    confirmButtonText: 'Cerrar'
+                });
+            });
+        }
+    });
 }
 
 function openAvailableProductsModal(idPaciente, onSelectCallback = null) {

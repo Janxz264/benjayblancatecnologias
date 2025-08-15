@@ -96,4 +96,34 @@ if ($action === "VIEW") {
         "success" => true,
         "message" => "$successCount productos asignados correctamente"
     ]);
+} else if ($action === "REMOVE") {
+    $idProducto = isset($_POST['idProducto']) ? intval($_POST['idProducto']) : null;
+    $userModify = $_SESSION['user_id'] ?? 'system';
+
+    if (!$idProducto) {
+        echo json_encode(["error" => "ID de producto no proporcionado"]);
+        exit;
+    }
+
+    $stmt = $pdo->prepare("
+        UPDATE PRODUCTO
+        SET ID_PACIENTE = NULL,
+            USER_MODIFY = :userModify,
+            MODIFIED = NOW()
+        WHERE ID_PRODUCTO = :idProducto
+    ");
+
+    $stmt->bindValue(':userModify', $userModify, PDO::PARAM_STR);
+    $stmt->bindValue(':idProducto', $idProducto, PDO::PARAM_INT);
+
+    if ($stmt->execute()) {
+        echo json_encode([
+            "success" => true,
+            "message" => "Producto desvinculado correctamente"
+        ]);
+    } else {
+        echo json_encode([
+            "error" => "No se pudo desvincular el producto"
+        ]);
+    }
 }
