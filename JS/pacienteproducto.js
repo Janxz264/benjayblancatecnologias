@@ -124,7 +124,7 @@ function loadPatientsProducts() {
 function unlinkProducto(idProducto) {
     Swal.fire({
         title: '¿Está seguro?',
-        text: '¿Está seguro de que desea quitarle este producto a este paciente? Esto permitirá agregar el producto a otro paciente.',
+        text: '¿Está seguro de que desea quitarle este producto a este paciente?',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Sí, quitar',
