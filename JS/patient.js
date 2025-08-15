@@ -98,10 +98,12 @@ function openPatientModal(isEdit = false, patient = null) {
     const saveBtn = document.getElementById("savePatientBtn");
     const form = document.getElementById("patientForm");
 
+    form.reset();
+
     if (isEdit && patient) {
         modalLabel.innerText = "Editar Paciente";
         saveBtn.innerText = "Guardar Cambios";
-        form.reset();
+
         document.getElementById("patientId").value = patient.ID_PACIENTE;
         document.getElementById("name").value = patient.NOMBRE;
         document.getElementById("paterno").value = patient.PATERNO;
@@ -115,84 +117,84 @@ function openPatientModal(isEdit = false, patient = null) {
             document.getElementById("sexo_mujer").checked = true;
         }
 
-        // Cargar estados y municipios
-        loadStates(patient.ID_ESTADO).then(() => {
-            loadMunicipios(patient.ID_ESTADO, patient.ID_MUNICIPIO);
-        });
+        const statePromise = loadStates(patient.ID_ESTADO)
+            .then(() => loadMunicipios(patient.ID_ESTADO, patient.ID_MUNICIPIO));
 
-        // Cargar seguros y seleccionar
-        loadAssurances().then(() => {
+        const assurancePromise = loadAssurances().then(() => {
             if (patient.ID_SEGURO) {
-            document.getElementById("assuranceCheckbox").checked = true;
-            document.getElementById("assuranceFields").style.display = "block";
-            document.getElementById("assuranceSelectContainer").style.display = "block";
-            document.getElementById("assuranceSelect").value = patient.ID_SEGURO;
-            document.getElementById("assuranceSelect").disabled = false;
-            document.getElementById("assuranceName").disabled = false;
-            document.getElementById("assuranceManualField").style.display = "none";
-        }
-        else {
-            document.getElementById("assuranceFields").style.display = "none";
-        }
+                document.getElementById("assuranceCheckbox").checked = true;
+                document.getElementById("assuranceFields").style.display = "block";
+                document.getElementById("assuranceSelectContainer").style.display = "block";
+                document.getElementById("assuranceSelect").value = patient.ID_SEGURO;
+                document.getElementById("assuranceSelect").disabled = false;
+                document.getElementById("assuranceName").disabled = false;
+                document.getElementById("assuranceManualField").style.display = "none";
+            } else {
+                document.getElementById("assuranceFields").style.display = "none";
+            }
         });
 
-        // Cargar doctores y seleccionar
-        loadDoctors().then(() => {
-        if (patient.ID_DOCTOR_REFERENTE) {
-            document.getElementById("referredCheckbox").checked = true;
-            document.getElementById("doctorFields").style.display = "block";
-            document.getElementById("doctorSelectContainer").style.display = "block";
-            document.getElementById("doctorSelect").value = patient.ID_DOCTOR_REFERENTE;
-            document.getElementById("doctorSelect").disabled = false;
-            document.getElementById("doctorName").disabled = false;
-            document.getElementById("doctorPaterno").disabled = false;
-            document.getElementById("doctorMaterno").disabled = false;
-            document.getElementById("doctorManualFields").style.display = "none";
-        } else {
-            document.getElementById("doctorFields").style.display = "none";
-        }
+        const doctorPromise = loadDoctors().then(() => {
+            if (patient.ID_DOCTOR_REFERENTE) {
+                document.getElementById("referredCheckbox").checked = true;
+                document.getElementById("doctorFields").style.display = "block";
+                document.getElementById("doctorSelectContainer").style.display = "block";
+                document.getElementById("doctorSelect").value = patient.ID_DOCTOR_REFERENTE;
+                document.getElementById("doctorSelect").disabled = false;
+                document.getElementById("doctorName").disabled = false;
+                document.getElementById("doctorPaterno").disabled = false;
+                document.getElementById("doctorMaterno").disabled = false;
+                document.getElementById("doctorManualFields").style.display = "none";
+            } else {
+                document.getElementById("doctorFields").style.display = "none";
+            }
         });
+
+        return Promise.all([statePromise, assurancePromise, doctorPromise])
+            .then(() => {
+                new bootstrap.Modal(document.getElementById("patientModal")).show();
+            });
     } else {
         modalLabel.innerText = "Agregar Paciente";
         saveBtn.innerText = "Guardar";
-        form.reset();
         document.getElementById("patientId").value = "";
-        // Reset manual assurance fields
-    document.getElementById("assuranceCheckbox").checked = false;
-    document.getElementById("assuranceFields").style.display = "none";
-    document.getElementById("assuranceSelectContainer").style.display = "none";
-    document.getElementById("assuranceSelect").value = "";
-    document.getElementById("assuranceSelect").disabled = true;
-    document.getElementById("assuranceName").value = "";
-    document.getElementById("assuranceName").disabled = true;
-    document.getElementById("assuranceManualField").style.display = "none";
 
-    // Reset manual doctor fields
-    document.getElementById("referredCheckbox").checked = false;
-    document.getElementById("doctorFields").style.display = "none";
-    document.getElementById("doctorSelectContainer").style.display = "none";
-    document.getElementById("doctorSelect").value = "";
-    document.getElementById("doctorSelect").disabled = true;
-    document.getElementById("doctorName").value = "";
-    document.getElementById("doctorName").disabled = true;
-    document.getElementById("doctorPaterno").value = "";
-    document.getElementById("doctorPaterno").disabled = true;
-    document.getElementById("doctorMaterno").value = "";
-    document.getElementById("doctorMaterno").disabled = true;
-    document.getElementById("doctorManualFields").style.display = "none";
+        // Reset assurance fields
+        document.getElementById("assuranceCheckbox").checked = false;
+        document.getElementById("assuranceFields").style.display = "none";
+        document.getElementById("assuranceSelectContainer").style.display = "none";
+        document.getElementById("assuranceSelect").value = "";
+        document.getElementById("assuranceSelect").disabled = true;
+        document.getElementById("assuranceName").value = "";
+        document.getElementById("assuranceName").disabled = true;
+        document.getElementById("assuranceManualField").style.display = "none";
 
-    // Reset estado y municipio
-    loadStates();
-    document.getElementById("municipio").innerHTML = "<option>Seleccione un estado primero</option>";
-    
-    // Cargar listas
-    loadAssurances();
-    loadDoctors();
+        // Reset doctor fields
+        document.getElementById("referredCheckbox").checked = false;
+        document.getElementById("doctorFields").style.display = "none";
+        document.getElementById("doctorSelectContainer").style.display = "none";
+        document.getElementById("doctorSelect").value = "";
+        document.getElementById("doctorSelect").disabled = true;
+        document.getElementById("doctorName").value = "";
+        document.getElementById("doctorName").disabled = true;
+        document.getElementById("doctorPaterno").value = "";
+        document.getElementById("doctorPaterno").disabled = true;
+        document.getElementById("doctorMaterno").value = "";
+        document.getElementById("doctorMaterno").disabled = true;
+        document.getElementById("doctorManualFields").style.display = "none";
+
+        // Reset location
+        loadStates();
+        document.getElementById("municipio").innerHTML = "<option>Seleccione un estado primero</option>";
+
+        // Load lists
+        loadAssurances();
+        loadDoctors();
+
+        new bootstrap.Modal(document.getElementById("patientModal")).show();
+        return Promise.resolve();
     }
-
-    new bootstrap.Modal(document.getElementById("patientModal")).show();
 }
-
 
 function openAddPatientModal() {
     openPatientModal(false);
@@ -204,12 +206,21 @@ function editPatient(id) {
     fetch(`../PHP/patienthandler.php?action=GET&id=${id}`)
         .then(response => response.json())
         .then(patient => {
-            hideSpinner();
             if (patient.error) {
+                hideSpinner();
                 Swal.fire("Error", patient.error, "error");
                 return;
             }
-            openPatientModal(true, patient);
+
+            openPatientModal(true, patient)
+                .then(() => {
+                    hideSpinner();
+                })
+                .catch(error => {
+                    hideSpinner();
+                    console.error("Error preparando modal:", error);
+                    Swal.fire("Error", "No se pudo preparar el formulario del paciente.", "error");
+                });
         })
         .catch(error => {
             hideSpinner();
