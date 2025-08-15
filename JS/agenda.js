@@ -489,6 +489,7 @@ function formatSpanishDateTime(fechaHora) {
 }
 
 function viewAppointment(idCita) {
+    showSpinner("Cargando detalles de la cita...");
 
     const existingModal = document.getElementById("viewAppointmentModal");
     if (existingModal) {
@@ -498,19 +499,17 @@ function viewAppointment(idCita) {
     fetch(`../PHP/agendahandler.php?action=GET&id=${idCita}`)
         .then(response => response.json())
         .then(data => {
+            hideSpinner();
+
             if (data.error) {
                 Swal.fire("Error", data.error, "error");
                 return;
             }
 
-            // Helper to handle null or empty values
             const safe = (value) => value ? value : "No registrado";
-
-            // Format the date using JavaScript
             const formattedDateTime = formatSpanishDateTime(data.FECHA_HORA);
             const formattedBirthdate = data.FECHA_NACIMIENTO ? formatBirthdate(data.FECHA_NACIMIENTO) : "No registrado";
 
-            // Generate modal content dynamically
             const modalContent = `
                 <div class="modal fade" id="viewAppointmentModal" tabindex="-1" aria-labelledby="viewAppointmentModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -540,13 +539,13 @@ function viewAppointment(idCita) {
                 </div>
             `;
 
-            // Insert and show modal
             const modalContainer = document.createElement("div");
             modalContainer.innerHTML = modalContent;
             document.body.appendChild(modalContainer);
             $("#viewAppointmentModal").modal("show");
         })
         .catch(error => {
+            hideSpinner();
             console.error("Error fetching appointment details:", error);
             Swal.fire("Error", "Ocurrió un problema al obtener los detalles de la cita.", "error");
         });
