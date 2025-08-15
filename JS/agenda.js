@@ -445,6 +445,8 @@ function endAppointment() {
 
     const payload = { observaciones };
 
+    showSpinner("Finalizando cita...");
+
     fetch(`../PHP/agendahandler.php?action=FINISH&id=${idCita}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -452,6 +454,7 @@ function endAppointment() {
     })
     .then(res => res.json())
     .then(response => {
+        hideSpinner();
         if (response.success) {
             $("#endAppointmentModal").modal("hide");
             Swal.fire("Cita finalizada", "La cita ha sido cerrada correctamente.", "success");
@@ -461,6 +464,7 @@ function endAppointment() {
         }
     })
     .catch(error => {
+        hideSpinner();
         console.error("Error:", error);
         Swal.fire("Error", "Ocurrió un error al finalizar la cita.", "error");
     });
