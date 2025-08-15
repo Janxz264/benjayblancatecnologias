@@ -580,9 +580,12 @@ function editAppointment(idCita) {
     patientSelect.setAttribute('required', 'required');
     document.getElementById('patientSelectText').innerText = "Seleccione al paciente";
 
+    showSpinner("Cargando cita...");
+
     fetch(`../PHP/agendahandler.php?action=GET&id=${idCita}`)
         .then(response => response.json())
         .then(data => {
+            hideSpinner();
             if (data.error) {
                 Swal.fire({
                     title: "Error",
@@ -603,6 +606,7 @@ function editAppointment(idCita) {
             };
         })
         .catch(error => {
+            hideSpinner();
             console.error("Error fetching appointment:", error);
             Swal.fire({
                 title: "Error",
@@ -651,6 +655,8 @@ function saveEditedAppointment() {
         motivo: appointmentReason
     };
 
+    showSpinner("Actualizando cita...");
+
     fetch(`../PHP/agendahandler.php?action=EDIT&id=${idCita}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -658,6 +664,7 @@ function saveEditedAppointment() {
     })
     .then(response => response.json())
     .then(data => {
+        hideSpinner();
         if (data.success) {
             Swal.fire({
                 title: "Éxito",
@@ -680,6 +687,7 @@ function saveEditedAppointment() {
         }
     })
     .catch(error => {
+        hideSpinner();
         console.error("Error saving appointment:", error);
         Swal.fire({
             title: "Error",
