@@ -91,7 +91,7 @@ function loadPatientsProducts() {
                             <td>${info.productos.length}</td>
                             <td>${productosHTML || "<em>Sin productos asignados</em>"}</td>
                             <td>
-                                <button class="btn btn-success btn-sm" onclick="openAssignProductoModal(${idPaciente})">
+                                <button class="btn btn-success btn-sm" onclick="openAvailableProductsModal(${idPaciente})">
                                     <i class="fas fa-plus"></i> Agregar Producto
                                 </button>
                             </td>
@@ -125,7 +125,8 @@ function unlinkProducto(idProducto) {
     // Confirm and send unlink request
 }
 
-function openAvailableProductsModal(onSelectCallback = null) {
+
+function openAvailableProductsModal(idPaciente, onSelectCallback = null) {
     // Remove existing modal if present
     const existingModal = document.getElementById("availableProductsModal");
     if (existingModal) existingModal.remove();
@@ -154,7 +155,7 @@ function openAvailableProductsModal(onSelectCallback = null) {
     document.body.appendChild(modal);
 
     // Fetch available products
-    fetch("../PHP/pacienteproductohandler.php?action=VIEWAVAILABLEPRODUCTS")
+    fetch(`../PHP/pacienteproductohandler.php?action=VIEWAVAILABLEPRODUCTS&idPaciente=${idPaciente}`)
         .then(res => res.json())
         .then(products => {
             const select = document.getElementById("availableProductSelect");

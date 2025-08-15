@@ -57,8 +57,9 @@ if ($action === "VIEW") {
 
     echo json_encode($patients);
 } else if ($action === "VIEWAVAILABLEPRODUCTS") {
-    // Fetch products not yet assigned to any patient
-    $stmt = $pdo->prepare("
+    $idPaciente = isset($_GET['idPaciente']) ? intval($_GET['idPaciente']) : null;
+
+    $query = "
         SELECT 
             pr.ID_PRODUCTO,
             pr.MODELO,
@@ -69,11 +70,44 @@ if ($action === "VIEW") {
         FROM PRODUCTO pr
         LEFT JOIN MARCA m ON pr.ID_MARCA = m.ID_MARCA
         LEFT JOIN PROVEEDOR prov ON pr.ID_PROVEEDOR = prov.ID_PROVEEDOR
-        WHERE pr.ID_PACIENTE IS NULL
+        WHERE (pr.ID_PACIENTE IS NULL OR pr.ID_PACIENTE != :idPaciente)
         ORDER BY pr.MODELO ASC;
-    ");
+    ";
+
+    $stmt = $pdo->prepare($query);
+    $stmt->bindValue(':idPaciente', $idPaciente, PDO::PARAM_INT);
     $stmt->execute();
     $availableProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode($availableProducts);
+    
+} else if ($action === "ADD") {
+    // Ensure required POST parameters are present
+    $idProducto = isset($_POST['idProducto']) ? intval($_POST['idProducto']) : null;
+    $idPaciente = isset($_POST['idPaciente']) ? intval($_POST['idPaciente']) : null;
+    $userModify = $_SESSION['user_id'] ?? 'system';
+
+    if (!$idProducto || !$idPaciente) {
+        echo json_encode(["error" => "Datos incompletos"]);
+        exit;
+    }
+
+    // Update PRODUCTO to assign it to the patient
+    $stmt = $pdo->prepare("
+        UPDATE PRODUCTO
+        SET ID_PACIENTE = :idPaciente,
+            USER_MODIFY = :userModify,
+            MODIFIED = NOW()
+        WHERE ID_PRODUCTO = :idProducto
+    ");
+
+    $stmt->bindValue(':idPaciente', $idPaciente, PDO::PARAM_INT);
+    $stmt->bindValue(':userModify', $userModify, PDO::PARAM_STR);
+    $stmt->bindValue(':idProducto', $idProducto, PDO::PARAM_INT);
+
+    if ($stmt->execute()) {
+        echo json_encode(["success" => true, "message" => "Producto asignado correctamente"]);
+    } else {
+        echo json_encode(["error" => "Error al asignar producto"]);
+    }
 }
