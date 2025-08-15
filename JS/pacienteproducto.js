@@ -140,13 +140,12 @@ function openAvailableProductsModal(idPaciente, onSelectCallback = null) {
     // Inner modal content
     modal.innerHTML = `
         <div class="custom-form-bg p-4 rounded shadow" style="min-width: 300px;">
-            <h5 class="mb-3">Seleccionar productos disponibles</h5>
+            <h5 class="mb-3">Añade los productos para el paciente:</h5>
             <div id="availableProductList" class="mb-3" style="max-height: 300px; overflow-y: auto;">
                 <p>Cargando productos...</p>
             </div>
             <div class="d-flex justify-content-end">
-                <button class="btn btn-danger" onclick="document.getElementById('availableProductsModal').remove()">Cerrar</button>
-                <br>
+                <button class="btn btn-danger me-2" onclick="document.getElementById('availableProductsModal').remove()">Cerrar</button>
                 <button class="btn btn-success" onclick="handleProductSelection()">Añadir producto(s) al cliente</button>
             </div>
         </div>
