@@ -58,32 +58,42 @@ if ($action === "VIEW") {
 
     echo json_encode($availableProducts);
 } else if ($action === "ADD") {
-    // Ensure required POST parameters are present
-    $idProducto = isset($_POST['idProducto']) ? intval($_POST['idProducto']) : null;
+    $idProductos = isset($_POST['idProducto']) ? $_POST['idProducto'] : null;
     $idPaciente = isset($_POST['idPaciente']) ? intval($_POST['idPaciente']) : null;
     $userModify = $_SESSION['user_id'] ?? 'system';
 
-    if (!$idProducto || !$idPaciente) {
+    if (!$idProductos || !$idPaciente) {
         echo json_encode(["error" => "Datos incompletos"]);
         exit;
     }
 
-    // Update PRODUCTO to assign it to the patient
-    $stmt = $pdo->prepare("
-        UPDATE PRODUCTO
-        SET ID_PACIENTE = :idPaciente,
-            USER_MODIFY = :userModify,
-            MODIFIED = NOW()
-        WHERE ID_PRODUCTO = :idProducto
-    ");
-
-    $stmt->bindValue(':idPaciente', $idPaciente, PDO::PARAM_INT);
-    $stmt->bindValue(':userModify', $userModify, PDO::PARAM_STR);
-    $stmt->bindValue(':idProducto', $idProducto, PDO::PARAM_INT);
-
-    if ($stmt->execute()) {
-        echo json_encode(["success" => true, "message" => "Producto asignado correctamente"]);
-    } else {
-        echo json_encode(["error" => "Error al asignar producto"]);
+    // Normalize to array
+    if (!is_array($idProductos)) {
+        $idProductos = [$idProductos];
     }
+
+    $successCount = 0;
+    foreach ($idProductos as $idProducto) {
+        $idProducto = intval($idProducto);
+        $stmt = $pdo->prepare("
+            UPDATE PRODUCTO
+            SET ID_PACIENTE = :idPaciente,
+                USER_MODIFY = :userModify,
+                MODIFIED = NOW()
+            WHERE ID_PRODUCTO = :idProducto
+        ");
+
+        $stmt->bindValue(':idPaciente', $idPaciente, PDO::PARAM_INT);
+        $stmt->bindValue(':userModify', $userModify, PDO::PARAM_STR);
+        $stmt->bindValue(':idProducto', $idProducto, PDO::PARAM_INT);
+
+        if ($stmt->execute()) {
+            $successCount++;
+        }
+    }
+
+    echo json_encode([
+        "success" => true,
+        "message" => "$successCount productos asignados correctamente"
+    ]);
 }

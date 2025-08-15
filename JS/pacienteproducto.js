@@ -125,7 +125,6 @@ function unlinkProducto(idProducto) {
     // Confirm and send unlink request
 }
 
-
 function openAvailableProductsModal(idPaciente, onSelectCallback = null) {
     // Remove existing modal if present
     const existingModal = document.getElementById("availableProductsModal");
@@ -142,9 +141,9 @@ function openAvailableProductsModal(idPaciente, onSelectCallback = null) {
     modal.innerHTML = `
         <div class="bg-white p-4 rounded shadow" style="min-width: 300px;">
             <h5 class="mb-3">Seleccionar producto disponible</h5>
-            <select id="availableProductSelect" class="form-select mb-3">
-                <option disabled selected>Cargando productos...</option>
-            </select>
+            <div id="availableProductList" class="mb-3" style="max-height: 300px; overflow-y: auto;">
+                <p>Cargando productos...</p>
+            </div>
             <div class="d-flex justify-content-end">
                 <button class="btn btn-secondary me-2" onclick="document.getElementById('availableProductsModal').remove()">Cerrar</button>
                 <button class="btn btn-primary" onclick="handleProductSelection()">Seleccionar</button>
@@ -158,20 +157,33 @@ function openAvailableProductsModal(idPaciente, onSelectCallback = null) {
     fetch(`../PHP/pacienteproductohandler.php?action=VIEWAVAILABLEPRODUCTS&idPaciente=${idPaciente}`)
         .then(res => res.json())
         .then(products => {
-            const select = document.getElementById("availableProductSelect");
-            select.innerHTML = "";
 
             if (!products || products.length === 0) {
-                select.innerHTML = `<option disabled selected>No hay productos disponibles</option>`;
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Sin productos disponibles',
+                    text: 'No hay productos que puedan asignarse en este momento.',
+                    confirmButtonText: 'Entendido'
+                });
                 return;
             }
 
+            const list = document.getElementById("availableProductList");
+            list.innerHTML = "";
+
             products.forEach(prod => {
-                const option = document.createElement("option");
-                option.value = prod.ID_PRODUCTO;
-                option.textContent = `${prod.MODELO} - ${prod.NUMERO_DE_SERIE || "Sin serie"}`;
-                select.appendChild(option);
+                const wrapper = document.createElement("div");
+                wrapper.className = "form-check";
+
+                wrapper.innerHTML = `
+                    <input class="form-check-input" type="checkbox" value="${prod.ID_PRODUCTO}" id="prod_${prod.ID_PRODUCTO}">
+                    <label class="form-check-label" for="prod_${prod.ID_PRODUCTO}">
+                        ${prod.MODELO} - ${prod.NUMERO_DE_SERIE || "Sin serie"}
+                    </label>
+                `;
+                list.appendChild(wrapper);
             });
+
         })
         .catch(err => {
             console.error("Error fetching available products:", err);
@@ -181,14 +193,34 @@ function openAvailableProductsModal(idPaciente, onSelectCallback = null) {
 
     // Selection handler
     window.handleProductSelection = function () {
-        const select = document.getElementById("availableProductSelect");
-        const selectedId = select.value;
-        if (!selectedId) return;
+        const selectedIds = Array.from(document.querySelectorAll("#availableProductList input:checked"))
+            .map(input => input.value);
+
+        if (selectedIds.length === 0) return;
 
         if (typeof onSelectCallback === "function") {
-            onSelectCallback(selectedId);
+            onSelectCallback(selectedIds);
         }
 
         modal.remove();
     };
+}
+
+function assignProductToPatient(productIds, idPaciente) {
+    const formData = new FormData();
+    formData.append("idPaciente", idPaciente);
+    productIds.forEach(id => formData.append("idProducto[]", id));
+
+    fetch("../PHP/pacienteproductohandler.php?action=ADD", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(response => {
+        console.log(response.message);
+        loadPatientsProducts();
+    })
+    .catch(err => {
+        console.error("Error en la asignación múltiple:", err);
+    });
 }
