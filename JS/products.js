@@ -424,22 +424,21 @@ document.getElementById('saveProductBtn').addEventListener('click', function (e)
     const numeroSerie = numeroSerieInput.value.trim();
 
     if (garantiaCheckbox.checked) {
-    const fechaInicio = document.getElementById('fechaInicio').value;
-    const fechaFin = document.getElementById('fechaFin').value;
+        const fechaInicio = document.getElementById('fechaInicio').value;
+        const fechaFin = document.getElementById('fechaFin').value;
 
-    if (!fechaInicio) {
-        errors.push("La fecha de inicio de garantía es obligatoria.");
-    }
+        if (!fechaInicio) {
+            errors.push("La fecha de inicio de garantía es obligatoria.");
+        }
 
-    if (!fechaFin) {
-        errors.push("La fecha de fin de garantía es obligatoria.");
-    }
+        if (!fechaFin) {
+            errors.push("La fecha de fin de garantía es obligatoria.");
+        }
 
-    // Optional: Validate logical order
-    if (fechaInicio && fechaFin && new Date(fechaFin) < new Date(fechaInicio)) {
-        errors.push("La fecha de fin no puede ser anterior a la fecha de inicio.");
+        if (fechaInicio && fechaFin && new Date(fechaFin) < new Date(fechaInicio)) {
+            errors.push("La fecha de fin no puede ser anterior a la fecha de inicio.");
+        }
     }
-}
 
     if (errors.length > 0) {
         Swal.fire({
@@ -452,54 +451,56 @@ document.getElementById('saveProductBtn').addEventListener('click', function (e)
     }
 
     const payload = {
-    ...marcaData,
-    ...proveedorData,
-    modelo,
-    precioDistribuidor,
-    precioVenta,
-    numeroSerie,
-    ...(garantiaCheckbox.checked && {
-        garantia: true,
-        fechaInicioGarantia: document.getElementById('fechaInicio').value,
-        fechaFinGarantia: document.getElementById('fechaFin').value
-    }),
-    ...(isEdit && { id: parseInt(productId) })
+        ...marcaData,
+        ...proveedorData,
+        modelo,
+        precioDistribuidor,
+        precioVenta,
+        numeroSerie,
+        ...(garantiaCheckbox.checked && {
+            garantia: true,
+            fechaInicioGarantia: document.getElementById('fechaInicio').value,
+            fechaFinGarantia: document.getElementById('fechaFin').value
+        }),
+        ...(isEdit && { id: parseInt(productId) })
     };
+
+    showSpinner(isEdit ? "Actualizando producto..." : "Registrando producto...");
 
     fetch(`../PHP/producthandler.php?action=${isEdit ? 'EDIT' : 'ADD'}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
     })
-
     .then(res => res.json())
     .then(response => {
+        hideSpinner();
+
         if (response.success) {
             Swal.fire({
-            icon: 'success',
-            title: 'Producto guardado',
-            text: 'El producto fue registrado correctamente.',
-            confirmButtonText: 'Cerrar'
+                icon: 'success',
+                title: 'Producto guardado',
+                text: 'El producto fue registrado correctamente.',
+                confirmButtonText: 'Cerrar'
             }).then(() => {
-            document.getElementById("productForm").reset();
-            const modalEl = document.getElementById('productModal');
-            const modalInstance = bootstrap.Modal.getInstance(modalEl);
-            if (modalInstance) modalInstance.hide();
+                document.getElementById("productForm").reset();
+                const modalEl = document.getElementById('productModal');
+                const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                if (modalInstance) modalInstance.hide();
 
-            if (originString === "pedido") {
-                console.log("Es pedido");
-                // Return to pedido modal and refresh product list only
-                const pedidoModal = new bootstrap.Modal(document.getElementById('pedidoModal'));
-                pedidoModal.show();
+                if (originString === "pedido") {
+                    console.log("Es pedido");
+                    const pedidoModal = new bootstrap.Modal(document.getElementById('pedidoModal'));
+                    pedidoModal.show();
 
-                retrieveProductos().then(productList => {
-                availableProducts = productList;
-                renderProductLists(); // refresh dual-list UI
-                });
-            } else {
-                console.log("No es pedido");
-                loadProducts(); // fallback for standard product page
-            }
+                    retrieveProductos().then(productList => {
+                        availableProducts = productList;
+                        renderProductLists();
+                    });
+                } else {
+                    console.log("No es pedido");
+                    loadProducts();
+                }
             });
         } else {
             Swal.fire({
@@ -511,6 +512,7 @@ document.getElementById('saveProductBtn').addEventListener('click', function (e)
         }
     })
     .catch(err => {
+        hideSpinner();
         console.error("Error en la solicitud:", err);
         Swal.fire({
             icon: 'error',
