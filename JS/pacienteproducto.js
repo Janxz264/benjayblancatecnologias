@@ -146,7 +146,7 @@ function openAvailableProductsModal(idPaciente, onSelectCallback = null) {
             </div>
             <div class="d-flex justify-content-end">
                 <button class="btn btn-danger me-2" onclick="document.getElementById('availableProductsModal').remove()">Cerrar</button>
-                <button class="btn btn-success" onclick="handleProductSelection()">Añadir producto(s) al cliente</button>
+                <button class="btn btn-success" onclick="assignSelectedProducts(${idPaciente})">Añadir producto(s) al cliente</button>
             </div>
         </div>
     `;
@@ -207,6 +207,8 @@ function openAvailableProductsModal(idPaciente, onSelectCallback = null) {
 }
 
 function assignProductToPatient(productIds, idPaciente) {
+    showSpinner("Asignando productos al paciente...");
+
     const formData = new FormData();
     formData.append("idPaciente", idPaciente);
     productIds.forEach(id => formData.append("idProducto[]", id));
@@ -217,10 +219,51 @@ function assignProductToPatient(productIds, idPaciente) {
     })
     .then(res => res.json())
     .then(response => {
+        hideSpinner();
         console.log(response.message);
+        Swal.fire({
+            icon: 'success',
+            title: 'Productos asignados',
+            text: response.message || 'Los productos fueron asignados correctamente.',
+            timer: 2000,
+            showConfirmButton: false
+        });
         loadPatientsProducts();
     })
     .catch(err => {
+        hideSpinner();
         console.error("Error en la asignación múltiple:", err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error al asignar productos',
+            text: 'Ocurrió un problema al intentar asignar los productos. Intenta nuevamente.',
+            confirmButtonText: 'Cerrar'
+        });
+
+        const assignBtn = document.querySelector("#availableProductsModal .btn-success");
+        if (assignBtn) assignBtn.disabled = false;
     });
+}
+
+function assignSelectedProducts(idPaciente) {
+    const selectedIds = Array.from(document.querySelectorAll("#availableProductList input:checked"))
+        .map(input => input.value);
+
+    if (selectedIds.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Ningún producto seleccionado',
+            text: 'Por favor selecciona al menos un producto para asignar.',
+            confirmButtonText: 'Entendido'
+        });
+        return;
+    }
+
+    const assignBtn = document.querySelector("#availableProductsModal .btn-success");
+    if (assignBtn) assignBtn.disabled = true;
+
+    assignProductToPatient(selectedIds, idPaciente);
+
+    const modal = document.getElementById("availableProductsModal");
+    if (modal) modal.remove();
 }
