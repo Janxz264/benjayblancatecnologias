@@ -131,6 +131,8 @@ function unlinkProducto(idProducto) {
         cancelButtonText: 'Cancelar'
     }).then(result => {
         if (result.isConfirmed) {
+            showSpinner("Quitando producto...");
+
             fetch('../PHP/pacienteproductohandler.php?action=REMOVE', {
                 method: 'POST',
                 headers: {
@@ -140,6 +142,8 @@ function unlinkProducto(idProducto) {
             })
             .then(res => res.json())
             .then(response => {
+                hideSpinner();
+
                 if (response.success) {
                     Swal.fire({
                         icon: 'success',
@@ -147,7 +151,6 @@ function unlinkProducto(idProducto) {
                         text: response.message || 'El producto ha sido removido del paciente.',
                         confirmButtonText: 'Entendido'
                     }).then(() => {
-                        // RELOAD ON SUCCES
                         loadPatientsProducts();
                     });
                 } else {
@@ -161,6 +164,8 @@ function unlinkProducto(idProducto) {
             })
             .catch(err => {
                 console.error("Error unlinking product:", err);
+                hideSpinner();
+
                 Swal.fire({
                     icon: 'error',
                     title: 'Error de conexión',
