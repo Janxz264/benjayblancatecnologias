@@ -403,6 +403,8 @@ function deleteAppointment(idCita) {
         cancelButtonText: "Cancelar"
     }).then((result) => {
         if (result.isConfirmed) {
+            showSpinner("Eliminando cita...");
+
             fetch("../PHP/agendahandler.php?action=REMOVE", {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -410,6 +412,7 @@ function deleteAppointment(idCita) {
             })
             .then(res => res.json())
             .then(response => {
+                hideSpinner();
                 if (response.success) {
                     Swal.fire("Eliminada", "La cita ha sido eliminada correctamente.", "success");
                     loadCurrentAppointments(); // Refresh table
@@ -418,6 +421,7 @@ function deleteAppointment(idCita) {
                 }
             })
             .catch(err => {
+                hideSpinner();
                 console.error(err);
                 Swal.fire("Error", "Ocurrió un error al eliminar la cita", "error");
             });
