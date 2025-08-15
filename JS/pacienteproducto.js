@@ -146,7 +146,8 @@ function openAvailableProductsModal(idPaciente, onSelectCallback = null) {
             </div>
             <div class="d-flex justify-content-end">
                 <button class="btn btn-danger" onclick="document.getElementById('availableProductsModal').remove()">Cerrar</button>
-                <button class="btn btn-success" onclick="handleProductSelection()">Seleccionar</button>
+                <br>
+                <button class="btn btn-success" onclick="handleProductSelection()">Añadir producto(s) al cliente</button>
             </div>
         </div>
     `;
