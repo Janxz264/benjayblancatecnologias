@@ -162,8 +162,12 @@ function openAvailableProductsModal(idPaciente, onSelectCallback = null) {
                 Swal.fire({
                     icon: 'info',
                     title: 'Sin productos disponibles',
-                    text: 'No hay productos que puedan asignarse en este momento.',
+                    text: 'No hay productos que puedan asignarse en este momento a este paciente.',
                     confirmButtonText: 'Entendido'
+                }).then(() => {
+                    // Close modal after alert is acknowledged
+                    const modalToClose = document.getElementById("availableProductsModal");
+                    if (modalToClose) modalToClose.remove();
                 });
                 return;
             }
