@@ -224,6 +224,8 @@ function deletePatient(id) {
         cancelButtonText: "Cancelar"
     }).then(result => {
         if (result.isConfirmed) {
+            showSpinner("Eliminando paciente...");
+
             fetch(`../PHP/patienthandler.php?action=REMOVE`, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -231,6 +233,7 @@ function deletePatient(id) {
             })
             .then(response => response.json())
             .then(result => {
+                hideSpinner();
                 if (result.success) {
                     Swal.fire("Eliminado", "Paciente eliminado correctamente.", "success");
                     loadPatients();
@@ -239,6 +242,7 @@ function deletePatient(id) {
                 }
             })
             .catch(error => {
+                hideSpinner();
                 console.error("Error deleting patient:", error);
                 Swal.fire("Error", "No se pudo eliminar el paciente.", "error");
             });
