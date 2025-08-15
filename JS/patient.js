@@ -199,9 +199,12 @@ function openAddPatientModal() {
 }
 
 function editPatient(id) {
+    showSpinner("Cargando datos del paciente...");
+
     fetch(`../PHP/patienthandler.php?action=GET&id=${id}`)
         .then(response => response.json())
         .then(patient => {
+            hideSpinner();
             if (patient.error) {
                 Swal.fire("Error", patient.error, "error");
                 return;
@@ -209,6 +212,7 @@ function editPatient(id) {
             openPatientModal(true, patient);
         })
         .catch(error => {
+            hideSpinner();
             console.error("Error loading patient data:", error);
             Swal.fire("Error", "No se pudo cargar el paciente.", "error");
         });
