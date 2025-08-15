@@ -191,46 +191,53 @@ function editProduct(id_producto) {
     }
 
     openAddProductModal(true); // edit mode
+    showSpinner("Cargando datos del producto...");
 
-    retrieveBrands(() => {
+    Promise.all([
+        retrieveBrands(),
+        retrieveProviders()
+    ])
+    .then(() => {
         document.getElementById('marcaSelect').value = product.ID_MARCA;
-    });
-
-    retrieveProviders(() => {
         document.getElementById('proveedorSelect').value = product.ID_PROVEEDOR;
+
+        document.getElementById('productId').value = product.ID_PRODUCTO;
+        document.getElementById('modeloInput').value = product.MODELO;
+        document.getElementById('precioDistribuidor').value = parseFloat(product.PRECIO_DISTRIBUIDOR).toFixed(2);
+        document.getElementById('precioVenta').value = parseFloat(product.PRECIO_DE_VENTA).toFixed(2);
+        document.getElementById('numeroSerie').value = product.NUMERO_DE_SERIE;
+
+        const hasGarantia = !!product.ID_GARANTIA;
+        const garantiaCheckbox = document.getElementById('hasWarrantyCheckbox');
+        const fechaInicio = document.getElementById('fechaInicio');
+        const fechaFin = document.getElementById('fechaFin');
+        const warrantyWrapper = document.getElementById('warrantyFieldsWrapper');
+
+        garantiaCheckbox.checked = hasGarantia;
+
+        if (hasGarantia) {
+            warrantyWrapper.classList.remove('d-none');
+            fechaInicio.value = product.FECHA_INICIO ?? '';
+            fechaFin.value = product.FECHA_FIN ?? '';
+            fechaFin.setAttribute('data-user-modified', 'true');
+        } else {
+            warrantyWrapper.classList.add('d-none');
+            fechaInicio.value = '';
+            fechaFin.value = '';
+            fechaFin.removeAttribute('data-user-modified');
+        }
+
+        hideSpinner();
+    })
+    .catch(error => {
+        hideSpinner();
+        console.error("Error al cargar datos para edición:", error);
+        Swal.fire("Error", "No se pudieron cargar los datos del producto.", "error");
     });
-
-    // Basic fields
-    document.getElementById('productId').value = product.ID_PRODUCTO;
-    document.getElementById('modeloInput').value = product.MODELO;
-    document.getElementById('precioDistribuidor').value = parseFloat(product.PRECIO_DISTRIBUIDOR).toFixed(2);
-    document.getElementById('precioVenta').value = parseFloat(product.PRECIO_DE_VENTA).toFixed(2);
-    document.getElementById('numeroSerie').value = product.NUMERO_DE_SERIE;
-
-    // Warranty
-    const hasGarantia = !!product.ID_GARANTIA;
-    const garantiaCheckbox = document.getElementById('hasWarrantyCheckbox');
-    const fechaInicio = document.getElementById('fechaInicio');
-    const fechaFin = document.getElementById('fechaFin');
-    const warrantyWrapper = document.getElementById('warrantyFieldsWrapper');
-
-    garantiaCheckbox.checked = hasGarantia;
-
-    if (hasGarantia) {
-        warrantyWrapper.classList.remove('d-none');
-        fechaInicio.value = product.FECHA_INICIO ?? '';
-        fechaFin.value = product.FECHA_FIN ?? '';
-        fechaFin.setAttribute('data-user-modified', 'true'); // prevent auto-overwrite on change
-    } else {
-        warrantyWrapper.classList.add('d-none');
-        fechaInicio.value = '';
-        fechaFin.value = '';
-        fechaFin.removeAttribute('data-user-modified');
-    }
 }
 
-function retrieveBrands(callback) {
-    fetch("../PHP/producthandler.php?action=RETRIEVEBRANDS")
+function retrieveBrands() {
+    return fetch("../PHP/producthandler.php?action=RETRIEVEBRANDS")
         .then(response => response.json())
         .then(brands => {
             const marcaSelect = document.getElementById('marcaSelect');
@@ -241,15 +248,11 @@ function retrieveBrands(callback) {
                 option.textContent = brand.NOMBRE;
                 marcaSelect.appendChild(option);
             });
-            if (typeof callback === 'function') callback();
-        })
-        .catch(error => {
-            console.error("Error al recuperar marcas:", error);
         });
 }
 
-function retrieveProviders(callback) {
-    fetch("../PHP/producthandler.php?action=RETRIEVEPROVIDERS")
+function retrieveProviders() {
+    return fetch("../PHP/producthandler.php?action=RETRIEVEPROVIDERS")
         .then(response => response.json())
         .then(providers => {
             const proveedorSelect = document.getElementById('proveedorSelect');
@@ -260,10 +263,6 @@ function retrieveProviders(callback) {
                 option.textContent = provider.NOMBRE;
                 proveedorSelect.appendChild(option);
             });
-            if (typeof callback === 'function') callback();
-        })
-        .catch(error => {
-            console.error("Error al recuperar proveedores:", error);
         });
 }
 
