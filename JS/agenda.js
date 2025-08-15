@@ -307,6 +307,8 @@ function saveAppointment() {
         return;
     }
 
+    showSpinner("Guardando cita...");
+
     if (isFirstTime) {
         const nombre = $('#nameagenda').val().trim();
         const paterno = $('#paternoagenda').val().trim();
@@ -315,17 +317,18 @@ function saveAppointment() {
         const sexoValor = selectedSexo.value === "Hombre" ? 1 : 0;
 
         if (!nombre || !paterno) {
+            hideSpinner();
             Swal.fire('Campos incompletos', 'Nombre y Apellido paterno son obligatorios', 'warning');
             return;
         }
 
         const payload = {
-            nombre: nombre,
-            paterno: paterno,
-            materno: materno,
+            nombre,
+            paterno,
+            materno,
             sexo: sexoValor,
             fecha_hora: mysqlDateTime,
-            motivo: motivo
+            motivo
         };
 
         fetch('../PHP/agendahandler.php?action=ADDFIRSTTIME', {
@@ -335,6 +338,7 @@ function saveAppointment() {
         })
         .then(res => res.json())
         .then(response => {
+            hideSpinner();
             if (response.success) {
                 $('#appointmentModal').modal('hide');
                 Swal.fire('Cita guardada', 'Se ha registrado la cita con un paciente de primera vez.', 'success');
@@ -344,6 +348,7 @@ function saveAppointment() {
             }
         })
         .catch(err => {
+            hideSpinner();
             console.error(err);
             Swal.fire('Error', 'Error al enviar la cita', 'error');
         });
@@ -351,6 +356,7 @@ function saveAppointment() {
     } else {
         const pacienteId = $('#patientSelect').val();
         if (!pacienteId) {
+            hideSpinner();
             Swal.fire('Campos incompletos', 'Seleccione un paciente existente', 'warning');
             return;
         }
@@ -358,7 +364,7 @@ function saveAppointment() {
         const payload = {
             id_paciente: pacienteId,
             fecha_hora: mysqlDateTime,
-            motivo: motivo
+            motivo
         };
 
         fetch('../PHP/agendahandler.php?action=ADD', {
@@ -368,6 +374,7 @@ function saveAppointment() {
         })
         .then(res => res.json())
         .then(response => {
+            hideSpinner();
             if (response.success) {
                 $('#appointmentModal').modal('hide');
                 Swal.fire('Cita guardada', 'La cita se ha registrado correctamente.', 'success');
@@ -377,6 +384,7 @@ function saveAppointment() {
             }
         })
         .catch(err => {
+            hideSpinner();
             console.error(err);
             Swal.fire('Error', 'Ocurrió un error al enviar la cita', 'error');
         });
