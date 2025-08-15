@@ -24,9 +24,13 @@ function loadStates(selectedStateId = null) {
 }
 
 function loadMunicipios(stateId, selectedMunicipio = null) {
+    showSpinner("Cargando municipios...");
+
     return fetch(`../PHP/getMunicipios.php?stateId=${stateId}`)
         .then(response => response.json())
         .then(municipios => {
+            hideSpinner();
+
             const municipioSelect = document.getElementById("municipio");
             municipioSelect.innerHTML = ""; // Limpiar opciones anteriores
 
@@ -46,7 +50,10 @@ function loadMunicipios(stateId, selectedMunicipio = null) {
                 if (centroOption) centroOption.selected = true;
             }
         })
-        .catch(error => console.error("Error al cargar municipios:", error));
+        .catch(error => {
+            hideSpinner();
+            console.error("Error al cargar municipios:", error);
+        });
 }
 
 document.getElementById("state").addEventListener("change", function () {
