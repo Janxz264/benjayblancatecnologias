@@ -311,6 +311,8 @@ function deleteProduct(id_producto) {
         reverseButtons: true
     }).then(result => {
         if (result.isConfirmed) {
+            showSpinner("Eliminando producto...");
+
             fetch(`../PHP/producthandler.php?action=REMOVE`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -318,6 +320,8 @@ function deleteProduct(id_producto) {
             })
             .then(res => res.json())
             .then(response => {
+                hideSpinner();
+
                 if (response.success) {
                     Swal.fire({
                         icon: 'success',
@@ -336,6 +340,7 @@ function deleteProduct(id_producto) {
                 }
             })
             .catch(error => {
+                hideSpinner();
                 console.error("Error al eliminar producto:", error);
                 Swal.fire({
                     icon: 'error',
