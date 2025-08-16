@@ -197,7 +197,15 @@ function openPatientModal(isEdit = false, patient = null) {
 }
 
 function openAddPatientModal() {
-    openPatientModal(false);
+    showSpinner("Preparando formulario de nuevo paciente...");
+
+    openPatientModal(false)
+        .then(() => hideSpinner())
+        .catch(error => {
+            hideSpinner();
+            console.error("Error preparando nuevo paciente:", error);
+            Swal.fire("Error", "No se pudo preparar el formulario de paciente nuevo.", "error");
+        });
 }
 
 function editPatient(id) {
