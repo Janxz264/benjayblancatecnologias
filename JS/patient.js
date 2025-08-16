@@ -183,16 +183,18 @@ function openPatientModal(isEdit = false, patient = null) {
         document.getElementById("doctorMaterno").disabled = true;
         document.getElementById("doctorManualFields").style.display = "none";
 
-        // Reset location
-        loadStates();
+        // Reset municipio dropdown
         document.getElementById("municipio").innerHTML = "<option>Seleccione un estado primero</option>";
 
-        // Load lists
-        loadAssurances();
-        loadDoctors();
+        // Await all async loads before showing modal
+        const statePromise = loadStates(); // Will auto-select Tabasco + Centro
+        const assurancePromise = loadAssurances();
+        const doctorPromise = loadDoctors();
 
-        new bootstrap.Modal(document.getElementById("patientModal")).show();
-        return Promise.resolve();
+        return Promise.all([statePromise, assurancePromise, doctorPromise])
+            .then(() => {
+                new bootstrap.Modal(document.getElementById("patientModal")).show();
+            });
     }
 }
 
