@@ -291,7 +291,7 @@ document.getElementById('savePedidoBtn').addEventListener('click', function (e) 
     ...(fechaEntrega && { fechaEntrega })
   };
 
-    if (!Array.isArray(selectedProducts) || selectedProducts.length === 0) {
+  if (!Array.isArray(selectedProducts) || selectedProducts.length === 0) {
     errors.push("Debe agregar al menos un producto al pedido.");
   } else {
     const selectedIds = selectedProducts.map(p => parseInt(p.ID_PRODUCTO));
@@ -308,6 +308,8 @@ document.getElementById('savePedidoBtn').addEventListener('click', function (e) 
     return;
   }
 
+  showSpinner("Guardando pedido...");
+
   fetch(`../PHP/pedidohandler.php?action=${isEdit ? 'EDIT' : 'ADD'}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -315,6 +317,8 @@ document.getElementById('savePedidoBtn').addEventListener('click', function (e) 
   })
     .then(res => res.json())
     .then(response => {
+      hideSpinner();
+
       if (response.success) {
         Swal.fire({
           icon: 'success',
@@ -339,6 +343,7 @@ document.getElementById('savePedidoBtn').addEventListener('click', function (e) 
       }
     })
     .catch(err => {
+      hideSpinner(); // ✅ Hide spinner on error
       console.error("Error en la solicitud:", err);
       Swal.fire({
         icon: 'error',
