@@ -251,20 +251,25 @@ function retrieveProductos() {
 }
 
 function openAddPedidoModal() {
-    const modal = new bootstrap.Modal(document.getElementById('pedidoModal'));
-    modal.show();
+  const modal = new bootstrap.Modal(document.getElementById('pedidoModal'));
+  modal.show();
 
-    document.getElementById('pedidoForm').reset();
-    document.getElementById('embeddedProductForm').classList.add('d-none');
+  document.getElementById('pedidoForm').reset();
+  document.getElementById('embeddedProductForm').classList.add('d-none');
 
-    // Clear product arrays for fresh modal state
-    availableProducts = [];
-    selectedProducts = [];
+  // Clear product arrays for fresh modal state
+  availableProducts = [];
+  selectedProducts = [];
 
-    // Fetch product list dynamically
-    retrieveProductos().then(products => {
-        availableProducts = products;
-        renderProductLists(); // Refresh UI with both lists
+  showSpinner("Cargando productos disponibles...");
+
+  retrieveProductos()
+    .then(products => {
+      availableProducts = products;
+      renderProductLists(); // Refresh UI with both lists
+    })
+    .finally(() => {
+      hideSpinner();
     });
 }
 
