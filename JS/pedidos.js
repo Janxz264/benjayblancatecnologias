@@ -566,34 +566,40 @@ function editarPedido() {
     fechaEntrega
   };
 
+  // 🌀 Show spinner before sending request
+  showSpinner("Actualizando pedido...");
+
   fetch("../PHP/pedidohandler.php?action=EDIT", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   })
-  .then(res => res.json())
-  .then(response => {
-    if (response.success) {
-      Swal.fire({
-        icon: "success",
-        title: "Pedido actualizado",
-        text: "Las fechas fueron modificadas exitosamente.",
-        confirmButtonText: "Cerrar"
-      }).then(() => {
-        const modalEl = document.getElementById("editPedidoModal");
-        const modalInstance = bootstrap.Modal.getInstance(modalEl);
-        if (modalInstance) modalInstance.hide();
+    .then(res => res.json())
+    .then(response => {
+      hideSpinner(); // ✅ Always hide spinner after response
 
-        loadPedidos(); // Refresh table
-      });
-    } else {
-      throw new Error(response.error || "Error desconocido.");
-    }
-  })
-  .catch(err => {
-    console.error("Error en editarPedido:", err);
-    Swal.fire("Error", err.message, "error");
-  });
+      if (response.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Pedido actualizado",
+          text: "Las fechas fueron modificadas exitosamente.",
+          confirmButtonText: "Cerrar"
+        }).then(() => {
+          const modalEl = document.getElementById("editPedidoModal");
+          const modalInstance = bootstrap.Modal.getInstance(modalEl);
+          if (modalInstance) modalInstance.hide();
+
+          loadPedidos(); // Refresh table
+        });
+      } else {
+        throw new Error(response.error || "Error desconocido.");
+      }
+    })
+    .catch(err => {
+      hideSpinner(); // ✅ Hide spinner on error
+      console.error("Error en editarPedido:", err);
+      Swal.fire("Error", err.message, "error");
+    });
 }
 
 function agregarProductoAPedido(ID_PEDIDO) {
