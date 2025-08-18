@@ -453,62 +453,66 @@ function verProductos(pedidoID, isEditable) {
 }
 
 function quitarProductodePedido(ID_PRODUCTO, ID_PEDIDO) {
-    Swal.fire({
-        title: '¿Desea quitar este producto del pedido?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, quitarlo',
-        cancelButtonText: 'Cancelar',
-        reverseButtons: true
-    }).then(result => {
-        if (result.isConfirmed) {
-            fetch("../PHP/pedidohandler.php?action=REMOVEPRODUCTO", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id_producto: ID_PRODUCTO, id_pedido: ID_PEDIDO })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Remove product row from modal
-                    const row = document.querySelector(`#productosTable tr[data-id='${ID_PRODUCTO}']`);
-                    if (row) row.remove();
+  Swal.fire({
+    title: '¿Desea quitar este producto del pedido?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, quitarlo',
+    cancelButtonText: 'Cancelar',
+    reverseButtons: true
+  }).then(result => {
+    if (!result.isConfirmed) return;
 
-                    // Update pedidosCache
-                    const pedido = pedidosCache.find(p => p.ID_PEDIDO === ID_PEDIDO);
-                    if (pedido && Array.isArray(pedido.PRODUCTOS)) {
-                        pedido.PRODUCTOS = pedido.PRODUCTOS.filter(p => p.ID_PRODUCTO !== ID_PRODUCTO);
-                    }
+    showSpinner("Quitando producto del pedido...");
 
-                    //Recalcular totales
-                    actualizarTotales(ID_PEDIDO);
+    fetch("../PHP/pedidohandler.php?action=REMOVEPRODUCTO", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id_producto: ID_PRODUCTO, id_pedido: ID_PEDIDO })
+    })
+      .then(response => response.json())
+      .then(data => {
+        hideSpinner();
 
-                    // Update the main table count cell
-                    const mainTableRows = document.querySelectorAll(`#pedidosTable tbody tr`);
-                    mainTableRows.forEach(tr => {
-                        const cells = tr.querySelectorAll("td");
-                        if (parseInt(cells[0]?.innerText) === ID_PEDIDO) {
-                            const countCell = cells[3];
-                            const currentCount = parseInt(countCell.innerText) || 0;
-                            countCell.innerText = Math.max(currentCount - 1, 0); // Prevent negatives
-                        }
-                    });
+        if (!data.success) throw new Error(data.error || "Error desconocido.");
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Producto quitado del pedido exitosamente',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                } else {
-                    throw new Error(data.error || "Error desconocido.");
-                }
-            })
-            .catch(err => {
-                Swal.fire('Error', err.message, 'error');
-            });
+        // Remove product row from modal
+        const row = document.querySelector(`#productosTable tr[data-id='${ID_PRODUCTO}']`);
+        if (row) row.remove();
+
+        // Update pedidosCache
+        const pedido = pedidosCache.find(p => p.ID_PEDIDO === ID_PEDIDO);
+        if (pedido && Array.isArray(pedido.PRODUCTOS)) {
+          pedido.PRODUCTOS = pedido.PRODUCTOS.filter(p => p.ID_PRODUCTO !== ID_PRODUCTO);
         }
-    });
+
+        // Recalcular totales
+        actualizarTotales(ID_PEDIDO);
+
+        // Update the main table count cell
+        const mainTableRows = document.querySelectorAll(`#pedidosTable tbody tr`);
+        mainTableRows.forEach(tr => {
+          const cells = tr.querySelectorAll("td");
+          if (parseInt(cells[0]?.innerText) === ID_PEDIDO) {
+            const countCell = cells[3];
+            const currentCount = parseInt(countCell.innerText) || 0;
+            countCell.innerText = Math.max(currentCount - 1, 0); // Prevent negatives
+          }
+        });
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Producto quitado del pedido exitosamente',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      })
+      .catch(err => {
+        hideSpinner();
+        console.error("Error al quitar producto del pedido:", err);
+        Swal.fire('Error', err.message, 'error');
+      });
+  });
 }
 
 function editPedido(ID_PEDIDO) {
@@ -566,7 +570,6 @@ function editarPedido() {
     fechaEntrega
   };
 
-  // 🌀 Show spinner before sending request
   showSpinner("Actualizando pedido...");
 
   fetch("../PHP/pedidohandler.php?action=EDIT", {
@@ -576,7 +579,7 @@ function editarPedido() {
   })
     .then(res => res.json())
     .then(response => {
-      hideSpinner(); // ✅ Always hide spinner after response
+      hideSpinner();
 
       if (response.success) {
         Swal.fire({
@@ -589,14 +592,14 @@ function editarPedido() {
           const modalInstance = bootstrap.Modal.getInstance(modalEl);
           if (modalInstance) modalInstance.hide();
 
-          loadPedidos(); // Refresh table
+          loadPedidos();
         });
       } else {
         throw new Error(response.error || "Error desconocido.");
       }
     })
     .catch(err => {
-      hideSpinner(); // ✅ Hide spinner on error
+      hideSpinner();
       console.error("Error en editarPedido:", err);
       Swal.fire("Error", err.message, "error");
     });
@@ -672,6 +675,8 @@ function confirmAddProduct(ID_PEDIDO) {
 
   const payload = { idPedido: ID_PEDIDO, idProducto: selectedId };
 
+  showSpinner("Agregando producto al pedido...");
+
   fetch("../PHP/pedidohandler.php?action=EDITADD", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -679,6 +684,8 @@ function confirmAddProduct(ID_PEDIDO) {
   })
     .then(res => res.json())
     .then(response => {
+      hideSpinner();
+
       if (!response.success) throw new Error(response.error || "Error inesperado.");
 
       Swal.fire("Éxito", "Producto agregado al pedido.", "success");
@@ -708,7 +715,7 @@ function confirmAddProduct(ID_PEDIDO) {
       const pedido = pedidosCache.find(p => p.ID_PEDIDO === ID_PEDIDO);
       if (pedido) pedido.PRODUCTOS.push(producto);
 
-      //Recalcular totales
+      // Recalcular totales
       actualizarTotales(ID_PEDIDO);
 
       const modalEl = document.getElementById("addProductToPedidoModal");
@@ -716,6 +723,7 @@ function confirmAddProduct(ID_PEDIDO) {
       if (modalInstance) modalInstance.hide();
     })
     .catch(err => {
+      hideSpinner();
       console.error("Error al agregar producto al pedido:", err);
       Swal.fire("Error", err.message, "error");
     });
