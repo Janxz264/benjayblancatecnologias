@@ -185,50 +185,55 @@ function loadPedidos() {
 }
 
 function deletePedido(id_pedido) {
-    Swal.fire({
-        title: '¿Está seguro de que desea eliminar este pedido?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar',
-        reverseButtons: true
-    }).then(result => {
-        if (result.isConfirmed) {
-            fetch(`../PHP/pedidohandler.php?action=REMOVE`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id: id_pedido })
-            })
-            .then(res => res.json())
-            .then(response => {
-                if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Pedido eliminado',
-                        text: 'El pedido fue eliminado correctamente.',
-                        confirmButtonText: 'Cerrar'
-                    });
-                    loadPedidos(); // Refresh pedidos list
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: response.error || 'No se pudo eliminar el pedido.',
-                        confirmButtonText: 'Cerrar'
-                    });
-                }
-            })
-            .catch(error => {
-                console.error("Error al eliminar pedido:", error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error de red',
-                    text: 'No se pudo contactar al servidor.',
-                    confirmButtonText: 'Cerrar'
-                });
-            });
+  Swal.fire({
+    title: '¿Está seguro de que desea eliminar este pedido?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar',
+    reverseButtons: true
+  }).then(result => {
+    if (!result.isConfirmed) return;
+
+    showSpinner("Eliminando pedido...");
+
+    fetch(`../PHP/pedidohandler.php?action=REMOVE`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: id_pedido })
+    })
+      .then(res => res.json())
+      .then(response => {
+        hideSpinner();
+
+        if (response.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Pedido eliminado',
+            text: 'El pedido fue eliminado correctamente.',
+            confirmButtonText: 'Cerrar'
+          });
+          loadPedidos();
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: response.error || 'No se pudo eliminar el pedido.',
+            confirmButtonText: 'Cerrar'
+          });
         }
-    });
+      })
+      .catch(error => {
+        hideSpinner();
+        console.error("Error al eliminar pedido:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error de red',
+          text: 'No se pudo contactar al servidor.',
+          confirmButtonText: 'Cerrar'
+        });
+      });
+  });
 }
 
 function retrieveProductos() {
