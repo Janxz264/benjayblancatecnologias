@@ -502,17 +502,18 @@ document.getElementById('saveProductBtn').addEventListener('click', function (e)
                 if (modalInstance) modalInstance.hide();
 
                 if (originString === "pedido") {
-                    console.log("Es pedido");
+                    //Added product from the pedido modal and section
                     const pedidoModal = new bootstrap.Modal(document.getElementById('pedidoModal'));
                     pedidoModal.show();
 
                     retrieveProductos().then(productList => {
-                        availableProducts = productList;
+                        const savedProductId = parseInt(productId);
+                        availableProducts = productList.filter(p => p.ID_PRODUCTO !== savedProductId);
                         renderProductLists();
                     });
-                } else {
-                    console.log("No es pedido");
-                    loadProducts();
+                }
+                else {
+                    loadProducts(); //Native product
                 }
             });
         } else {
