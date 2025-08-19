@@ -120,63 +120,71 @@ function loadProducts() {
 }
 
 function openAddProductModal(isEditMode = false, origin = null) {
-    const pedidoModalEl = document.getElementById('pedidoModal');
-    const pedidoModalInstance = bootstrap.Modal.getInstance(pedidoModalEl);
-    if (origin === 'pedido' && pedidoModalInstance) {
-        pedidoModalInstance.hide(); // Close pedido modal
-    }
+  const pedidoModalEl = document.getElementById('pedidoModal');
+  const pedidoModalInstance = bootstrap.Modal.getInstance(pedidoModalEl);
+  if (origin === 'pedido' && pedidoModalInstance) {
+    pedidoModalInstance.hide(); // Close pedido modal
+  }
 
-    originString=origin;
+  originString = origin;
 
-    const modal = new bootstrap.Modal(document.getElementById('productModal'));
-    modal.show();
+  const modal = new bootstrap.Modal(document.getElementById('productModal'));
+  modal.show();
 
-    const productModalEl = document.getElementById('productModal');
-    productModalEl.addEventListener('hidden.bs.modal', () => {
+  const productModalEl = document.getElementById('productModal');
+  productModalEl.addEventListener('hidden.bs.modal', () => {
     if (origin === 'pedido') {
-        const fechaPedidoInput = document.getElementById('fechaPedido');
-        if (savedFechaPedido !== null) {
+      const fechaPedidoInput = document.getElementById('fechaPedido');
+      if (savedFechaPedido !== null) {
         fechaPedidoInput.value = savedFechaPedido;
-        }
-        fechaPedidoInput.setAttribute('required', 'required'); // restore constraint
+      }
+      fechaPedidoInput.setAttribute('required', 'required'); // restore constraint
 
-        const pedidoModal = new bootstrap.Modal(document.getElementById('pedidoModal'));
-        pedidoModal.show();
+      const pedidoModal = new bootstrap.Modal(document.getElementById('pedidoModal'));
+      pedidoModal.show();
     }
-    }, { once: true });
+  }, { once: true });
 
-    document.getElementById('productForm').reset();
-    currentEditMode = isEditMode;
+  document.getElementById('productForm').reset();
+  currentEditMode = isEditMode;
 
-    // Reset Marca
-    const marcaCheckbox = document.getElementById('addNewMarcaCheckbox');
-    document.getElementById('newMarcaFieldWrapper').classList.add('d-none');
-    document.getElementById('newMarcaInput').value = '';
-    const marcaSelect = document.getElementById('marcaSelect');
-    marcaCheckbox.checked = false;
-    marcaSelect.disabled = false;
-    marcaSelect.value = '';
+  // Reset Marca
+  const marcaCheckbox = document.getElementById('addNewMarcaCheckbox');
+  document.getElementById('newMarcaFieldWrapper').classList.add('d-none');
+  document.getElementById('newMarcaInput').value = '';
+  const marcaSelect = document.getElementById('marcaSelect');
+  marcaCheckbox.checked = false;
+  marcaSelect.disabled = false;
+  marcaSelect.value = '';
 
-    // Reset Proveedor
-    const proveedorCheckbox = document.getElementById('addNewProveedorCheckbox');
-    document.getElementById('newProveedorFieldWrapper').classList.add('d-none');
-    document.getElementById('newProveedorInput').value = '';
-    const proveedorSelect = document.getElementById('proveedorSelect');
-    proveedorCheckbox.checked = false;
-    proveedorSelect.disabled = false;
-    proveedorSelect.value = '';
+  // Reset Proveedor
+  const proveedorCheckbox = document.getElementById('addNewProveedorCheckbox');
+  document.getElementById('newProveedorFieldWrapper').classList.add('d-none');
+  document.getElementById('newProveedorInput').value = '';
+  const proveedorSelect = document.getElementById('proveedorSelect');
+  proveedorCheckbox.checked = false;
+  proveedorSelect.disabled = false;
+  proveedorSelect.value = '';
 
-    //Reset Garantía
-    const garantiaCheckbox = document.getElementById('hasWarrantyCheckbox');
-    garantiaCheckbox.checked = false;
-    document.getElementById('warrantyFieldsWrapper').classList.add('d-none');
+  // Reset Garantía
+  const garantiaCheckbox = document.getElementById('hasWarrantyCheckbox');
+  garantiaCheckbox.checked = false;
+  document.getElementById('warrantyFieldsWrapper').classList.add('d-none');
 
-    document.getElementById('productId').value = '';
+  document.getElementById('productId').value = '';
 
-    // Load dropdowns
-    retrieveBrands();
-    retrieveProviders();
+  showSpinner("Cargando datos del producto...");
+
+  Promise.all([retrieveBrands(), retrieveProviders()])
+    .catch(err => {
+      console.error("Error al cargar datos del producto:", err);
+      Swal.fire("Error", "No se pudieron cargar las listas de marcas y proveedores.", "error");
+    })
+    .finally(() => {
+      hideSpinner();
+    });
 }
+
 
 function editProduct(id_producto) {
     const product = productsCache.find(p => p.ID_PRODUCTO === id_producto);
@@ -236,19 +244,25 @@ function editProduct(id_producto) {
     });
 }
 
-function retrieveBrands() {
-    return fetch("../PHP/producthandler.php?action=RETRIEVEBRANDS")
-        .then(response => response.json())
-        .then(brands => {
-            const marcaSelect = document.getElementById('marcaSelect');
-            marcaSelect.innerHTML = '<option value="">-- Seleccione una marca --</option>';
-            brands.forEach(brand => {
-                const option = document.createElement('option');
-                option.value = brand.ID_MARCA;
-                option.textContent = brand.NOMBRE;
-                marcaSelect.appendChild(option);
-            });
-        });
+function retrieveProviders() {
+  return fetch("../PHP/producthandler.php?action=RETRIEVEPROVIDERS")
+    .then(response => {
+      if (!response.ok) throw new Error("Error al obtener proveedores.");
+      return response.json();
+    })
+    .then(providers => {
+      const proveedorSelect = document.getElementById('proveedorSelect');
+      proveedorSelect.innerHTML = '<option value="">-- Seleccione un proveedor --</option>';
+      providers.forEach(provider => {
+        const option = document.createElement('option');
+        option.value = provider.ID_PROVEEDOR;
+        option.textContent = provider.NOMBRE;
+        proveedorSelect.appendChild(option);
+      });
+    })
+    .catch(err => {
+      console.error("Error en retrieveProviders:", err);
+    });
 }
 
 function retrieveProviders() {
