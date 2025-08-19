@@ -500,16 +500,7 @@ function quitarProductodePedido(ID_PRODUCTO, ID_PEDIDO) {
         // Recalcular totales
         actualizarTotales(ID_PEDIDO);
 
-        // Update the main table count cell
-        const mainTableRows = document.querySelectorAll(`#pedidosTable tbody tr`);
-        mainTableRows.forEach(tr => {
-          const cells = tr.querySelectorAll("td");
-          if (parseInt(cells[0]?.innerText) === ID_PEDIDO) {
-            const countCell = cells[3];
-            const currentCount = parseInt(countCell.innerText) || 0;
-            countCell.innerText = Math.max(currentCount - 1, 0); // Prevent negatives
-          }
-        });
+        loadPedidos();
 
         Swal.fire({
           icon: 'success',
@@ -729,6 +720,10 @@ function confirmAddProduct(ID_PEDIDO) {
       // Recalcular totales
       actualizarTotales(ID_PEDIDO);
 
+      // ✅ Refresh pedidos table to update product count and status
+      loadPedidos();
+
+      // Close modal
       const modalEl = document.getElementById("addProductToPedidoModal");
       const modalInstance = bootstrap.Modal.getInstance(modalEl);
       if (modalInstance) modalInstance.hide();
