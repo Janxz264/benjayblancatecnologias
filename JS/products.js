@@ -244,24 +244,24 @@ function editProduct(id_producto) {
     });
 }
 
-function retrieveProviders() {
-  return fetch("../PHP/producthandler.php?action=RETRIEVEPROVIDERS")
+function retrieveBrands() {
+  return fetch("../PHP/producthandler.php?action=RETRIEVEBRANDS")
     .then(response => {
-      if (!response.ok) throw new Error("Error al obtener proveedores.");
+      if (!response.ok) throw new Error("Error al obtener marcas.");
       return response.json();
     })
-    .then(providers => {
-      const proveedorSelect = document.getElementById('proveedorSelect');
-      proveedorSelect.innerHTML = '<option value="">-- Seleccione un proveedor --</option>';
-      providers.forEach(provider => {
+    .then(brands => {
+      const marcaSelect = document.getElementById('marcaSelect');
+      marcaSelect.innerHTML = '<option value="">-- Seleccione una marca --</option>';
+      brands.forEach(brand => {
         const option = document.createElement('option');
-        option.value = provider.ID_PROVEEDOR;
-        option.textContent = provider.NOMBRE;
-        proveedorSelect.appendChild(option);
+        option.value = brand.ID_MARCA;
+        option.textContent = brand.NOMBRE;
+        marcaSelect.appendChild(option);
       });
     })
     .catch(err => {
-      console.error("Error en retrieveProviders:", err);
+      console.error("Error en retrieveBrands:", err);
     });
 }
 
