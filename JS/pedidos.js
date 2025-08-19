@@ -341,6 +341,7 @@ document.getElementById('savePedidoBtn').addEventListener('click', function (e) 
           const modalEl = document.getElementById('pedidoModal');
           const modalInstance = bootstrap.Modal.getInstance(modalEl);
           if (modalInstance) modalInstance.hide();
+          cleanUpModals();
           loadPedidos(); // Refresh your pedidos listing
         });
       } else {
@@ -353,7 +354,7 @@ document.getElementById('savePedidoBtn').addEventListener('click', function (e) 
       }
     })
     .catch(err => {
-      hideSpinner(); // ✅ Hide spinner on error
+      hideSpinner();
       console.error("Error en la solicitud:", err);
       Swal.fire({
         icon: 'error',
