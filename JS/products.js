@@ -173,7 +173,7 @@ function openAddProductModal(isEditMode = false, origin = null) {
 
   document.getElementById('productId').value = '';
 
-  showSpinner("Cargando datos del producto...");
+  showSpinner("Cargando marcas y proveedores...");
 
   Promise.all([retrieveBrands(), retrieveProviders()])
     .catch(err => {
