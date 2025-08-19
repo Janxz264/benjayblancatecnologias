@@ -237,7 +237,7 @@ function deletePedido(id_pedido) {
 }
 
 function retrieveProductos() {
-    return fetch("../PHP/producthandler.php?action=VIEW")
+    return fetch("../PHP/producthandler.php?action=VIEWAVAILABLE")
         .then(res => {
             if (!res.ok) throw new Error("No se pudo obtener la lista de productos.");
             return res.json();
