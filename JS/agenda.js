@@ -262,6 +262,8 @@ function openAddAppointmentModal() {
 
 // Cargar pacientes desde patienthandler.php
 function loadPatientsForAppointment() {
+    showSpinner("Cargando pacientes...");
+
     $.ajax({
         url: '../PHP/patienthandler.php?action=VIEW',
         method: 'GET',
@@ -270,13 +272,15 @@ function loadPatientsForAppointment() {
             let $select = $('#patientSelect');
             $select.empty().append('<option value="">-- Seleccione un paciente --</option>');
 
-            // Populate dropdown with patient data
             patients.forEach(p => {
                 const fullName = `${p.NOMBRE} ${p.PATERNO} ${p.MATERNO}`;
                 $select.append(`<option value="${p.ID_PACIENTE}">${fullName}</option>`);
             });
+
+            hideSpinner();
         },
         error: function(err) {
+            hideSpinner();
             console.error("Error al cargar pacientes:", err);
             Swal.fire("Error", "Ocurrió un problema al cargar los pacientes.", "error");
         }
