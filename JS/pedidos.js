@@ -756,3 +756,11 @@ function actualizarTotales(pedidoID) {
     if (distCell) distCell.textContent = `$${totalDistribuidor.toFixed(2)}`;
     if (ventaCell) ventaCell.textContent = `$${totalVenta.toFixed(2)}`;
 }
+
+window.addEventListener("productoGuardado", function (e) {
+    retrieveProductos().then(productList => {
+        const selectedIds = selectedProducts.map(p => p.ID_PRODUCTO);
+        availableProducts = productList.filter(p => !selectedIds.includes(p.ID_PRODUCTO));
+        renderProductLists();
+    });
+});
