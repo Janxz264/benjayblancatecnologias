@@ -630,8 +630,13 @@ function editAppointment(idCita) {
 }
 
 async function saveEditedAppointment() {
+    blockUI("Actualizando cita...");
+    showSpinner("Actualizando cita...");
+
     const idCita = document.getElementById('appointmentId').value;
     if (!idCita) {
+        hideSpinner();
+        unblockUI();
         Swal.fire("Error", "No se ha seleccionado ninguna cita para editar.", "error");
         return;
     }
@@ -641,16 +646,20 @@ async function saveEditedAppointment() {
     const appointmentTime = document.getElementById('appointmentTime').value;
     const appointmentReason = document.getElementById('appointmentReason').value;
 
-    const time24 = convertTo24Hour(appointmentTime);
-    const fechaHora = `${appointmentDate} ${time24}`;
-
     if (!patientId || !appointmentDate || !appointmentTime || !appointmentReason) {
+        hideSpinner();
+        unblockUI();
         Swal.fire("Error", "Todos los campos son obligatorios.", "warning");
         return;
     }
 
+    const time24 = convertTo24Hour(appointmentTime);
+    const fechaHora = `${appointmentDate} ${time24}`;
+
     const overlapping = await isOverlappingAppointment(fechaHora, 60, idCita);
     if (overlapping) {
+        hideSpinner();
+        unblockUI();
         Swal.fire('Conflicto de horario', 'Ya existe otra cita agendada dentro de la ventana de 1 hora alrededor de esta hora.', 'warning');
         return;
     }
@@ -661,8 +670,6 @@ async function saveEditedAppointment() {
         motivo: appointmentReason
     };
 
-    showSpinner("Actualizando cita...");
-
     try {
         const response = await fetch(`../PHP/agendahandler.php?action=EDIT&id=${idCita}`, {
             method: "POST",
@@ -671,6 +678,7 @@ async function saveEditedAppointment() {
         });
         const data = await response.json();
         hideSpinner();
+        unblockUI();
 
         if (data.success) {
             Swal.fire({
@@ -690,6 +698,7 @@ async function saveEditedAppointment() {
         }
     } catch (error) {
         hideSpinner();
+        unblockUI();
         console.error("Error saving appointment:", error);
         Swal.fire("Error", "Error de comunicación con el servidor.", "error");
     }
