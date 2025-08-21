@@ -18,9 +18,15 @@ function toggleAssuranceFields() {
 }
 
 function fetchAssurances() {
+    blockUI("Cargando seguros disponibles...");
+    showSpinner("Cargando seguros...");
+
     fetch("../PHP/getAssurances.php")
         .then(response => response.json())
         .then(assurances => {
+            hideSpinner();
+            unblockUI();
+
             const assuranceSelect = document.getElementById("assuranceSelect");
             assuranceSelect.innerHTML = '<option value="">-- Seleccione un seguro --</option>'; // Default option
 
@@ -37,7 +43,11 @@ function fetchAssurances() {
 
             handleAssuranceSelection(); // Ensure manual field remains visible if no assurance is selected
         })
-        .catch(error => console.error("Error fetching assurances:", error));
+        .catch(error => {
+            hideSpinner();
+            unblockUI();
+            console.error("Error fetching assurances:", error);
+        });
 }
 
 function handleAssuranceSelection() {
