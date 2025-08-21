@@ -2,14 +2,16 @@ function loadStates(selectedStateId = null) {
     blockUI("Cargando estados...");
     showSpinner("Cargando estados...");
 
+    const stateSelect = document.getElementById("state");
+    stateSelect.removeEventListener("change", onStateChange); // Desactivar temporalmente
+
     return fetch("../PHP/getStates.php")
         .then(response => response.json())
         .then(states => {
             hideSpinner();
             unblockUI();
 
-            const stateSelect = document.getElementById("state");
-            stateSelect.innerHTML = ""; // Limpiar opciones anteriores
+            stateSelect.innerHTML = "";
 
             states.forEach(state => {
                 let option = new Option(state.NOMBRE, state.ID_ESTADO);
@@ -22,14 +24,17 @@ function loadStates(selectedStateId = null) {
                 }
             });
 
-            // Una vez seleccionado el estado, cargar municipios
             const selectedId = selectedStateId || stateSelect.value;
             return loadMunicipios(selectedId);
+        })
+        .then(() => {
+            stateSelect.addEventListener("change", onStateChange); //Reactivar después de todo
         })
         .catch(error => {
             hideSpinner();
             unblockUI();
             console.error("Error al cargar estados:", error);
+            stateSelect.addEventListener("change", onStateChange); //Asegurar reactivación incluso en error
         });
 }
 
@@ -69,11 +74,11 @@ function loadMunicipios(stateId, selectedMunicipio = null) {
         });
 }
 
-document.getElementById("state").addEventListener("change", function () {
-    const selectedState = this.value;
+function onStateChange() {
+    const selectedState = document.getElementById("state").value;
     if (selectedState) {
         loadMunicipios(selectedState);
     } else {
         document.getElementById("municipio").innerHTML = "<option>Seleccione un estado primero</option>";
     }
-});
+}
