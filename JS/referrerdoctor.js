@@ -29,7 +29,13 @@ function fetchDoctors() {
             unblockUI();
 
             const doctorSelect = document.getElementById("doctorSelect");
-            doctorSelect.innerHTML = '<option value="">-- Seleccione un médico --</option>'; // Default option
+            doctorSelect.innerHTML = '<option value="">-- Seleccione un médico --</option>';
+
+            const manualInputs = [
+                document.getElementById("doctorName"),
+                document.getElementById("doctorPaterno"),
+                document.getElementById("doctorMaterno")
+            ];
 
             if (doctors.length > 0) {
                 doctors.forEach(doctor => {
@@ -37,12 +43,14 @@ function fetchDoctors() {
                     doctorSelect.add(option);
                 });
 
-                document.getElementById("doctorSelectContainer").style.display = "block"; // Show dropdown
+                document.getElementById("doctorSelectContainer").style.display = "block";
+                manualInputs.forEach(input => input.disabled = false); // Keep manual inputs enabled
             } else {
-                document.getElementById("doctorSelectContainer").style.display = "none"; // Hide dropdown
+                document.getElementById("doctorSelectContainer").style.display = "none";
+                manualInputs.forEach(input => input.disabled = false); // Enable manual inputs if no options
             }
 
-            handleDoctorSelection(); // Ensure manual fields remain visible if no doctor is selected
+            handleDoctorSelection(); // Sync visibility
         })
         .catch(error => {
             hideSpinner();
@@ -53,13 +61,19 @@ function fetchDoctors() {
 
 function handleDoctorSelection() {
     const doctorSelect = document.getElementById("doctorSelect");
-    const doctorManualFields = document.getElementById("doctorManualFields");
+    const manualInputs = [
+        document.getElementById("doctorName"),
+        document.getElementById("doctorPaterno"),
+        document.getElementById("doctorMaterno")
+    ];
 
     if (doctorSelect.value) {
-        doctorManualFields.style.display = "none"; // Hide manual entry
-        clearDoctorFields(); // Clear manual input fields
+        manualInputs.forEach(input => {
+            input.disabled = true;
+            input.value = "";
+        });
     } else {
-        doctorManualFields.style.display = "block"; // Show manual entry
+        manualInputs.forEach(input => input.disabled = false);
     }
 }
 

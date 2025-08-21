@@ -28,7 +28,9 @@ function fetchAssurances() {
             unblockUI();
 
             const assuranceSelect = document.getElementById("assuranceSelect");
-            assuranceSelect.innerHTML = '<option value="">-- Seleccione un seguro --</option>'; // Default option
+            const assuranceManualInput = document.getElementById("assuranceName");
+
+            assuranceSelect.innerHTML = '<option value="">-- Seleccione un seguro --</option>';
 
             if (assurances.length > 0) {
                 assurances.forEach(assurance => {
@@ -36,12 +38,14 @@ function fetchAssurances() {
                     assuranceSelect.add(option);
                 });
 
-                document.getElementById("assuranceSelectContainer").style.display = "block"; // Show dropdown
+                document.getElementById("assuranceSelectContainer").style.display = "block";
+                assuranceManualInput.disabled = false; // Keep manual input enabled by default
             } else {
-                document.getElementById("assuranceSelectContainer").style.display = "none"; // Hide dropdown
+                document.getElementById("assuranceSelectContainer").style.display = "none";
+                assuranceManualInput.disabled = false; // Enable manual input if no options
             }
 
-            handleAssuranceSelection(); // Ensure manual field remains visible if no assurance is selected
+            handleAssuranceSelection(); // Sync visibility
         })
         .catch(error => {
             hideSpinner();
@@ -52,13 +56,13 @@ function fetchAssurances() {
 
 function handleAssuranceSelection() {
     const assuranceSelect = document.getElementById("assuranceSelect");
-    const assuranceManualField = document.getElementById("assuranceManualField");
+    const assuranceManualInput = document.getElementById("assuranceName");
 
     if (assuranceSelect.value) {
-        assuranceManualField.style.display = "none"; // Hide manual entry
-        clearAssuranceField(); // Clear manual input field
+        assuranceManualInput.disabled = true;
+        assuranceManualInput.value = "";
     } else {
-        assuranceManualField.style.display = "block"; // Show manual entry
+        assuranceManualInput.disabled = false;
     }
 }
 
