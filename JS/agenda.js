@@ -574,7 +574,7 @@ function formatBirthdate(dateString) {
 }
 
 function editAppointment(idCita) {
-    blockUI("Cargando cita...");
+    blockUI("Cargando datos de la cita...");
     showSpinner("Cargando cita...");
 
     const appointmentModal = new bootstrap.Modal(document.getElementById('appointmentModal'));
