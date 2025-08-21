@@ -287,7 +287,7 @@ function loadPatientsForAppointment() {
     });
 }
 
-function saveAppointment() {
+async function saveAppointment() {
     const isFirstTime = document.getElementById('firstTimeCheckbox').checked;
     const date = $('#appointmentDate').val();
     const time = $('#appointmentTime').val();
@@ -298,7 +298,6 @@ function saveAppointment() {
         return;
     }
 
-    // Convertir hora AM/PM a 24 horas
     const [hourMinute, meridian] = time.split(' ');
     let [hour, minute] = hourMinute.split(':').map(Number);
     if (meridian === 'PM' && hour !== 12) hour += 12;
@@ -306,7 +305,8 @@ function saveAppointment() {
     const formattedTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
     const mysqlDateTime = `${date} ${formattedTime}:00`;
 
-    if (isOverlappingAppointment(mysqlDateTime)) {
+    const overlapping = await isOverlappingAppointment(mysqlDateTime);
+    if (overlapping) {
         Swal.fire('Conflicto de horario', 'Ya existe una cita agendada dentro de la ventana de 1 hora alrededor de esta hora.', 'warning');
         return;
     }
@@ -335,14 +335,15 @@ function saveAppointment() {
             motivo
         };
 
-        fetch('../PHP/agendahandler.php?action=ADDFIRSTTIME', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        })
-        .then(res => res.json())
-        .then(response => {
+        try {
+            const res = await fetch('../PHP/agendahandler.php?action=ADDFIRSTTIME', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const response = await res.json();
             hideSpinner();
+
             if (response.success) {
                 $('#appointmentModal').modal('hide');
                 Swal.fire('Cita guardada', 'Se ha registrado la cita con un paciente de primera vez.', 'success');
@@ -350,12 +351,11 @@ function saveAppointment() {
             } else {
                 Swal.fire('Error', response.error || 'No se pudo guardar la cita', 'error');
             }
-        })
-        .catch(err => {
+        } catch (err) {
             hideSpinner();
             console.error(err);
             Swal.fire('Error', 'Error al enviar la cita', 'error');
-        });
+        }
 
     } else {
         const pacienteId = $('#patientSelect').val();
@@ -371,14 +371,15 @@ function saveAppointment() {
             motivo
         };
 
-        fetch('../PHP/agendahandler.php?action=ADD', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        })
-        .then(res => res.json())
-        .then(response => {
+        try {
+            const res = await fetch('../PHP/agendahandler.php?action=ADD', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const response = await res.json();
             hideSpinner();
+
             if (response.success) {
                 $('#appointmentModal').modal('hide');
                 Swal.fire('Cita guardada', 'La cita se ha registrado correctamente.', 'success');
@@ -386,12 +387,11 @@ function saveAppointment() {
             } else {
                 Swal.fire('Error', response.error || 'No se pudo guardar la cita', 'error');
             }
-        })
-        .catch(err => {
+        } catch (err) {
             hideSpinner();
             console.error(err);
             Swal.fire('Error', 'Ocurrió un error al enviar la cita', 'error');
-        });
+        }
     }
 }
 
@@ -619,14 +619,10 @@ function editAppointment(idCita) {
         });
 }
 
-function saveEditedAppointment() {
+async function saveEditedAppointment() {
     const idCita = document.getElementById('appointmentId').value;
     if (!idCita) {
-        Swal.fire({
-            title: "Error",
-            text: "No se ha seleccionado ninguna cita para editar.",
-            icon: "error"
-        });
+        Swal.fire("Error", "No se ha seleccionado ninguna cita para editar.", "error");
         return;
     }
 
@@ -639,15 +635,12 @@ function saveEditedAppointment() {
     const fechaHora = `${appointmentDate} ${time24}`;
 
     if (!patientId || !appointmentDate || !appointmentTime || !appointmentReason) {
-        Swal.fire({
-            title: "Error",
-            text: "Todos los campos son obligatorios.",
-            icon: "warning"
-        });
+        Swal.fire("Error", "Todos los campos son obligatorios.", "warning");
         return;
     }
 
-    if (isOverlappingAppointment(fechaHora, 60, idCita)) {
+    const overlapping = await isOverlappingAppointment(fechaHora, 60, idCita);
+    if (overlapping) {
         Swal.fire('Conflicto de horario', 'Ya existe otra cita agendada dentro de la ventana de 1 hora alrededor de esta hora.', 'warning');
         return;
     }
@@ -660,14 +653,15 @@ function saveEditedAppointment() {
 
     showSpinner("Actualizando cita...");
 
-    fetch(`../PHP/agendahandler.php?action=EDIT&id=${idCita}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedData)
-    })
-    .then(response => response.json())
-    .then(data => {
+    try {
+        const response = await fetch(`../PHP/agendahandler.php?action=EDIT&id=${idCita}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedData)
+        });
+        const data = await response.json();
         hideSpinner();
+
         if (data.success) {
             Swal.fire({
                 title: "Éxito",
@@ -677,27 +671,18 @@ function saveEditedAppointment() {
                 showConfirmButton: false
             }).then(() => {
                 loadCurrentAppointments();
-                $('#appointmentForm')[0].reset(); // Clean form
+                $('#appointmentForm')[0].reset();
                 $('#patientSelect').empty().append('<option value="">-- Cargando pacientes... --</option>');
                 $('#appointmentModal').modal('hide');
             });
         } else {
-            Swal.fire({
-                title: "Error",
-                text: "Hubo un problema al actualizar la cita.",
-                icon: "error"
-            });
+            Swal.fire("Error", "Hubo un problema al actualizar la cita.", "error");
         }
-    })
-    .catch(error => {
+    } catch (error) {
         hideSpinner();
         console.error("Error saving appointment:", error);
-        Swal.fire({
-            title: "Error",
-            text: "Error de comunicación con el servidor.",
-            icon: "error"
-        });
-    });
+        Swal.fire("Error", "Error de comunicación con el servidor.", "error");
+    }
 }
 
 function convertTo24Hour(timeStr) {
@@ -741,8 +726,19 @@ function toggleFirstTimeFields() {
  * dentro de un margen de `toleranceMinutes` minutos.
  * Si es edición, se pasa `excludeId` para no comparar contra sí misma.
  */
-function isOverlappingAppointment(newDateTime, toleranceMinutes = 60, excludeId = null) {
+async function isOverlappingAppointment(newDateTime, toleranceMinutes = 60, excludeId = null) {
     const newTime = new Date(newDateTime).getTime();
+
+    // Refrescar citas desde el backend
+    const response = await fetch("../PHP/agendahandler.php?action=VIEWCURRENT");
+    const data = await response.json();
+
+    if (data.error) {
+        console.error("Error al obtener citas:", data.error);
+        return false; // No podemos verificar, asumimos que no hay solapamiento
+    }
+
+    currentAppointments = data;
 
     for (const appt of currentAppointments) {
         if (excludeId && appt.ID_CITA == excludeId) continue;
@@ -751,9 +747,9 @@ function isOverlappingAppointment(newDateTime, toleranceMinutes = 60, excludeId 
         const diffMinutes = Math.abs((apptTime - newTime) / 60000);
 
         if (diffMinutes < toleranceMinutes) {
-            return true; // Hay solapamiento
+            return true;
         }
     }
 
-    return false; // No hay solapamiento
+    return false;
 }
