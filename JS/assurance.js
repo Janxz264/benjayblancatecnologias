@@ -61,8 +61,12 @@ function handleAssuranceSelection() {
     if (assuranceSelect.value) {
         assuranceManualInput.disabled = true;
         assuranceManualInput.value = "";
+        assuranceSelect.disabled = false;
+    } else if (assuranceManualInput.value !== "") {
+        assuranceSelect.disabled = true;
     } else {
         assuranceManualInput.disabled = false;
+        assuranceSelect.disabled = false;
     }
 }
 

@@ -126,12 +126,10 @@ function openPatientModal(isEdit = false, patient = null) {
                 document.getElementById("assuranceFields").style.display = "block";
                 document.getElementById("assuranceSelectContainer").style.display = "block";
                 document.getElementById("assuranceSelect").value = patient.ID_SEGURO;
-                document.getElementById("assuranceSelect").disabled = false;
-                document.getElementById("assuranceName").disabled = false;
-                document.getElementById("assuranceManualField").style.display = "none";
             } else {
                 document.getElementById("assuranceFields").style.display = "none";
             }
+            handleAssuranceSelection(); // sincroniza estado después de asignar valor
         });
 
         const doctorPromise = loadDoctors().then(() => {
@@ -140,14 +138,10 @@ function openPatientModal(isEdit = false, patient = null) {
                 document.getElementById("doctorFields").style.display = "block";
                 document.getElementById("doctorSelectContainer").style.display = "block";
                 document.getElementById("doctorSelect").value = patient.ID_DOCTOR_REFERENTE;
-                document.getElementById("doctorSelect").disabled = false;
-                document.getElementById("doctorName").disabled = false;
-                document.getElementById("doctorPaterno").disabled = false;
-                document.getElementById("doctorMaterno").disabled = false;
-                document.getElementById("doctorManualFields").style.display = "none";
             } else {
                 document.getElementById("doctorFields").style.display = "none";
             }
+            handleDoctorSelection(); // sincroniza estado después de asignar valor
         });
 
         return Promise.all([statePromise, assurancePromise, doctorPromise])
@@ -186,8 +180,7 @@ function openPatientModal(isEdit = false, patient = null) {
         // Reset municipio dropdown
         document.getElementById("municipio").innerHTML = "<option>Seleccione un estado primero</option>";
 
-        // Await all async loads before showing modal
-        const statePromise = loadStates(); // Will auto-select Tabasco + Centro
+        const statePromise = loadStates();
         const assurancePromise = loadAssurances();
         const doctorPromise = loadDoctors();
 

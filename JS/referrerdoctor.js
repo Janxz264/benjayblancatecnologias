@@ -67,13 +67,19 @@ function handleDoctorSelection() {
         document.getElementById("doctorMaterno")
     ];
 
+    const manualFilled = manualInputs.some(input => input.value.trim() !== "");
+
     if (doctorSelect.value) {
         manualInputs.forEach(input => {
             input.disabled = true;
             input.value = "";
         });
+        doctorSelect.disabled = false;
+    } else if (manualFilled) {
+        doctorSelect.disabled = true;
     } else {
         manualInputs.forEach(input => input.disabled = false);
+        doctorSelect.disabled = false;
     }
 }
 
