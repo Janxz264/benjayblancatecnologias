@@ -356,21 +356,19 @@ function savePatient() {
         return;
     }
 
-    // Acción ADD o EDIT
     const idPaciente = document.getElementById("patientId").value;
     const action = idPaciente ? "EDIT" : "ADD";
     if (idPaciente) patientData.id_paciente = idPaciente;
 
-    // Si no está marcado el seguro, forzamos id_seguro = null para borrarlo al editar
     if (!assuranceCheckbox && idPaciente) {
         patientData.id_seguro = null;
     }
 
-    // Si no está marcado el médico, forzamos id_doctor_referente = null para borrarlo al editar
     if (!referredCheckbox && idPaciente) {
         patientData.id_doctor_referente = null;
     }
 
+    blockUI(idPaciente ? "Actualizando paciente..." : "Guardando paciente...");
     showSpinner(idPaciente ? "Actualizando paciente..." : "Guardando paciente...");
 
     fetch(`../PHP/patienthandler.php?action=${action}${idPaciente ? `&id=${idPaciente}` : ''}`, {
@@ -381,6 +379,8 @@ function savePatient() {
     .then(response => response.json())
     .then(result => {
         hideSpinner();
+        unblockUI();
+
         if (result.success) {
             Swal.fire("Éxito", `Paciente ${idPaciente ? "actualizado" : "agregado"} correctamente.`, "success");
             document.querySelector("#patientModal .btn-close").click();
@@ -391,6 +391,8 @@ function savePatient() {
     })
     .catch(error => {
         hideSpinner();
+        unblockUI();
+
         console.error("Error saving patient:", error);
         Swal.fire("Error", "Error al enviar los datos del paciente.", "error");
     });
