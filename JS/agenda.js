@@ -288,12 +288,15 @@ function loadPatientsForAppointment() {
 }
 
 async function saveAppointment() {
+    blockUI("Guardando cita...");
+
     const isFirstTime = document.getElementById('firstTimeCheckbox').checked;
     const date = $('#appointmentDate').val();
     const time = $('#appointmentTime').val();
     const motivo = $('#appointmentReason').val();
 
     if (!date || !time || !motivo) {
+        unblockUI();
         Swal.fire('Campos incompletos', 'Todos los campos son obligatorios', 'warning');
         return;
     }
@@ -307,6 +310,7 @@ async function saveAppointment() {
 
     const overlapping = await isOverlappingAppointment(mysqlDateTime);
     if (overlapping) {
+        unblockUI();
         Swal.fire('Conflicto de horario', 'Ya existe una cita agendada dentro de la ventana de 1 hora alrededor de esta hora.', 'warning');
         return;
     }
@@ -322,6 +326,7 @@ async function saveAppointment() {
 
         if (!nombre || !paterno) {
             hideSpinner();
+            unblockUI();
             Swal.fire('Campos incompletos', 'Nombre y Apellido paterno son obligatorios', 'warning');
             return;
         }
@@ -343,6 +348,7 @@ async function saveAppointment() {
             });
             const response = await res.json();
             hideSpinner();
+            unblockUI();
 
             if (response.success) {
                 $('#appointmentModal').modal('hide');
@@ -353,6 +359,7 @@ async function saveAppointment() {
             }
         } catch (err) {
             hideSpinner();
+            unblockUI();
             console.error(err);
             Swal.fire('Error', 'Error al enviar la cita', 'error');
         }
@@ -361,6 +368,7 @@ async function saveAppointment() {
         const pacienteId = $('#patientSelect').val();
         if (!pacienteId) {
             hideSpinner();
+            unblockUI();
             Swal.fire('Campos incompletos', 'Seleccione un paciente existente', 'warning');
             return;
         }
@@ -379,6 +387,7 @@ async function saveAppointment() {
             });
             const response = await res.json();
             hideSpinner();
+            unblockUI();
 
             if (response.success) {
                 $('#appointmentModal').modal('hide');
@@ -389,6 +398,7 @@ async function saveAppointment() {
             }
         } catch (err) {
             hideSpinner();
+            unblockUI();
             console.error(err);
             Swal.fire('Error', 'Ocurrió un error al enviar la cita', 'error');
         }
