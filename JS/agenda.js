@@ -459,7 +459,6 @@ function endAppointment() {
 
     const payload = { observaciones };
 
-    blockUI("Finalizando cita...");
     showSpinner("Finalizando cita...");
 
     fetch(`../PHP/agendahandler.php?action=FINISH&id=${idCita}`, {
@@ -470,8 +469,6 @@ function endAppointment() {
     .then(res => res.json())
     .then(response => {
         hideSpinner();
-        unblockUI();
-
         if (response.success) {
             $("#endAppointmentModal").modal("hide");
             Swal.fire("Cita finalizada", "La cita ha sido cerrada correctamente.", "success");
@@ -482,8 +479,6 @@ function endAppointment() {
     })
     .catch(error => {
         hideSpinner();
-        unblockUI();
-
         console.error("Error:", error);
         Swal.fire("Error", "Ocurrió un error al finalizar la cita.", "error");
     });
