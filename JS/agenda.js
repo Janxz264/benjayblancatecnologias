@@ -574,6 +574,9 @@ function formatBirthdate(dateString) {
 }
 
 function editAppointment(idCita) {
+    blockUI("Cargando cita...");
+    showSpinner("Cargando cita...");
+
     const appointmentModal = new bootstrap.Modal(document.getElementById('appointmentModal'));
     $('#appointmentForm')[0].reset(); // Clean form
     $('#patientSelect').empty().append('<option value="">-- Cargando pacientes... --</option>');
@@ -593,12 +596,12 @@ function editAppointment(idCita) {
     patientSelect.setAttribute('required', 'required');
     document.getElementById('patientSelectText').innerText = "Seleccione al paciente";
 
-    showSpinner("Cargando cita...");
-
     fetch(`../PHP/agendahandler.php?action=GET&id=${idCita}`)
         .then(response => response.json())
         .then(data => {
             hideSpinner();
+            unblockUI();
+
             if (data.error) {
                 Swal.fire({
                     title: "Error",
@@ -620,6 +623,8 @@ function editAppointment(idCita) {
         })
         .catch(error => {
             hideSpinner();
+            unblockUI();
+
             console.error("Error fetching appointment:", error);
             Swal.fire({
                 title: "Error",
