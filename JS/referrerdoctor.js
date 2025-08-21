@@ -19,9 +19,15 @@ function toggleDoctorFields() {
 }
 
 function fetchDoctors() {
+    blockUI("Cargando médicos...");
+    showSpinner("Cargando médicos...");
+
     fetch("../PHP/getDoctors.php")
         .then(response => response.json())
         .then(doctors => {
+            hideSpinner();
+            unblockUI();
+
             const doctorSelect = document.getElementById("doctorSelect");
             doctorSelect.innerHTML = '<option value="">-- Seleccione un médico --</option>'; // Default option
 
@@ -38,7 +44,11 @@ function fetchDoctors() {
 
             handleDoctorSelection(); // Ensure manual fields remain visible if no doctor is selected
         })
-        .catch(error => console.error("Error fetching doctors:", error));
+        .catch(error => {
+            hideSpinner();
+            unblockUI();
+            console.error("Error fetching doctors:", error);
+        });
 }
 
 function handleDoctorSelection() {
