@@ -100,8 +100,7 @@ elseif ($action === "GET" && isset($_GET['id'])) {
     } else {
         echo json_encode(["error" => "Paciente no encontrado"]);
     }
-}
- elseif ($action === "ADD") {
+} elseif ($action === "ADD") {
     $data = json_decode(file_get_contents("php://input"), true);
 
     // Verifica que el campo user_id esté en la sesión
