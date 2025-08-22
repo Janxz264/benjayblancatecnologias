@@ -15,11 +15,12 @@ try {
         SELECT P.ID_PERSONA, P.NOMBRE, P.PATERNO, P.MATERNO
         FROM PERSONA P
         WHERE P.ACTIVO = 1
-        AND NOT EXISTS (
-            SELECT 1 FROM PACIENTE PA WHERE PA.ID_PERSONA = P.ID_PERSONA
+        AND P.ID_PERSONA NOT IN (
+            SELECT PA.ID_PERSONA
+            FROM PACIENTE PA
         )
-        ORDER BY P.PATERNO, P.MATERNO, P.NOMBRE"
-        );
+        ORDER BY P.PATERNO, P.MATERNO, P.NOMBRE
+    ");
     $stmt->execute();
     $doctors = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
