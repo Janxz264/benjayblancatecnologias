@@ -73,7 +73,7 @@ function loadPatients() {
                             </button>
                         </td>
                         <td>
-                            <button class="btn btn-danger btn-sm" onclick="deletePatient(${patient.ID_PACIENTE})">
+                            <button class="btn btn-danger btn-sm" onclick="deletePatient(${patient.ID_PERSONA})">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
                         </td>
@@ -256,8 +256,7 @@ function deletePatient(id) {
                     Swal.fire("Eliminado", "Paciente eliminado correctamente.", "success");
                     loadPatients();
                 } else {
-                    console.error("Server error:", result.error);
-                    Swal.fire("Error", result.error || "Error eliminando paciente.", "error");
+                    Swal.fire("Error", "Error eliminando paciente.", "error");
                 }
             })
             .catch(error => {

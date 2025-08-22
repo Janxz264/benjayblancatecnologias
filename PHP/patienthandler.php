@@ -17,7 +17,7 @@ $action = $_GET['action'] ?? '';
 if ($action === "VIEW") {
     // Fetch patient data
     $stmt = $pdo->prepare("
-        SELECT PA.ID_PACIENTE, P.NOMBRE, P.PATERNO, P.MATERNO, PA.TELEFONO, 
+        SELECT PA.ID_PACIENTE, PA.ID_PERSONA, P.NOMBRE, P.PATERNO, P.MATERNO, PA.TELEFONO, 
         DATE_FORMAT(PA.FECHA_NACIMIENTO, '%d/%m/%Y') AS FECHA_NACIMIENTO,
         M.NOMBRE AS NOMBRE_MUNICIPIO, E.NOMBRE AS NOMBRE_ESTADO,
         CASE
@@ -59,15 +59,10 @@ if ($action === "VIEW") {
 
         echo json_encode(["success" => true]);
     } catch (PDOException $e) {
-    echo json_encode([
-        "error" => "SQL Error: " . $e->getMessage(),
-        "context" => [
-            "personaQuery" => "UPDATE PERSONA SET ACTIVO = 0 WHERE ID_PERSONA = ?",
-            "pacienteQuery" => "UPDATE PACIENTE SET ACTIVO = 0 WHERE ID_PERSONA = ?"
-        ]
-    ]); 
-    } 
-} elseif ($action === "GET" && isset($_GET['id'])) {
+        echo json_encode(["error" => "Error al eliminar al paciente: " . $e->getMessage()]);
+    }
+}
+elseif ($action === "GET" && isset($_GET['id'])) {
     $idPaciente = $_GET['id'];
 
     $stmt = $pdo->prepare("
