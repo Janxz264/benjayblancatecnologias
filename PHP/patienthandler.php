@@ -59,10 +59,15 @@ if ($action === "VIEW") {
 
         echo json_encode(["success" => true]);
     } catch (PDOException $e) {
-        echo json_encode(["error" => "Error al desactivar la persona: " . $e->getMessage()]);
-    }
-}
-elseif ($action === "GET" && isset($_GET['id'])) {
+    echo json_encode([
+        "error" => "SQL Error: " . $e->getMessage(),
+        "context" => [
+            "personaQuery" => "UPDATE PERSONA SET ACTIVO = 0 WHERE ID_PERSONA = ?",
+            "pacienteQuery" => "UPDATE PACIENTE SET ACTIVO = 0 WHERE ID_PERSONA = ?"
+        ]
+    ]); 
+    } 
+} elseif ($action === "GET" && isset($_GET['id'])) {
     $idPaciente = $_GET['id'];
 
     $stmt = $pdo->prepare("

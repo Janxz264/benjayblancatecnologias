@@ -256,7 +256,8 @@ function deletePatient(id) {
                     Swal.fire("Eliminado", "Paciente eliminado correctamente.", "success");
                     loadPatients();
                 } else {
-                    Swal.fire("Error", "Error eliminando paciente.", "error");
+                    console.error("Server error:", result.error);
+                    Swal.fire("Error", result.error || "Error eliminando paciente.", "error");
                 }
             })
             .catch(error => {
