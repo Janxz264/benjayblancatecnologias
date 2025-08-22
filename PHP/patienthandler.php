@@ -238,25 +238,20 @@ elseif ($action === "GET" && isset($_GET['id'])) {
     }
 
     echo json_encode(["success" => true]);
-}
-
-elseif ($action === "GET_ASSURANCES") {
+} elseif ($action === "GET_ASSURANCES") {
     $stmt = $pdo->prepare("SELECT ID_SEGURO, NOMBRE FROM SEGURO ORDER BY NOMBRE");
     $stmt->execute();
     $seguros = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode($seguros);
-}
-elseif ($action === "GET_DOCTORS") {
+} elseif ($action === "GET_DOCTORS") {
     $stmt = $pdo->prepare("
         SELECT P.ID_PERSONA, P.NOMBRE, P.PATERNO, P.MATERNO
         FROM PERSONA P
-        WHERE P.ID_PERSONA NOT IN (
-            SELECT ID_PERSONA
-            FROM PACIENTE
-            WHERE ACTIVO = 1
-               OR ID_PACIENTE IN (SELECT ID_PACIENTE FROM CITA)
-        )
-        ORDER BY P.NOMBRE, P.PATERNO, P.MATERNO
+        WHERE P.ACTIVO = 1
+          AND NOT EXISTS (
+              SELECT 1 FROM PACIENTE PA WHERE PA.ID_PERSONA = P.ID_PERSONA
+          )
+        ORDER BY P.PATERNO, P.MATERNO, P.NOMBRE
     ");
     $stmt->execute();
     $doctores = $stmt->fetchAll(PDO::FETCH_ASSOC);
