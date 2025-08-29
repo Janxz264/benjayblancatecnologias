@@ -88,7 +88,7 @@ function loadCurrentAppointments() {
 
                 const isToday = appointmentDate.getTime() === today.getTime();
                 const formattedDate = isToday 
-                    ? `Hoy a las ${formatDateTime(appointment.FECHA_HORA)}` 
+                    ? `${formatDateTime(appointment.FECHA_HORA)}`
                     : formatDateTime(appointment.FECHA_HORA);
 
                 const finalizarButton = isToday 
