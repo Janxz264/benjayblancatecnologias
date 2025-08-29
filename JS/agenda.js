@@ -208,7 +208,6 @@ function formatDateTime(datetimeString) {
     const appointmentDate = new Date(date);
     appointmentDate.setHours(0, 0, 0, 0);
 
-    // Format options for future & past dates
     const fullDateOptions = {
         weekday: "long",
         day: "numeric",
@@ -219,19 +218,13 @@ function formatDateTime(datetimeString) {
         hour12: true
     };
 
-    const onlyTimeOptions = {
-        hour: "numeric",
-        minute: "numeric",
-        hour12: true
-    };
-
-    // If appointment is today → Show only time
+    // If appointment is today → Prefix with "Hoy, "
     if (appointmentDate.getTime() === today.getTime()) {
-        return date.toLocaleTimeString("es-MX", onlyTimeOptions);
+        return "Hoy, " + date.toLocaleString("es-MX", fullDateOptions);
     }
-    
-    // If appointment is tomorrow or later → Full date format
-    return date.toLocaleDateString("es-MX", fullDateOptions);
+
+    // Otherwise → Full date format
+    return date.toLocaleString("es-MX", fullDateOptions);
 }
 
 // Función para abrir el modal de cita
