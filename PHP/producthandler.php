@@ -55,7 +55,7 @@ if ($action === "VIEW") {
     } catch (PDOException $e) {
         echo json_encode(["error" => "Error al recuperar productos", "details" => $e->getMessage()]);
     }
-} if ($action === "VIEWAVAILABLE") {
+} else if ($action === "VIEWAVAILABLE") {
     try {
         $stmt = $pdo->prepare("
         WITH UltimoMantto AS (
