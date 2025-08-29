@@ -185,7 +185,6 @@ function openAddProductModal(isEditMode = false, origin = null) {
     });
 }
 
-
 function editProduct(id_producto) {
     const product = productsCache.find(p => p.ID_PRODUCTO === id_producto);
     if (!product) {
