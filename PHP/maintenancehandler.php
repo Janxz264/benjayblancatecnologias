@@ -50,6 +50,7 @@ if ($action === "VIEW") {
         gar.MODIFIED AS garantia_modified,
 
         -- Mantenimiento
+        man.ID_MANTENIMIENTO AS mantenimiento_id,
         man.USER_CREATE AS mantenimiento_user_create,
         man.USER_MODIFY AS mantenimiento_user_modify,
         man.FECHA AS mantenimiento_fecha,
@@ -108,6 +109,7 @@ if ($action === "VIEW") {
         gar.MODIFIED AS garantia_modified,
 
         -- Mantenimiento
+        man.ID_MANTENIMIENTO AS mantenimiento_id,
         man.USER_CREATE AS mantenimiento_user_create,
         man.USER_MODIFY AS mantenimiento_user_modify,
         man.FECHA AS mantenimiento_fecha,
@@ -144,40 +146,29 @@ if ($action === "VIEW") {
 } else if ($action === "FINISHMANTTO") {
     try {
         $data = json_decode(file_get_contents("php://input"), true);
-        $idProducto = $data['idProducto'] ?? null;
+        $idMantto = $data['idMantto'] ?? null;
         $userModify = $_SESSION['user_id'] ?? null;
 
-        if (!$userModify) {
-            echo json_encode(["error" => "Usuario no autenticado"]);
-            exit;
+        if (!$userModify || !$idMantto || !is_numeric($idMantto)) {
+            throw new Exception("Datos inválidos para finalizar mantenimiento.");
         }
 
-        if (!$idProducto || !is_numeric($idProducto)) {
-            throw new Exception("ID de producto inválido.");
-        }
-
-        // Mark the mantenimiento with the latest (MAX) fecha for this product
         $stmt = $pdo->prepare("
             UPDATE mantenimiento
             SET 
                 HECHO = 1,
                 USER_MODIFY = :user_modify,
                 MODIFIED = NOW()
-            WHERE ID_PRODUCTO = :id_producto
-              AND FECHA = (
-                SELECT MAX(FECHA)
-                FROM mantenimiento
-                WHERE ID_PRODUCTO = :id_producto
-              )
+            WHERE ID_MANTENIMIENTO = :id_mantto
               AND HECHO = 0
         ");
         $stmt->execute([
             'user_modify' => $userModify,
-            'id_producto' => $idProducto
+            'id_mantto' => $idMantto
         ]);
 
         if ($stmt->rowCount() === 0) {
-            throw new Exception("No se encontró mantenimiento pendiente para esta fecha más reciente.");
+            throw new Exception("No se encontró mantenimiento pendiente con ese ID.");
         }
 
         echo json_encode(["success" => true]);
@@ -208,18 +199,23 @@ if ($action === "VIEW") {
             'fecha' => $fecha
         ]);
 
-        echo json_encode(["success" => true]);
+        $newId = $pdo->lastInsertId();
+
+        echo json_encode([
+            "success" => true,
+            "idMantto" => $newId
+        ]);
     } catch (Exception $e) {
         echo json_encode(["error" => $e->getMessage()]);
     }
 } else if ($action === "EDITFECHA") {
     try {
         $data = json_decode(file_get_contents("php://input"), true);
-        $idProducto = $data['idProducto'] ?? null;
+        $idMantto = $data['idMantto'] ?? null;
         $fecha = $data['fecha'] ?? null;
         $userModify = $_SESSION['user_id'] ?? null;
 
-        if (!$userModify || !$idProducto || !$fecha || !is_numeric($idProducto)) {
+        if (!$userModify || !$idMantto || !$fecha || !is_numeric($idMantto)) {
             throw new Exception("Datos inválidos para editar fecha.");
         }
 
@@ -229,12 +225,12 @@ if ($action === "VIEW") {
                 FECHA = :fecha,
                 USER_MODIFY = :user_modify,
                 MODIFIED = NOW()
-            WHERE ID_PRODUCTO = :id_producto
+            WHERE ID_MANTENIMIENTO = :id_mantto
         ");
         $stmt->execute([
             'fecha' => $fecha,
             'user_modify' => $userModify,
-            'id_producto' => $idProducto
+            'id_mantto' => $idMantto
         ]);
 
         if ($stmt->rowCount() === 0) {
@@ -245,13 +241,13 @@ if ($action === "VIEW") {
     } catch (Exception $e) {
         echo json_encode(["error" => $e->getMessage()]);
     }
-} else if ($action === "TERMINARMANTTO") {
+}  else if ($action === "TERMINARMANTTO") {
     try {
         $data = json_decode(file_get_contents("php://input"), true);
-        $idProducto = $data['idProducto'] ?? null;
+        $idMantto = $data['idMantto'] ?? null;
         $userModify = $_SESSION['user_id'] ?? null;
 
-        if (!$userModify || !$idProducto || !is_numeric($idProducto)) {
+        if (!$userModify || !$idMantto || !is_numeric($idMantto)) {
             throw new Exception("Datos inválidos para marcar mantenimiento como realizado.");
         }
 
@@ -261,11 +257,11 @@ if ($action === "VIEW") {
                 HECHO = 1,
                 USER_MODIFY = :user_modify,
                 MODIFIED = NOW()
-            WHERE ID_PRODUCTO = :id_producto
+            WHERE ID_MANTENIMIENTO = :id_mantto
         ");
         $stmt->execute([
             'user_modify' => $userModify,
-            'id_producto' => $idProducto
+            'id_mantto' => $idMantto
         ]);
 
         if ($stmt->rowCount() === 0) {
@@ -277,7 +273,6 @@ if ($action === "VIEW") {
         echo json_encode(["error" => $e->getMessage()]);
     }
 }
-
 else {
     echo json_encode(["error" => "Acción no válida"]);
 }

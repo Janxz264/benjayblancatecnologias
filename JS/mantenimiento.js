@@ -74,17 +74,15 @@ function loadMaintenances() {
 
         if ((!fechaMantto || isToday || isFuture) && !hecho) {
           let accionBtn = "";
-          if (!fechaMantto) {
-            accionBtn = `<button class="btn btn-sm btn-success" onclick="agregarFechaMantto(${item.producto_id})">
-                          <i class="fas fa-plus"></i> Agregar fecha</button>`;
-          } else {
-            accionBtn = `<button class="btn btn-sm btn-primary" onclick="editarFechaMantto(${item.producto_id}, '${item.mantenimiento_fecha}')">
-                          <i class="fas fa-edit"></i> Editar fecha</button>`;
-          }
-
-          let realizadoHTML = isToday
-            ? `<button class="btn btn-sm btn-success" onclick="confirmarTerminarMantto(${item.producto_id})">
-                 <i class="fas fa-check"></i> Finalizar</button>`
+        if (!fechaMantto) {
+          accionBtn = `<button class="btn btn-sm btn-success" onclick="agregarFechaMantto(${item.producto_id})">
+                        <i class="fas fa-plus"></i> Agregar fecha</button>`;
+        } else {
+          accionBtn = `<button class="btn btn-sm btn-primary" onclick="editarFechaMantto(${item.mantenimiento_id}, '${item.mantenimiento_fecha}')">
+                        <i class="fas fa-edit"></i> Editar fecha</button>`;
+        }
+            let realizadoHTML = isToday
+            ? `<button class="btn btn-sm btn-success" onclick="confirmarTerminarMantto(${item.mantenimiento_id})">`
             : `<button class="btn btn-sm btn-secondary" disabled>
                  <i class="fas fa-lock"></i></button>`;
 
@@ -164,7 +162,7 @@ function loadPastMaintenances() {
         let accionBtn = "";
         if (!item.has_upcoming_mantto && hecho) {
           accionBtn = `<button class="btn btn-sm btn-success" 
-               onclick="openReactivateMantto(${item.producto_id}, '${item.mantenimiento_fecha}')">
+               onclick="openReactivateMantto(${item.mantenimiento_id}, '${item.mantenimiento_fecha}')"
                <i class="fas fa-calendar-plus"></i> Reprogramar mantto.</button>`;
         }
 
@@ -191,34 +189,6 @@ function loadPastMaintenances() {
       console.error("Error fetching past maintenance data:", error);
       container.innerHTML += "<p class='text-danger'>Error al obtener mantenimientos pasados.</p>";
     });
-}
-
-function confirmarTerminarMantto(ID_PRODUCTO) {
-  Swal.fire({
-    title: "¿Confirmar mantenimiento realizado?",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "Sí, marcar como hecho",
-    cancelButtonText: "Cancelar"
-  }).then(result => {
-    if (!result.isConfirmed) return;
-
-    fetch("../PHP/maintenancehandler.php?action=FINISHMANTTO", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idProducto: ID_PRODUCTO })
-    })
-      .then(res => res.json())
-      .then(response => {
-        if (!response.success) throw new Error(response.error || "Error inesperado.");
-        Swal.fire("Éxito", "El mantenimiento se realizó correctamente.", "success");
-        loadMaintenances();
-      })
-      .catch(error => {
-        console.error("Error al finalizar mantenimiento:", error);
-        Swal.fire("Error", error.message, "error");
-      });
-  });
 }
 
 function agregarFechaMantto(ID_PRODUCTO) {
@@ -280,9 +250,9 @@ function confirmarAgregarFechaMantto(ID_PRODUCTO) {
     });
 }
 
-function editarFechaMantto(ID_PRODUCTO, fechaRaw) {
-  const fechaBase = fechaRaw || ""; // 'YYYY-MM-DD' works as-is for input[type="date"]
-  const minFecha = getTodayISO();   // still limits to today and later
+function editarFechaMantto(idMantto, fechaRaw) {
+  const fechaBase = fechaRaw || "";
+  const minFecha = getTodayISO();
 
   const modalHTML = `
     <div class="modal fade" id="editFechaModal" tabindex="-1">
@@ -296,7 +266,7 @@ function editarFechaMantto(ID_PRODUCTO, fechaRaw) {
             <input type="date" id="editFechaInput" class="form-control" value="${fechaBase}" min="${minFecha}" />
           </div>
           <div class="modal-footer">
-            <button class="btn btn-primary" onclick="confirmarEditarFechaMantto(${ID_PRODUCTO})">Actualizar</button>
+            <button class="btn btn-primary" onclick="confirmarEditarFechaMantto(${idMantto})">Actualizar</button>
             <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
           </div>
         </div>
@@ -312,7 +282,7 @@ function editarFechaMantto(ID_PRODUCTO, fechaRaw) {
   });
 }
 
-function confirmarEditarFechaMantto(ID_PRODUCTO) {
+function confirmarEditarFechaMantto(idMantto) {
   const fecha = document.getElementById("editFechaInput").value;
   if (!fecha) {
     Swal.fire("Error", "Debe seleccionar una fecha válida.", "error");
@@ -322,15 +292,14 @@ function confirmarEditarFechaMantto(ID_PRODUCTO) {
   fetch("../PHP/maintenancehandler.php?action=EDITFECHA", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ idProducto: ID_PRODUCTO, fecha })
+    body: JSON.stringify({ idMantto, fecha })
   })
     .then(res => res.json())
     .then(response => {
       if (!response.success) throw new Error(response.error || "Error al actualizar fecha.");
       Swal.fire("Éxito", "Fecha actualizada correctamente.", "success");
-        // Close the modal first
-        const modalInstance = bootstrap.Modal.getInstance(document.getElementById("editFechaModal"));
-        if (modalInstance) modalInstance.hide();
+      const modalInstance = bootstrap.Modal.getInstance(document.getElementById("editFechaModal"));
+      if (modalInstance) modalInstance.hide();
       loadMaintenances();
     })
     .catch(err => {
@@ -339,9 +308,9 @@ function confirmarEditarFechaMantto(ID_PRODUCTO) {
     });
 }
 
-function confirmarTerminarMantto(ID_PRODUCTO) {
+function confirmarTerminarMantto(idMantto) {
   Swal.fire({
-    title: "¿Está seguro de que desea marcar como realizado el mantenimiento de este producto?",
+    title: "¿Está seguro de que desea marcar como realizado el mantenimiento?",
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: "Sí, confirmar",
@@ -352,7 +321,7 @@ function confirmarTerminarMantto(ID_PRODUCTO) {
     fetch("../PHP/maintenancehandler.php?action=TERMINARMANTTO", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idProducto: ID_PRODUCTO })
+      body: JSON.stringify({ idMantto })
     })
       .then(res => res.json())
       .then(response => {
@@ -375,11 +344,10 @@ function getTodayISO() {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function openReactivateMantto(idProducto, recordDateStr) {
+function openReactivateMantto(idMantto, recordDateStr) {
   const recordDate = new Date(recordDateStr);
   const sixMonthsLater = new Date(recordDate.setMonth(recordDate.getMonth() + 6));
   const formattedDate = sixMonthsLater.toISOString().split("T")[0];
-
   const minFecha = new Date().toISOString().split("T")[0];
 
   const modalHTML = `
@@ -395,7 +363,7 @@ function openReactivateMantto(idProducto, recordDateStr) {
                    min="${minFecha}" value="${formattedDate}" required>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-success" onclick="confirmarReactivateMantto(${idProducto})">Guardar</button>
+            <button class="btn btn-success" onclick="confirmarReactivateMantto(${idMantto})">Guardar</button>
             <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
           </div>
         </div>
@@ -411,7 +379,7 @@ function openReactivateMantto(idProducto, recordDateStr) {
   });
 }
 
-function confirmarReactivateMantto(idProducto) {
+function confirmarReactivateMantto(idMantto) {
   const fecha = document.getElementById("reactivateFechaInput").value;
   if (!fecha) {
     Swal.fire("Error", "Debe seleccionar una fecha válida.", "error");
@@ -420,6 +388,16 @@ function confirmarReactivateMantto(idProducto) {
 
   const modalInstance = bootstrap.Modal.getInstance(document.getElementById("reactivateModal"));
   if (modalInstance) modalInstance.hide();
+
+  // You need to retrieve the product ID from the original record
+  // If you already have it in the row, pass it along with idMantto
+  const originalRecord = window.maintenanceData?.find(m => m.mantenimiento_id === idMantto);
+  const idProducto = originalRecord?.producto_id;
+
+  if (!idProducto) {
+    Swal.fire("Error", "No se pudo determinar el producto original.", "error");
+    return;
+  }
 
   fetch("../PHP/maintenancehandler.php?action=ADDFECHA", {
     method: "POST",
@@ -430,7 +408,7 @@ function confirmarReactivateMantto(idProducto) {
     .then(response => {
       if (!response.success) throw new Error(response.error || "Error al reprogramar mantenimiento.");
       Swal.fire("Éxito", "Mantenimiento programado correctamente.", "success");
-      loadPastMaintenances(); // Refresh view
+      loadPastMaintenances();
     })
     .catch(err => {
       console.error("Reactivate error:", err);
