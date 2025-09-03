@@ -36,87 +36,95 @@ formatAsDecimal(document.getElementById('precioDistribuidor'));
 formatAsDecimal(document.getElementById('precioVenta'));
 
 function loadProducts() {
-    document.getElementById("mainTitle").innerText = "Gestor de productos";
-    const container = document.getElementById("mainContainer");
+  document.getElementById("mainTitle").innerText = "Gestor de productos";
+  const container = document.getElementById("mainContainer");
 
-    container.innerHTML = `
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <button class="btn btn-success" onclick="openAddProductModal()">
-                <i class="fas fa-plus"></i> Agregar Producto
-            </button>
-        </div>
-    `;
+  container.innerHTML = `
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <button class="btn btn-success" onclick="openAddProductModal()">
+        <i class="fas fa-plus"></i> Agregar Producto
+      </button>
+    </div>
+  `;
 
-    showSpinner("Cargando productos...");
+  showSpinner("Cargando productos...");
 
-    fetch("../PHP/producthandler.php?action=VIEW")
-        .then(response => response.json())
-        .then(data => {
-            hideSpinner();
+  fetch("../PHP/producthandler.php?action=VIEW")
+    .then(response => response.json())
+    .then(data => {
+      hideSpinner();
 
-            if (!data || data.length === 0) {
-                container.innerHTML += "<h1>No existen productos registrados en la base de datos.</h1>";
-                return;
-            }
+      if (!data || data.length === 0) {
+        container.innerHTML += "<h1>No existen productos registrados en la base de datos.</h1>";
+        return;
+      }
 
-            let tableHTML = `
-                <table id="productsTable" class="table table-bordered table-striped">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th>Marca</th>
-                            <th>Proveedor</th>
-                            <th>Modelo</th>
-                            <th>Precio Distribuidor</th>
-                            <th>Precio de Venta</th>
-                            <th>Número de Serie</th>
-                            <th>Ver detalles</th>
-                            <th>Editar</th>
-                            <th>Eliminar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+      let tableHTML = `
+        <table id="productsTable" class="table table-bordered table-striped">
+          <thead class="thead-dark">
+            <tr>
+              <th>Marca</th>
+              <th>Proveedor</th>
+              <th>Modelo</th>
+              <th>Precio Distribuidor</th>
+              <th>Precio de Venta</th>
+              <th>Número de Serie</th>
+              <th>Lado</th>
+              <th>Ver detalles</th>
+              <th>Editar</th>
+              <th>Eliminar</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
 
-            data.forEach(product => {
-                tableHTML += `
-                    <tr>
-                        <td>${safeText(product.NOMBRE_MARCA)}</td>
-                        <td>${safeText(product.NOMBRE_PROVEEDOR)}</td>
-                        <td>${safeText(product.MODELO)}</td>
-                        <td>$${parseFloat(product.PRECIO_DISTRIBUIDOR).toFixed(2)}</td>
-                        <td>$${parseFloat(product.PRECIO_DE_VENTA).toFixed(2)}</td>
-                        <td>${safeText(product.NUMERO_DE_SERIE)}</td>
-                        <td>
-                            <button class="btn btn-info btn-sm" onclick="viewProduct(${product.ID_PRODUCTO})">
-                                <i class="fa fa-search"></i> Ver detalles
-                            </button>
-                        </td>
-                        <td>
-                            <button class="btn btn-primary btn-sm" onclick="editProduct(${product.ID_PRODUCTO})">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                        </td>
-                        <td>
-                            <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.ID_PRODUCTO})">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
+      data.forEach(product => {
+        let ladoLabel = "N/A";
+        switch (product.LADO) {
+          case 0: ladoLabel = "Oído izquierdo"; break;
+          case 1: ladoLabel = "Oído derecho"; break;
+        }
 
-            tableHTML += `</tbody></table>`;
-            container.innerHTML += tableHTML;
-            productsCache = data;
+        tableHTML += `
+          <tr>
+            <td>${safeText(product.NOMBRE_MARCA)}</td>
+            <td>${safeText(product.NOMBRE_PROVEEDOR)}</td>
+            <td>${safeText(product.MODELO)}</td>
+            <td>$${parseFloat(product.PRECIO_DISTRIBUIDOR).toFixed(2)}</td>
+            <td>$${parseFloat(product.PRECIO_DE_VENTA).toFixed(2)}</td>
+            <td>${safeText(product.NUMERO_DE_SERIE)}</td>
+            <td>${ladoLabel}</td>
+            <td>
+              <button class="btn btn-info btn-sm" onclick="viewProduct(${product.ID_PRODUCTO})">
+                <i class="fa fa-search"></i> Ver detalles
+              </button>
+            </td>
+            <td>
+              <button class="btn btn-primary btn-sm" onclick="editProduct(${product.ID_PRODUCTO})">
+                <i class="fas fa-edit"></i> Editar
+              </button>
+            </td>
+            <td>
+              <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.ID_PRODUCTO})">
+                <i class="fas fa-trash"></i> Eliminar
+              </button>
+            </td>
+          </tr>
+        `;
+      });
 
-            $('#productsTable').DataTable().destroy();
-            initializeDataTable("#productsTable");
-        })
-        .catch(error => {
-            hideSpinner();
-            console.error("Error fetching products:", error);
-            container.innerHTML += "<p class='text-danger'>Error al obtener datos de productos.</p>";
-        });
+      tableHTML += `</tbody></table>`;
+      container.innerHTML += tableHTML;
+      productsCache = data;
+
+      $('#productsTable').DataTable().destroy();
+      initializeDataTable("#productsTable");
+    })
+    .catch(error => {
+      hideSpinner();
+      console.error("Error fetching products:", error);
+      container.innerHTML += "<p class='text-danger'>Error al obtener datos de productos.</p>";
+    });
 }
 
 function openAddProductModal(isEditMode = false, origin = null) {
@@ -603,6 +611,12 @@ function viewProduct(ID_PRODUCTO) {
       const precioVenta = prod.producto_precio_venta ? `$${parseFloat(prod.producto_precio_venta).toFixed(2)}` : "-";
       const serie = prod.producto_numero_serie || "-";
 
+      let ladoTexto = "N/A";
+      switch (prod.producto_lado) {
+        case 0: ladoTexto = "Oído izquierdo"; break;
+        case 1: ladoTexto = "Oído derecho"; break;
+      }
+
       let garantiaStatus = "No tiene garantía.";
       if (prod.garantia_fecha_inicio && prod.garantia_fecha_fin) {
         const hoy = new Date();
@@ -656,6 +670,7 @@ function viewProduct(ID_PRODUCTO) {
                     <tr><th>Precio distribuidor</th><td>${precioDistribuidor}</td></tr>
                     <tr><th>Precio de venta</th><td>${precioVenta}</td></tr>
                     <tr><th>Número de serie</th><td>${serie}</td></tr>
+                    <tr><th>Lado</th><td>${ladoTexto}</td></tr>
                     <tr><th>Garantía</th><td>${garantiaStatus}</td></tr>
                     <tr><th>Mantenimiento</th><td>${mantenimientoStatus}</td></tr>
                   </tbody>

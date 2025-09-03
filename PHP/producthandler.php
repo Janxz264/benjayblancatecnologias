@@ -110,6 +110,7 @@ if ($action === "VIEW") {
         prod.PRECIO_DISTRIBUIDOR AS producto_precio_distribuidor,
         prod.PRECIO_DE_VENTA AS producto_precio_venta,
         prod.NUMERO_DE_SERIE AS producto_numero_serie,
+        prod.LADO AS producto_lado,
         prod.CREATED AS producto_created,
         prod.MODIFIED AS producto_modified,
 
