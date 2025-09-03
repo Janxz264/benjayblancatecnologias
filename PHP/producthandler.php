@@ -162,9 +162,7 @@ if ($action === "VIEW") {
     }
 } else if ($action === "ADD") {
     try {
-        // Decode JSON payload
         $data = json_decode(file_get_contents('php://input'), true);
-
         $userCreate = $_SESSION['user_id'] ?? null;
         if (!$userCreate) {
             echo json_encode(["error" => "Usuario no autenticado"]);
@@ -182,7 +180,12 @@ if ($action === "VIEW") {
             throw new Exception("Precio de venta inválido.");
         }
 
-        // Insert nueva Marca si aplica
+        $lado = isset($data['lado']) ? $data['lado'] : null;
+        if (!in_array($lado, [0, 1, null], true)) {
+            throw new Exception("Valor de lado inválido.");
+        }
+
+        // Marca
         if (!empty($data['nuevaMarca'])) {
             $stmt = $pdo->prepare("INSERT INTO marca (NOMBRE) VALUES (:nombre)");
             $stmt->execute(['nombre' => $data['nuevaMarca']]);
@@ -193,7 +196,7 @@ if ($action === "VIEW") {
             throw new Exception("Marca no válida.");
         }
 
-        // Insert nuevo Proveedor si aplica
+        // Proveedor
         if (!empty($data['nuevoProveedor'])) {
             $stmt = $pdo->prepare("INSERT INTO proveedor (NOMBRE) VALUES (:nombre)");
             $stmt->execute(['nombre' => $data['nuevoProveedor']]);
@@ -209,14 +212,13 @@ if ($action === "VIEW") {
             INSERT INTO producto (
                 ID_MARCA, ID_PROVEEDOR, MODELO, 
                 PRECIO_DISTRIBUIDOR, PRECIO_DE_VENTA, 
-                NUMERO_DE_SERIE, USER_CREATE
+                NUMERO_DE_SERIE, USER_CREATE, LADO
             ) VALUES (
                 :id_marca, :id_proveedor, :modelo,
                 :precio_distribuidor, :precio_venta,
-                :numero_serie, :user_create
+                :numero_serie, :user_create, :lado
             )
         ");
-
         $stmt->execute([
             'id_marca' => $idMarca,
             'id_proveedor' => $idProveedor,
@@ -224,11 +226,13 @@ if ($action === "VIEW") {
             'precio_distribuidor' => $data['precioDistribuidor'],
             'precio_venta' => $data['precioVenta'],
             'numero_serie' => $data['numeroSerie'],
-            'user_create' => $userCreate
+            'user_create' => $userCreate,
+            'lado' => $lado
         ]);
-        
+
         $productId = $pdo->lastInsertId();
 
+        // Garantía
         $hasWarranty = isset($data['garantia']) && $data['garantia'] === true;
         $fechaInicio = $hasWarranty ? ($data['fechaInicioGarantia'] ?? null) : null;
         $fechaFin = $hasWarranty ? ($data['fechaFinGarantia'] ?? null) : null;
@@ -237,7 +241,6 @@ if ($action === "VIEW") {
             if (!$fechaInicio || !$fechaFin) {
                 throw new Exception("Fechas de garantía requeridas.");
             }
-
             if (strtotime($fechaFin) < strtotime($fechaInicio)) {
                 throw new Exception("La fecha de fin no puede ser anterior a la fecha de inicio.");
             }
@@ -256,6 +259,7 @@ if ($action === "VIEW") {
                 'fecha_fin' => $fechaFin
             ]);
         }
+
         echo json_encode(["success" => true]);
     } catch (Exception $e) {
         echo json_encode(["error" => $e->getMessage()]);
@@ -306,12 +310,19 @@ if ($action === "VIEW") {
     try {
         $data = json_decode(file_get_contents('php://input'), true);
         $productId = $data['id'] ?? null;
+        $userModify = $_SESSION['user_id'] ?? null;
+
+        if (!$userModify || !$productId || !is_numeric($productId)) {
+            throw new Exception("ID de producto inválido.");
+        }
+
         $hasWarranty = isset($data['garantia']) && $data['garantia'] === true;
         $fechaInicio = $hasWarranty ? ($data['fechaInicioGarantia'] ?? null) : null;
         $fechaFin = $hasWarranty ? ($data['fechaFinGarantia'] ?? null) : null;
 
-        if (!$productId || !is_numeric($productId)) {
-            throw new Exception("ID de producto inválido.");
+        $lado = isset($data['lado']) ? $data['lado'] : null;
+        if (!in_array($lado, [0, 1, null], true)) {
+            throw new Exception("Valor de lado inválido.");
         }
 
         // Marca
@@ -336,8 +347,7 @@ if ($action === "VIEW") {
             throw new Exception("Proveedor no válido.");
         }
 
-        $userModify = $_SESSION['user_id'] ?? null;
-
+        // Update Producto
         $stmt = $pdo->prepare("
             UPDATE producto SET
                 ID_MARCA = :id_marca,
@@ -346,11 +356,11 @@ if ($action === "VIEW") {
                 PRECIO_DISTRIBUIDOR = :precio_distribuidor,
                 PRECIO_DE_VENTA = :precio_venta,
                 NUMERO_DE_SERIE = :numero_serie,
+                LADO = :lado,
                 USER_MODIFY = :user_modify,
                 MODIFIED = NOW()
             WHERE ID_PRODUCTO = :id_producto
         ");
-
         $stmt->execute([
             'id_marca' => $idMarca,
             'id_proveedor' => $idProveedor,
@@ -358,73 +368,71 @@ if ($action === "VIEW") {
             'precio_distribuidor' => $data['precioDistribuidor'],
             'precio_venta' => $data['precioVenta'],
             'numero_serie' => $data['numeroSerie'],
+            'lado' => $lado,
             'user_modify' => $userModify,
             'id_producto' => $productId
         ]);
 
+        // Garantía
         if ($hasWarranty) {
-        if (!$fechaInicio || !$fechaFin) {
-            throw new Exception("Fechas de garantía requeridas.");
-        }
-        if (strtotime($fechaFin) < strtotime($fechaInicio)) {
-            throw new Exception("La fecha de fin no puede ser anterior a la fecha de inicio.");
-        }
+            if (!$fechaInicio || !$fechaFin) {
+                throw new Exception("Fechas de garantía requeridas.");
+            }
+            if (strtotime($fechaFin) < strtotime($fechaInicio)) {
+                throw new Exception("La fecha de fin no puede ser anterior a la fecha de inicio.");
+            }
 
-        // Check if a garantia record exists
-        $stmt = $pdo->prepare("SELECT ID_GARANTIA FROM garantia WHERE ID_PRODUCTO = ?");
-        $stmt->execute([$productId]);
-        $existingGarantia = $stmt->fetch(PDO::FETCH_ASSOC);
+            $stmt = $pdo->prepare("SELECT ID_GARANTIA FROM garantia WHERE ID_PRODUCTO = ?");
+            $stmt->execute([$productId]);
+            $existingGarantia = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($existingGarantia) {
-            // UPDATE existing garantia
+            if ($existingGarantia) {
+                $stmt = $pdo->prepare("
+                    UPDATE garantia SET
+                        FECHA_INICIO = :inicio,
+                        FECHA_FIN = :fin,
+                        USER_MODIFY = :user,
+                        MODIFIED = NOW()
+                    WHERE ID_PRODUCTO = :id_producto
+                ");
+                $stmt->execute([
+                    'inicio' => $fechaInicio,
+                    'fin' => $fechaFin,
+                    'user' => $userModify,
+                    'id_producto' => $productId
+                ]);
+            } else {
+                $stmt = $pdo->prepare("
+                    INSERT INTO garantia (
+                        ID_PRODUCTO, USER_CREATE, FECHA_INICIO, FECHA_FIN
+                    ) VALUES (
+                        :id_producto, :user_create, :fecha_inicio, :fecha_fin
+                    )
+                ");
+                $stmt->execute([
+                    'id_producto' => $productId,
+                    'user_create' => $userModify,
+                    'fecha_inicio' => $fechaInicio,
+                    'fecha_fin' => $fechaFin
+                ]);
+            }
+        } else {
+            // Delete garantía if user unchecked it
             $stmt = $pdo->prepare("
-                UPDATE garantia SET
-                    FECHA_INICIO = :inicio,
-                    FECHA_FIN = :fin,
-                    USER_MODIFY = :user,
-                    MODIFIED = NOW()
+                UPDATE garantia SET USER_MODIFY = :user, MODIFIED = NOW()
                 WHERE ID_PRODUCTO = :id_producto
             ");
-            $stmt->execute([
-                'inicio' => $fechaInicio,
-                'fin' => $fechaFin,
-                'user' => $userModify,
-                'id_producto' => $productId
-            ]);
-        } else {
-            // INSERT new garantia
-            $stmt = $pdo->prepare("
-                INSERT INTO garantia (
-                    ID_PRODUCTO, USER_CREATE, FECHA_INICIO, FECHA_FIN
-                ) VALUES (
-                    :id_producto, :user_create, :fecha_inicio, :fecha_fin
-                )
-            ");
-            $stmt->execute([
-                'id_producto' => $productId,
-                'user_create' => $userModify,
-                'fecha_inicio' => $fechaInicio,
-                'fecha_fin' => $fechaFin
-            ]);
-        }
-    } else {
-        // Delete garantía if user unchecked it
-        $stmt = $pdo->prepare("
-            UPDATE garantia SET USER_MODIFY = :user, MODIFIED = NOW()
-            WHERE ID_PRODUCTO = :id_producto
-        ");
-        $stmt->execute(['user' => $userModify, 'id_producto' => $productId]);
+            $stmt->execute(['user' => $userModify, 'id_producto' => $productId]);
 
-        $stmt = $pdo->prepare("DELETE FROM garantia WHERE ID_PRODUCTO = ?");
-        $stmt->execute([$productId]);
-    }
+            $stmt = $pdo->prepare("DELETE FROM garantia WHERE ID_PRODUCTO = ?");
+            $stmt->execute([$productId]);
+        }
 
         echo json_encode(["success" => true]);
     } catch (Exception $e) {
         echo json_encode(["error" => $e->getMessage()]);
     }
 }
-
 else {
     echo json_encode(["error" => "Acción no válida"]);
 }

@@ -365,8 +365,7 @@ function deleteProduct(id_producto) {
     });
 }
 
-//Función para guardar un nuevo producto
-
+// Función para guardar un nuevo producto
 document.getElementById('saveProductBtn').addEventListener('click', function (e) {
     const productId = document.getElementById("productId").value;
     const isEdit = productId !== "";
@@ -386,6 +385,9 @@ document.getElementById('saveProductBtn').addEventListener('click', function (e)
     const precioDistribuidorInput = document.getElementById('precioDistribuidor');
     const precioVentaInput = document.getElementById('precioVenta');
     const numeroSerieInput = document.getElementById('numeroSerie');
+
+    const ladoRaw = document.querySelector('input[name="ladoRadio"]:checked')?.value;
+    const lado = ladoRaw === "" ? null : parseInt(ladoRaw);
 
     let errors = [];
 
@@ -469,6 +471,7 @@ document.getElementById('saveProductBtn').addEventListener('click', function (e)
         precioDistribuidor,
         precioVenta,
         numeroSerie,
+        lado,
         ...(garantiaCheckbox.checked && {
             garantia: true,
             fechaInicioGarantia: document.getElementById('fechaInicio').value,
@@ -505,13 +508,11 @@ document.getElementById('saveProductBtn').addEventListener('click', function (e)
                     pedidoModal.show();
 
                     const newProductEvent = new CustomEvent("productoGuardado", {
-                        detail: { modelo, numeroSerie } // or pass more if needed
+                        detail: { modelo, numeroSerie }
                     });
                     window.dispatchEvent(newProductEvent);
-                }
-
-                else {
-                    loadProducts(); //Native product
+                } else {
+                    loadProducts();
                 }
             });
         } else {
