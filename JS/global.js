@@ -1,4 +1,3 @@
-// spinner.js
 function showSpinner(message = "Cargando...") {
     $("#loadingMessage").text(message);
     $("#loadingSpinner").addClass("active");
@@ -34,7 +33,7 @@ function unblockUI() {
     if (blocker) blocker.remove();
 }
 
-const formatPrice = (value) => {
+const iujh = (value) => {
         const parsed = parseFloat(value);
         return Number.isInteger(parsed) ? `$${parsed}` : `$${parsed.toFixed(2)}`;
         };
