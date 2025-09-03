@@ -194,61 +194,72 @@ function openAddProductModal(isEditMode = false, origin = null) {
 }
 
 function editProduct(id_producto) {
-    const product = productsCache.find(p => p.ID_PRODUCTO === id_producto);
-    if (!product) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Producto no encontrado',
-            text: 'No se pudo localizar el producto en caché.',
-            confirmButtonText: 'Cerrar'
-        });
-        return;
+  const product = productsCache.find(p => p.ID_PRODUCTO === id_producto);
+  if (!product) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Producto no encontrado',
+      text: 'No se pudo localizar el producto en caché.',
+      confirmButtonText: 'Cerrar'
+    });
+    return;
+  }
+
+  openAddProductModal(true); // edit mode
+  showSpinner("Cargando datos del producto...");
+
+  Promise.all([
+    retrieveBrands(),
+    retrieveProviders()
+  ])
+  .then(() => {
+    document.getElementById('marcaSelect').value = product.ID_MARCA;
+    document.getElementById('proveedorSelect').value = product.ID_PROVEEDOR;
+
+    document.getElementById('productId').value = product.ID_PRODUCTO;
+    document.getElementById('modeloInput').value = product.MODELO;
+    document.getElementById('precioDistribuidor').value = parseFloat(product.PRECIO_DISTRIBUIDOR).toFixed(2);
+    document.getElementById('precioVenta').value = parseFloat(product.PRECIO_DE_VENTA).toFixed(2);
+    document.getElementById('numeroSerie').value = product.NUMERO_DE_SERIE;
+
+    switch (product.LADO) {
+      case 0:
+        document.getElementById('ladoIzquierdo').checked = true;
+        break;
+      case 1:
+        document.getElementById('ladoDerecho').checked = true;
+        break;
+      default:
+        document.getElementById('ladoNA').checked = true;
     }
 
-    openAddProductModal(true); // edit mode
-    showSpinner("Cargando datos del producto...");
+    const hasGarantia = !!product.ID_GARANTIA;
+    const garantiaCheckbox = document.getElementById('hasWarrantyCheckbox');
+    const fechaInicio = document.getElementById('fechaInicio');
+    const fechaFin = document.getElementById('fechaFin');
+    const warrantyWrapper = document.getElementById('warrantyFieldsWrapper');
 
-    Promise.all([
-        retrieveBrands(),
-        retrieveProviders()
-    ])
-    .then(() => {
-        document.getElementById('marcaSelect').value = product.ID_MARCA;
-        document.getElementById('proveedorSelect').value = product.ID_PROVEEDOR;
+    garantiaCheckbox.checked = hasGarantia;
 
-        document.getElementById('productId').value = product.ID_PRODUCTO;
-        document.getElementById('modeloInput').value = product.MODELO;
-        document.getElementById('precioDistribuidor').value = parseFloat(product.PRECIO_DISTRIBUIDOR).toFixed(2);
-        document.getElementById('precioVenta').value = parseFloat(product.PRECIO_DE_VENTA).toFixed(2);
-        document.getElementById('numeroSerie').value = product.NUMERO_DE_SERIE;
+    if (hasGarantia) {
+      warrantyWrapper.classList.remove('d-none');
+      fechaInicio.value = product.FECHA_INICIO ?? '';
+      fechaFin.value = product.FECHA_FIN ?? '';
+      fechaFin.setAttribute('data-user-modified', 'true');
+    } else {
+      warrantyWrapper.classList.add('d-none');
+      fechaInicio.value = '';
+      fechaFin.value = '';
+      fechaFin.removeAttribute('data-user-modified');
+    }
 
-        const hasGarantia = !!product.ID_GARANTIA;
-        const garantiaCheckbox = document.getElementById('hasWarrantyCheckbox');
-        const fechaInicio = document.getElementById('fechaInicio');
-        const fechaFin = document.getElementById('fechaFin');
-        const warrantyWrapper = document.getElementById('warrantyFieldsWrapper');
-
-        garantiaCheckbox.checked = hasGarantia;
-
-        if (hasGarantia) {
-            warrantyWrapper.classList.remove('d-none');
-            fechaInicio.value = product.FECHA_INICIO ?? '';
-            fechaFin.value = product.FECHA_FIN ?? '';
-            fechaFin.setAttribute('data-user-modified', 'true');
-        } else {
-            warrantyWrapper.classList.add('d-none');
-            fechaInicio.value = '';
-            fechaFin.value = '';
-            fechaFin.removeAttribute('data-user-modified');
-        }
-
-        hideSpinner();
-    })
-    .catch(error => {
-        hideSpinner();
-        console.error("Error al cargar datos para edición:", error);
-        Swal.fire("Error", "No se pudieron cargar los datos del producto.", "error");
-    });
+    hideSpinner();
+  })
+  .catch(error => {
+    hideSpinner();
+    console.error("Error al cargar datos para edición:", error);
+    Swal.fire("Error", "No se pudieron cargar los datos del producto.", "error");
+  });
 }
 
 function retrieveBrands() {
