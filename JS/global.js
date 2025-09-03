@@ -33,3 +33,8 @@ function unblockUI() {
     const blocker = document.getElementById("uiBlocker");
     if (blocker) blocker.remove();
 }
+
+const formatPrice = (value) => {
+        const parsed = parseFloat(value);
+        return Number.isInteger(parsed) ? `$${parsed}` : `$${parsed.toFixed(2)}`;
+        };

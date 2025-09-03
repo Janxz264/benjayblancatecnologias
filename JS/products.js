@@ -90,8 +90,8 @@ function loadProducts() {
             <td>${safeText(product.NOMBRE_MARCA)}</td>
             <td>${safeText(product.NOMBRE_PROVEEDOR)}</td>
             <td>${safeText(product.MODELO)}</td>
-            <td>$${parseFloat(product.PRECIO_DISTRIBUIDOR).toFixed(2)}</td>
-            <td>$${parseFloat(product.PRECIO_DE_VENTA).toFixed(2)}</td>
+            <td>${formatPrice(product.PRECIO_DISTRIBUIDOR)}</td>
+            <td>${formatPrice(product.PRECIO_DE_VENTA)}</td>
             <td>${safeText(product.NUMERO_DE_SERIE)}</td>
             <td>${ladoLabel}</td>
             <td>
@@ -215,11 +215,10 @@ function editProduct(id_producto) {
   .then(() => {
     document.getElementById('marcaSelect').value = product.ID_MARCA;
     document.getElementById('proveedorSelect').value = product.ID_PROVEEDOR;
-
     document.getElementById('productId').value = product.ID_PRODUCTO;
     document.getElementById('modeloInput').value = product.MODELO;
-    document.getElementById('precioDistribuidor').value = parseFloat(product.PRECIO_DISTRIBUIDOR).toFixed(2);
-    document.getElementById('precioVenta').value = parseFloat(product.PRECIO_DE_VENTA).toFixed(2);
+    document.getElementById('precioDistribuidor').value = formatPrice(product.PRECIO_DISTRIBUIDOR);
+    document.getElementById('precioVenta').value = formatPrice(product.PRECIO_DE_VENTA);
     document.getElementById('numeroSerie').value = product.NUMERO_DE_SERIE;
 
     switch (product.LADO) {
