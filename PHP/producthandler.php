@@ -209,6 +209,26 @@ if ($action === "VIEW") {
             'lado' => $lado
         ]);
 
+        // Get the newly created product ID
+        $productoId = $pdo->lastInsertId();
+
+        // Set default maintenance date to 6 months from now
+        $defaultFecha = date('Y-m-d', strtotime('+6 months'));
+
+        // Create the maintenance record with default values
+        $stmtMantenimiento = $pdo->prepare("
+            INSERT INTO mantenimiento (
+                ID_PRODUCTO, USER_CREATE, FECHA, HECHO
+            ) VALUES (
+                :id_producto, :user_create, :fecha, 0
+            )
+        ");
+        $stmtMantenimiento->execute([
+            'id_producto' => $productoId,
+            'user_create' => $userCreate,
+            'fecha' => $defaultFecha
+        ]);
+
         $productId = $pdo->lastInsertId();
 
         // Garantía
