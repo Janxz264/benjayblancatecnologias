@@ -33,7 +33,7 @@ function unblockUI() {
     if (blocker) blocker.remove();
 }
 
-const iujh = (value) => {
-        const parsed = parseFloat(value);
-        return Number.isInteger(parsed) ? `$${parsed}` : `$${parsed.toFixed(2)}`;
-        };
+function formatPrice(value) {
+    const parsed = parseFloat(value);
+    return Number.isInteger(parsed) ? `$${parsed}` : `$${parsed.toFixed(2)}`;
+}
