@@ -296,6 +296,10 @@ if ($action === "VIEW") {
         $stmt = $pdo->prepare("DELETE FROM pedido_producto WHERE ID_PRODUCTO = ?");
         $stmt->execute([$id]);
 
+        // Delete from maintenance where this product is linked
+        $stmt = $pdo->prepare("DELETE FROM mantenimiento WHERE ID_PRODUCTO = ?");
+        $stmt->execute([$id]);
+
         // Then delete product itself
         $stmt = $pdo->prepare("DELETE FROM producto WHERE ID_PRODUCTO = ?");
         $stmt->execute([$id]);
