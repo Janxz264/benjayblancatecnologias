@@ -1,14 +1,21 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // Clear textarea when modal closes
+    $('#endAppointmentModal').on('hidden.bs.modal', function () {
+        $("#appointmentObservations").val("");
+    });
+
+    // Initialize Flatpickr for appointment time
     flatpickr("#appointmentTime", {
         enableTime: true,
         noCalendar: true,
         dateFormat: "h:i K", // 12-hour format with AM/PM
         time_24hr: false
     });
+
     // Update Save button behavior
-            document.getElementById('saveAppointmentBtn').onclick = function () {
-                saveAppointment();
-            };
+    document.getElementById('saveAppointmentBtn').onclick = function () {
+        saveAppointment();
+    };
 });
 
 let currentAppointments = []; // variable global
@@ -770,7 +777,3 @@ async function isOverlappingAppointment(newDateTime, toleranceMinutes = 60, excl
 
     return false;
 }
-
-$('#endAppointmentModal').on('hidden.bs.modal', function () {
-    $("#appointmentObservations").val("");
-});
