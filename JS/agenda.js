@@ -770,3 +770,7 @@ async function isOverlappingAppointment(newDateTime, toleranceMinutes = 60, excl
 
     return false;
 }
+
+$('#endAppointmentModal').on('hidden.bs.modal', function () {
+    $("#appointmentObservations").val("");
+});
