@@ -292,13 +292,15 @@ document.getElementById('savePedidoBtn').addEventListener('click', function (e) 
   if (!fechaPedido) {
     errors.push("La fecha de pedido es obligatoria.");
   }
-  if (fechaEntrega && new Date(fechaEntrega) < new Date(fechaPedido)) {
+  
+  // Only validate fechaEntrega if it has a value
+  if (fechaEntrega && fechaPedido && new Date(fechaEntrega) < new Date(fechaPedido)) {
     errors.push("La fecha de entrega no puede ser anterior a la fecha de pedido.");
   }
 
   let pedidoPayload = {
     fechaPedido,
-    ...(fechaEntrega && { fechaEntrega })
+    ...(fechaEntrega && { fechaEntrega }) // fechaEntrega is only included if it has a value
   };
 
   if (!Array.isArray(selectedProducts) || selectedProducts.length === 0) {
