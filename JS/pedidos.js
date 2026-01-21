@@ -418,8 +418,8 @@ function verProductos(pedidoID, isEditable) {
                                         <td>${safeText(prod.NOMBRE_MARCA)}</td>
                                         <td>${safeText(prod.NOMBRE_PROVEEDOR)}</td>
                                         <td>${safeText(prod.MODELO)}</td>
-                                        <td>$${parseFloat(prod.PRECIO_DISTRIBUIDOR).toFixed(2)}</td>
-                                        <td>$${parseFloat(prod.PRECIO_DE_VENTA).toFixed(2)}</td>
+                                        <td>${formatPrice(prod.PRECIO_DISTRIBUIDOR)}</td>
+                                        <td>${formatPrice(prod.PRECIO_DE_VENTA)}</td>
                                         <td>${safeText(prod.NUMERO_DE_SERIE)}</td>
                                         ${isEditable ? `
                                             <td><button class="btn btn-sm btn-danger" onclick="quitarProductodePedido(${prod.ID_PRODUCTO}, ${pedidoID})">
@@ -632,7 +632,7 @@ function agregarProductoAPedido(ID_PEDIDO) {
   // Build a simple select modal
   let optionsHTML = filteredAvailable.map(p => `
     <option value="${p.ID_PRODUCTO}">
-      ${p.NOMBRE_MARCA} - ${p.MODELO} - $${parseFloat(p.PRECIO_DE_VENTA).toFixed(2)}
+      ${p.NOMBRE_MARCA} - ${p.MODELO} - ${formatPrice(p.PRECIO_DE_VENTA)}
     </option>
   `).join('');
 
@@ -702,8 +702,8 @@ function confirmAddProduct(ID_PEDIDO) {
           <td class="sorting_1">${producto.NOMBRE_MARCA}</td>
           <td>${producto.NOMBRE_PROVEEDOR}</td>
           <td>${producto.MODELO}</td>
-          <td>$${parseFloat(producto.PRECIO_DISTRIBUIDOR).toFixed(2)}</td>
-          <td>$${parseFloat(producto.PRECIO_DE_VENTA).toFixed(2)}</td>
+          <td>${formatPrice(producto.PRECIO_DISTRIBUIDOR)}</td>
+          <td>${formatPrice(producto.PRECIO_DE_VENTA)}</td>
           <td>${producto.NUMERO_DE_SERIE}</td>
           <td>
             <button class="btn btn-sm btn-danger" onclick="quitarProductodePedido(${producto.ID_PRODUCTO}, ${ID_PEDIDO})">

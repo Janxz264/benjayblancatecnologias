@@ -78,7 +78,7 @@ function loadPatientsProducts() {
                             Serie: ${safeText(prod.NUMERO_DE_SERIE)}<br>
                             Marca: ${safeText(prod.NOMBRE_MARCA)}<br>
                             Proveedor: ${safeText(prod.NOMBRE_PROVEEDOR)}<br>
-                            Precio: $${parseFloat(prod.PRECIO_DE_VENTA).toFixed(2)}<br>
+                            Precio: ${formatPrice(prod.PRECIO_DE_VENTA)}<br>
                             <button class="btn btn-danger btn-sm mt-1" onclick="unlinkProducto(${prod.ID_PRODUCTO})">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>

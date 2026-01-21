@@ -617,8 +617,8 @@ function viewProduct(ID_PRODUCTO) {
       const marca = prod.marca_nombre || "No especificada";
       const proveedor = prod.proveedor_nombre || "No especificado";
       const modelo = prod.producto_modelo || "-";
-      const precioDistribuidor = prod.producto_precio_distribuidor ? `$${parseFloat(prod.producto_precio_distribuidor).toFixed(2)}` : "-";
-      const precioVenta = prod.producto_precio_venta ? `$${parseFloat(prod.producto_precio_venta).toFixed(2)}` : "-";
+      const precioDistribuidor = prod.producto_precio_distribuidor ? `${formatPrice(prod.producto_precio_distribuidor)}` : "-";
+      const precioVenta = prod.producto_precio_venta ? `${formatPrice(prod.producto_precio_venta)}` : "-";
       const serie = prod.producto_numero_serie || "-";
 
       let ladoTexto = "N/A";

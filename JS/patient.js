@@ -37,7 +37,7 @@ function loadPatients() {
             }
 
             let tableHTML = `
-                <table id="patientsTable" class="table table-bordered table-striped patientTable">
+                <table id="patientsTable" class="table table-bordered table-striped">
                     <thead class="thead-dark">
                         <tr>
                             <th>Nombre Completo</th>

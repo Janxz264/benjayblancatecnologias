@@ -140,6 +140,11 @@ table td {
     text-align: left;
 }
 
+#pacienteProductosTable td:first-child,
+#pacienteProductosTable th:first-child {
+    text-align: left;
+}
+
 #loadingSpinner {
     position: fixed;
     top: 0;
