@@ -34,6 +34,19 @@ function unblockUI() {
 }
 
 function formatPrice(value) {
-    const parsed = parseFloat(value);
-    return Number.isInteger(parsed) ? `$${parsed}` : `$${parsed.toFixed(2)}`;
+    // Convert to number if it's not already
+    const num = parseFloat(value);
+    
+    // Check if it's a valid number
+    if (isNaN(num)) {
+        return "$0.00";
+    }
+    
+    // Split into integer and decimal parts
+    const [integerPart, decimalPart = '00'] = num.toFixed(2).split('.');
+    
+    // Add commas for thousands separators
+    const integerWithCommas = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    
+    return `$${integerWithCommas}.${decimalPart}`;
 }
