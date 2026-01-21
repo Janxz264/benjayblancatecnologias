@@ -127,6 +127,10 @@ button[disabled]:hover::after {
 
 table th,
 table td {
+    text-align: center;
+}
+
+#patientsTable_wrapper {
     text-align: justify;
 }
 
