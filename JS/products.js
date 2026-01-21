@@ -217,8 +217,8 @@ function editProduct(id_producto) {
     document.getElementById('proveedorSelect').value = product.ID_PROVEEDOR;
     document.getElementById('productId').value = product.ID_PRODUCTO;
     document.getElementById('modeloInput').value = product.MODELO;
-    document.getElementById('precioDistribuidor').value = formatPrice(product.PRECIO_DISTRIBUIDOR);
-    document.getElementById('precioVenta').value = formatPrice(product.PRECIO_DE_VENTA);
+    document.getElementById('precioDistribuidor').value = product.PRECIO_DISTRIBUIDOR;
+    document.getElementById('precioVenta').value = product.PRECIO_DE_VENTA;
     document.getElementById('numeroSerie').value = product.NUMERO_DE_SERIE;
 
     switch (product.LADO) {
