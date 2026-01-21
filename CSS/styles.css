@@ -131,7 +131,7 @@ table td {
 }
 
 .patientsTable_wrapper {
-    text-align: justify;
+    text-align: left;
 }
 
 #loadingSpinner {
