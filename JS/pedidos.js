@@ -122,7 +122,11 @@ function loadPedidos() {
                 let estatusText = "";
                 let estatusIcon = "";
 
-                if (entregaDate.getTime() === todayUTC.getTime()) {
+                // Handle the case where entregaDate is null
+                if (!entregaDate) {
+                    estatusText = "Sin fecha de entrega";
+                    estatusIcon = '<i class="fas fa-question-circle text-secondary"></i>';
+                } else if (entregaDate.getTime() === todayUTC.getTime()) {
                     estatusText = "Llega hoy";
                     estatusIcon = '<i class="fas fa-truck-moving text-success"></i>';
                 } else if (entregaDate > todayUTC) {
@@ -133,15 +137,23 @@ function loadPedidos() {
                     estatusIcon = '<i class="fas fa-check-circle text-muted"></i>';
                 }
 
-                const isEditable = estatusText === "Por entregar";
+                // Update editability logic
+                // Allow editing if: no delivery date OR status is "Por entregar"
+                const isEditable = !entregaDate || estatusText === "Por entregar";
+                
                 const productos = Array.isArray(pedido.PRODUCTOS) ? pedido.PRODUCTOS : [];
                 const numProductos = productos.length;
+                
+                // Display "No asignada" for empty delivery dates
+                const fechaEntregaDisplay = pedido.FECHA_DE_ENTREGA ? 
+                    safeText(pedido.FECHA_DE_ENTREGA) : 
+                    '<span class="text-muted"><i>No asignada</i></span>';
 
                 tableHTML += `
                     <tr>
                         <td>${pedido.ID_PEDIDO}</td>
                         <td>${safeText(pedido.FECHA_DE_PEDIDO)}</td>
-                        <td>${safeText(pedido.FECHA_DE_ENTREGA)}</td>
+                        <td>${fechaEntregaDisplay}</td>
                         <td>${estatusIcon} ${estatusText}</td>
                         <td>${numProductos}</td>
                         <td>
