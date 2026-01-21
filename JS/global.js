@@ -56,3 +56,10 @@ function parseFechaDDMMYYYY(fechaStr) {
     const [dia, mes, año] = fechaStr.split('/');
     return new Date(Date.UTC(año, mes - 1, dia));
 }
+
+function convertToDateInputFormat(dateStr) {
+  // Expects input like "16/07/2025"
+  if (!dateStr) return null;
+  const [day, month, year] = dateStr.split('/');
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+}

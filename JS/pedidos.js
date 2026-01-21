@@ -545,12 +545,6 @@ function editPedido(ID_PEDIDO) {
   modal.show();
 }
 
-function convertToDateInputFormat(dateStr) {
-  // Expects input like "16/07/2025"
-  const [day, month, year] = dateStr.split('/');
-  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-}
-
 function editarPedido() {
   const fechaPedido = document.getElementById("edit_fechaPedido").value;
   const fechaEntrega = document.getElementById("edit_fechaEntrega").value;
