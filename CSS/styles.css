@@ -130,6 +130,11 @@ table td {
     text-align: center;
 }
 
+#appointmentsTable td:first-child,
+#appointmentsTable th:first-child {
+    text-align: left;
+}
+
 #patientsTable td:first-child,
 #patientsTable th:first-child {
     text-align: left;
