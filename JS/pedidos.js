@@ -114,13 +114,8 @@ function loadPedidos() {
                     <tbody>
             `;
 
-            function parseFechaDDMMYYYY(fechaStr) {
-                const [dia, mes, año] = fechaStr.split('/');
-                return new Date(Date.UTC(año, mes - 1, dia));
-            }
-
             data.forEach(pedido => {
-                const entregaDate = parseFechaDDMMYYYY(pedido.FECHA_DE_ENTREGA);
+                const entregaDate = pedido.FECHA_DE_ENTREGA ? parseFechaDDMMYYYY(pedido.FECHA_DE_ENTREGA) : null;
                 const now = new Date();
                 const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
 

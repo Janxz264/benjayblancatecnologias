@@ -50,3 +50,9 @@ function formatPrice(value) {
     
     return `$${integerWithCommas}.${decimalPart}`;
 }
+
+function parseFechaDDMMYYYY(fechaStr) {
+    if (!fechaStr) return null;
+    const [dia, mes, año] = fechaStr.split('/');
+    return new Date(Date.UTC(año, mes - 1, dia));
+}
