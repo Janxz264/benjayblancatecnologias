@@ -42,7 +42,7 @@ function loadPatients() {
                         <tr>
                             <th>Nombre Completo</th>
                             <th>Teléfono</th>
-                            <th>Fecha de Nacimiento</th>
+                            <th>Fecha de Nac.</th>
                             <th>Edad</th>
                             <th>Sexo</th>
                             <th>Municipio</th>
@@ -266,22 +266,6 @@ function deletePatient(id) {
             });
         }
     });
-}
-
-function calculateAge(birthDateString) {
-    let parts = birthDateString.split('/');
-    let formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
-    let birthDate = new Date(formattedDate);
-    let today = new Date();
-
-    let age = today.getFullYear() - birthDate.getFullYear();
-    let monthDiff = today.getMonth() - birthDate.getMonth();
-    let dayDiff = today.getDate() - birthDate.getDate();
-
-    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-        age--;
-    }
-    return age;
 }
 
 function savePatient() {

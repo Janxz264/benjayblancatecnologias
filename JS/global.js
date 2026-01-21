@@ -63,3 +63,19 @@ function convertToDateInputFormat(dateStr) {
   const [day, month, year] = dateStr.split('/');
   return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 }
+
+function calculateAge(birthDateString) {
+    let parts = birthDateString.split('/');
+    let formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+    let birthDate = new Date(formattedDate);
+    let today = new Date();
+
+    let age = today.getFullYear() - birthDate.getFullYear();
+    let monthDiff = today.getMonth() - birthDate.getMonth();
+    let dayDiff = today.getDate() - birthDate.getDate();
+
+    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+        age--;
+    }
+    return age;
+}
