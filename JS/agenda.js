@@ -86,28 +86,36 @@ function loadCurrentAppointments() {
                     <tbody>
             `;
 
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            const now = new Date(); // Current date and time
+            const todayStart = new Date();
+            todayStart.setHours(0, 0, 0, 0); // Start of today (midnight)
 
             data.forEach(appointment => {
                 const appointmentDate = new Date(appointment.FECHA_HORA);
-                appointmentDate.setHours(0, 0, 0, 0);
+                const formattedDate = formatDateTime(appointment.FECHA_HORA);
 
-                const isToday = appointmentDate.getTime() === today.getTime();
-                const formattedDate = isToday 
-                    ? `${formatDateTime(appointment.FECHA_HORA)}`
-                    : formatDateTime(appointment.FECHA_HORA);
-
-                const finalizarButton = isToday 
+                // Enable "Finalizar" for appointments that are today OR in the past
+                // But typically you'd want to only enable it for appointments that haven't been finished yet
+                const isPastOrToday = appointmentDate <= now;
+                
+                // You might also want to check if the appointment is already finished
+                // Add this check if you have a status field like 'ESTADO' or 'FINALIZADA'
+                const isFinished = appointment.FINALIZADA || appointment.ESTADO === 'FINALIZADA' || appointment.ESTADO === 'COMPLETADA';
+                
+                const finalizarButton = (isPastOrToday && !isFinished)
                     ? `<button class="btn btn-info btn-sm" onclick="finishAppointment(${appointment.ID_CITA})">
                         <i class="fa fa-calendar-check"></i> Finalizar Cita
                       </button>`
-                    : `<button class="btn btn-info btn-sm" disabled style="cursor: not-allowed;" title="No es posible finalizar aún">
+                    : `<button class="btn btn-info btn-sm" disabled style="cursor: not-allowed;" 
+                         title="${isFinished ? 'Cita ya finalizada' : 'No es posible finalizar aún'}">
                         <i class="fa fa-calendar-check"></i> Finalizar Cita
                       </button>`;
 
+                // Optional: Highlight past appointments differently
+                const rowClass = appointmentDate < todayStart ? 'table-warning' : '';
+
                 tableHTML += `
-                    <tr>
+                    <tr class="${rowClass}">
                         <td>${appointment.NOMBRE_COMPLETO}</td>
                         <td>${formattedDate}</td>
                         <td>${appointment.MOTIVO_DE_CONSULTA}</td>
