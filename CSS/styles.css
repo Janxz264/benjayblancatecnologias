@@ -130,7 +130,8 @@ table td {
     text-align: center;
 }
 
-.patientTable {
+#patientsTable td:first-child,
+#patientsTable th:first-child {
     text-align: left;
 }
 
